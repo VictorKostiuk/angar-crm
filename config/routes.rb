@@ -35,6 +35,10 @@ Rails.application.routes.draw do
 
   patch "workshop/:id/approve", to: "workshop#approve", as: :approve_workshop_order
 
+  resources :users, only: %i[ index create update ]
+  resources :mechanics, only: %i[ index show ]
+  get "reports", to: "reports#index"
+
   # Defines the root path route ("/")
   root "workshop#index"
 end

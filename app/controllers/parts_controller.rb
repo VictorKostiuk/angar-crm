@@ -1,4 +1,9 @@
 class PartsController < ApplicationController
+  # search is exempt: P3's add-part modal calls it on every keystroke, and a
+  # mechanic building an order must be able to search the catalog even
+  # though they can't edit it (§7).
+  require_role :admin, :owner, except: :search
+
   def index
     load_index_data
     @part = params[:edit].present? ? Part.find(params[:edit]) : Part.new

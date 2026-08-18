@@ -1,0 +1,55 @@
+<h2 class="font-bold text-gray-900 mb-4"><%= @user.persisted? ? "Редагувати користувача" : "Додати користувача" %></h2>
+
+<%= form_with model: @user, url: (@user.persisted? ? user_path(@user) : users_path), class: "space-y-4" do |f| %>
+  <% if @user.errors.any? %>
+    <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+      <% @user.errors.full_messages.each do |message| %>
+        <p><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "Ім'я", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :name, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :email_address, "Email", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.email_field :email_address, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :phone, "Телефон", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :phone, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :role, "Роль", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :role, User.roles.keys.map { |r| [ t("roles.#{r}"), r ] },
+          {}, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :payroll_percent, "% від суми робіт (для механіків)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.number_field :payroll_percent, step: 1, min: 0, max: 100, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :password, @user.persisted? ? "Новий пароль (залиште порожнім, щоб не змінювати)" : "Пароль", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.password_field :password, autocomplete: "new-password", class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <%= f.check_box :active, class: "rounded border-gray-300" %>
+    <%= f.label :active, "Активний (може входити в систему)", class: "text-sm text-gray-700" %>
+  </div>
+
+  <div class="flex gap-2 pt-2">
+    <% if @user.persisted? %>
+      <%= link_to t("actions.cancel"), users_path,
+            class: "flex-1 text-center rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-300" %>
+    <% end %>
+    <%= f.submit t("actions.save"), class: "flex-1 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+  </div>
+<% end %>

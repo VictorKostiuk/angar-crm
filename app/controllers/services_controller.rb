@@ -1,4 +1,9 @@
 class ServicesController < ApplicationController
+  # search is exempt: P3's add-work modal calls it on every keystroke, and a
+  # mechanic building an order must be able to search the catalog even
+  # though they can't edit it (§7).
+  require_role :admin, :owner, except: :search
+
   def index
     load_index_data
     @service = params[:edit].present? ? Service.find(params[:edit]) : Service.new
