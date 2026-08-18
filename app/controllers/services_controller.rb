@@ -13,10 +13,15 @@ class ServicesController < ApplicationController
     @service = Service.new(service_params)
 
     if @service.save
-      redirect_to services_path(category_id: params[:category_id]), notice: "Роботу додано."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to services_path(category_id: params[:category_id]), notice: "Роботу додано." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -24,16 +29,28 @@ class ServicesController < ApplicationController
     @service = Service.find(params[:id])
 
     if @service.update(service_params)
-      redirect_to services_path(category_id: params[:category_id]), notice: "Роботу оновлено."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to services_path(category_id: params[:category_id]), notice: "Роботу оновлено." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     Service.find(params[:id]).update!(active: false)
-    redirect_to services_path(category_id: params[:category_id]), notice: "Роботу архівовано."
+
+    respond_to do |format|
+      format.turbo_stream do
+        load_index_data
+        render turbo_stream: turbo_stream.update("services_rows", partial: "rows", locals: { services: @services, category_id: params[:category_id] })
+      end
+      format.html { redirect_to services_path(category_id: params[:category_id]), notice: "Роботу архівовано." }
+    end
   end
 
   # Reused by the order "Додати роботу" modal (P3) to look up catalog items as-you-type.
@@ -53,5 +70,13 @@ class ServicesController < ApplicationController
       @selected_category = @categories.find_by(id: params[:category_id])
       @services = Service.active.ordered
       @services = @services.where(category: @selected_category) if @selected_category
+    end
+
+    # After a successful create/update, the side-panel form goes back to
+    # "Додати" mode (mirrors the html fallback's redirect to the plain index,
+    # which never carries ?edit=).
+    def load_index_data_and_reset_form
+      load_index_data
+      @service = Service.new
     end
 end

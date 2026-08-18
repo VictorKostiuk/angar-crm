@@ -1,0 +1,9 @@
+<%= turbo_stream.update "suppliers_rows" do %>
+  <%= render "rows", suppliers: @suppliers %>
+<% end %>
+
+<%= turbo_stream.replace "supplier_form" do %>
+  <div id="supplier_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>

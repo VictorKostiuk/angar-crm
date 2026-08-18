@@ -32,38 +32,13 @@
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
-        <% @parts.each do |part| %>
-          <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-900"><%= part.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(part.base_price) %></td>
-            <td class="px-4 py-3">
-              <span class="<%= class_names("font-medium", part.low_stock? ? "text-red-600" : "text-gray-900") %>"><%= part.stock_quantity %></span>
-              <% if part.low_stock? %>
-                <span class="ml-1 inline-block rounded-full bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5">Мало на складі</span>
-              <% end %>
-            </td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <%= link_to "Рух складу", new_part_stock_movement_path(part), data: { turbo_frame: "modal" },
-                    class: "text-gray-400 hover:text-brand-600 mr-3" %>
-              <%= link_to t("actions.edit"), parts_path(edit: part.id, category_id: params[:category_id]),
-                    class: "text-gray-400 hover:text-brand-600 mr-3" %>
-              <%= button_to t("actions.archive"), part_path(part, category_id: params[:category_id]), method: :delete,
-                    data: { turbo_confirm: "Архівувати «#{part.name}»?" },
-                    class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
-            </td>
-          </tr>
-        <% end %>
-
-        <% if @parts.none? %>
-          <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Немає позицій у цій категорії</td></tr>
-        <% end %>
+      <tbody id="parts_rows" class="divide-y divide-gray-100">
+        <%= render "rows", parts: @parts, category_id: params[:category_id] %>
       </tbody>
     </table>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl p-5">
+  <div id="part_form" class="bg-white border border-gray-200 rounded-xl p-5">
     <%= render "form" %>
   </div>
 </div>

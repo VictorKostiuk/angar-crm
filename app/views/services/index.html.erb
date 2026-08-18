@@ -24,30 +24,13 @@
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
-        <% @services.each do |service| %>
-          <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-900"><%= service.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= service.category.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(service.base_price) %></td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">
-              <%= link_to t("actions.edit"), services_path(edit: service.id, category_id: params[:category_id]),
-                    class: "text-gray-400 hover:text-brand-600 mr-3" %>
-              <%= button_to t("actions.archive"), service_path(service, category_id: params[:category_id]), method: :delete,
-                    data: { turbo_confirm: "Архівувати роботу «#{service.name}»?" },
-                    class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
-            </td>
-          </tr>
-        <% end %>
-
-        <% if @services.none? %>
-          <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Немає робіт у цій категорії</td></tr>
-        <% end %>
+      <tbody id="services_rows" class="divide-y divide-gray-100">
+        <%= render "rows", services: @services, category_id: params[:category_id] %>
       </tbody>
     </table>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl p-5">
+  <div id="service_form" class="bg-white border border-gray-200 rounded-xl p-5">
     <%= render "form" %>
   </div>
 </div>

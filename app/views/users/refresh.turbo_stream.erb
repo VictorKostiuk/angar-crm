@@ -1,0 +1,9 @@
+<%= turbo_stream.update "users_rows" do %>
+  <%= render "rows", users: @users %>
+<% end %>
+
+<%= turbo_stream.replace "user_form" do %>
+  <div id="user_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>

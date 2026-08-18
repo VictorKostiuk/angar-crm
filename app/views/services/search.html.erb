@@ -1,9 +1,11 @@
-<% if @services.any? %>
-  <% @services.each do |service| %>
-    <%= render "shared/catalog_result_item", name: service.name, price: service.base_price,
-          add_url: (@order ? order_order_works_path(@order) : nil),
-          add_params: (@order ? { order_work: { service_id: service.id } } : nil) %>
+<%= turbo_frame_tag "order_work_search_results" do %>
+  <% if @services.any? %>
+    <% @services.each do |service| %>
+      <%= render "shared/catalog_result_item", name: service.name, price: service.base_price,
+            add_url: (@order ? order_order_works_path(@order) : nil),
+            add_params: (@order ? { order_work: { service_id: service.id } } : nil) %>
+    <% end %>
+  <% else %>
+    <p class="px-3 py-2 text-sm text-gray-400">Нічого не знайдено</p>
   <% end %>
-<% else %>
-  <p class="px-3 py-2 text-sm text-gray-400">Нічого не знайдено</p>
 <% end %>

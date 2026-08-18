@@ -24,19 +24,30 @@
      "waiting_pickup" => "bg-teal-500"
    } %>
 
-<div class="space-y-8">
-  <% Order::OPEN_STATUSES.each do |status| %>
-    <% orders = @orders_by_status[status] %>
-    <div>
-      <div class="flex items-center gap-2 mb-3">
-        <span class="w-2.5 h-2.5 rounded-full <%= dot_colors.fetch(status, "bg-gray-400") %>"></span>
-        <h2 class="font-bold text-gray-900"><%= t("statuses.order.#{status}") %></h2>
-        <span id="board_section_<%= status %>_count" class="text-sm text-gray-400"><%= orders.size %></span>
-      </div>
+<div data-controller="board-filter">
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button type="button" data-board-filter-target="pill" data-status="all" data-action="board-filter#filter"
+            class="rounded-full px-4 py-1.5 text-sm font-medium bg-brand-600 text-white">Усі</button>
+    <% Order::OPEN_STATUSES.each do |status| %>
+      <button type="button" data-board-filter-target="pill" data-status="<%= status %>" data-action="board-filter#filter"
+              class="rounded-full px-4 py-1.5 text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"><%= t("statuses.order.#{status}") %></button>
+    <% end %>
+  </div>
 
-      <div id="board_section_<%= status %>_cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <%= render partial: "workshop/order_card", collection: orders, as: :order %>
+  <div class="space-y-8">
+    <% Order::OPEN_STATUSES.each do |status| %>
+      <% orders = @orders_by_status[status] %>
+      <div data-board-filter-target="section" data-status="<%= status %>">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-2.5 h-2.5 rounded-full <%= dot_colors.fetch(status, "bg-gray-400") %>"></span>
+          <h2 class="font-bold text-gray-900"><%= t("statuses.order.#{status}") %></h2>
+          <span id="board_section_<%= status %>_count" class="text-sm text-gray-400"><%= orders.size %></span>
+        </div>
+
+        <div id="board_section_<%= status %>_cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <%= render partial: "workshop/order_card", collection: orders, as: :order %>
+        </div>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </div>

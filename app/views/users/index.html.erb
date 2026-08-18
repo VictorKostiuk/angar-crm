@@ -15,28 +15,13 @@
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
-        <% @users.each do |user| %>
-          <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-900"><%= user.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= user.email_address %></td>
-            <td class="px-4 py-3 text-gray-600"><%= t("roles.#{user.role}") %></td>
-            <td class="px-4 py-3 text-gray-600"><%= user.mechanic? ? "#{user.payroll_percent.to_i}%" : "—" %></td>
-            <td class="px-4 py-3">
-              <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= user.active? ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500" %>">
-                <%= user.active? ? "Активний" : "Деактивований" %>
-              </span>
-            </td>
-            <td class="px-4 py-3 text-right">
-              <%= link_to t("actions.edit"), users_path(edit: user.id), class: "text-gray-400 hover:text-brand-600" %>
-            </td>
-          </tr>
-        <% end %>
+      <tbody id="users_rows" class="divide-y divide-gray-100">
+        <%= render "rows", users: @users %>
       </tbody>
     </table>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl p-5">
+  <div id="user_form" class="bg-white border border-gray-200 rounded-xl p-5">
     <%= render "form" %>
   </div>
 </div>

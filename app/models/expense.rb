@@ -1,5 +1,5 @@
 class Expense < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true # nil for system-generated consumption expenses
   belongs_to :stock_movement, optional: true
 
   normalizes :category, with: ->(category) { category.strip.squeeze(" ") }

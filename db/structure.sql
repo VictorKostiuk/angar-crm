@@ -244,7 +244,7 @@ CREATE TABLE public.expenses (
     amount numeric(12,2) NOT NULL,
     description character varying,
     date date NOT NULL,
-    user_id bigint NOT NULL,
+    user_id bigint,
     stock_movement_id bigint,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
@@ -1497,6 +1497,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260818150720'),
 ('20260818125557'),
 ('20260818123251'),
 ('20260818122545'),

@@ -2,8 +2,6 @@ uk:
   app:
     name: "Ангар"
     tagline: "Веломайстерня"
-    address: ""
-    phone: ""
 
   low_stock_banner:
     one: "%{count} деталь закінчується на складі"

@@ -8,14 +8,14 @@ class StockMovement < ApplicationRecord
   validates :quantity, numericality: { other_than: 0, only_integer: true }
 
   after_create :recalculate_part_stock
-  after_create :log_expense_from_receipt
+  after_create :log_expense_from_consumption
 
   private
     def recalculate_part_stock
       Parts::RecalculateStock.call(part)
     end
 
-    def log_expense_from_receipt
-      Finances::LogExpenseFromReceipt.call(self)
+    def log_expense_from_consumption
+      Finances::LogExpenseFromConsumption.call(self)
     end
 end

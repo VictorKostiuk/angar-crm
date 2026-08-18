@@ -1,0 +1,19 @@
+<%# locals: (services:, category_id:) %>
+<% services.each do |service| %>
+  <tr class="hover:bg-gray-50" id="service_row_<%= service.id %>">
+    <td class="px-4 py-3 text-gray-900"><%= service.name %></td>
+    <td class="px-4 py-3 text-gray-600"><%= service.category.name %></td>
+    <td class="px-4 py-3 text-gray-600"><%= money(service.base_price) %></td>
+    <td class="px-4 py-3 text-right whitespace-nowrap">
+      <%= link_to t("actions.edit"), services_path(edit: service.id, category_id: category_id),
+            class: "text-gray-400 hover:text-brand-600 mr-3" %>
+      <%= button_to t("actions.archive"), service_path(service, category_id: category_id), method: :delete,
+            data: { turbo_confirm: "Архівувати роботу «#{service.name}»?" },
+            class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+    </td>
+  </tr>
+<% end %>
+
+<% if services.none? %>
+  <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Немає робіт у цій категорії</td></tr>
+<% end %>

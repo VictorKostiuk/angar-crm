@@ -11,10 +11,15 @@ class ExpensesController < ApplicationController
     @expense.user = Current.user
 
     if @expense.save
-      redirect_to expenses_path, notice: "Витрату додано."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to expenses_path, notice: "Витрату додано." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -22,16 +27,28 @@ class ExpensesController < ApplicationController
     @expense = Expense.find(params[:id])
 
     if @expense.update(expense_params)
-      redirect_to expenses_path, notice: "Витрату оновлено."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to expenses_path, notice: "Витрату оновлено." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     Expense.find(params[:id]).destroy
-    redirect_to expenses_path, notice: "Витрату видалено."
+
+    respond_to do |format|
+      format.turbo_stream do
+        load_index_data
+        render turbo_stream: turbo_stream.update("expenses_rows", partial: "rows", locals: { expenses: @expenses })
+      end
+      format.html { redirect_to expenses_path, notice: "Витрату видалено." }
+    end
   end
 
   private
@@ -41,5 +58,10 @@ class ExpensesController < ApplicationController
 
     def load_index_data
       @expenses = Expense.ordered.includes(:stock_movement)
+    end
+
+    def load_index_data_and_reset_form
+      load_index_data
+      @expense = Expense.new(date: Date.current)
     end
 end

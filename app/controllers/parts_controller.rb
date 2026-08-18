@@ -13,10 +13,15 @@ class PartsController < ApplicationController
     @part = Part.new(part_params)
 
     if @part.save
-      redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал додано."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал додано." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -24,16 +29,28 @@ class PartsController < ApplicationController
     @part = Part.find(params[:id])
 
     if @part.update(part_params)
-      redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал оновлено."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал оновлено." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     Part.find(params[:id]).update!(active: false)
-    redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал архівовано."
+
+    respond_to do |format|
+      format.turbo_stream do
+        load_index_data
+        render turbo_stream: turbo_stream.update("parts_rows", partial: "rows", locals: { parts: @parts, category_id: params[:category_id] })
+      end
+      format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал архівовано." }
+    end
   end
 
   # Reused by the order "Додати деталь / матеріал" modal (P3) to look up catalog items as-you-type.
@@ -55,5 +72,10 @@ class PartsController < ApplicationController
       @parts = @parts.where(category: @selected_category) if @selected_category
       @parts = @parts.low_stock if params[:low_stock].present?
       @suppliers = Supplier.active.ordered
+    end
+
+    def load_index_data_and_reset_form
+      load_index_data
+      @part = Part.new
     end
 end

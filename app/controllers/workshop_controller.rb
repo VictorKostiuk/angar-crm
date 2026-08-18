@@ -1,6 +1,6 @@
 class WorkshopController < ApplicationController
   def index
-    orders = Order.open_orders.includes(:client, :bike, :mechanic).order(accepted_at: :asc)
+    orders = Order.open_orders.includes(:client, :bike, :mechanic).with_attached_photos.order(accepted_at: :asc)
     grouped = orders.group_by(&:status)
     @orders_by_status = Order::OPEN_STATUSES.index_with { |status| grouped[status] || [] }
 

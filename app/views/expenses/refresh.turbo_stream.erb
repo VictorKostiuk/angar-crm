@@ -1,0 +1,9 @@
+<%= turbo_stream.update "expenses_rows" do %>
+  <%= render "rows", expenses: @expenses %>
+<% end %>
+
+<%= turbo_stream.replace "expense_form" do %>
+  <div id="expense_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>

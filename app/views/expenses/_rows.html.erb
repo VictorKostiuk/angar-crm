@@ -1,0 +1,24 @@
+<%# locals: (expenses:) %>
+<% expenses.each do |expense| %>
+  <tr class="hover:bg-gray-50" id="expense_row_<%= expense.id %>">
+    <td class="px-4 py-3 text-gray-600 whitespace-nowrap"><%= expense.date.strftime("%d.%m.%Y") %></td>
+    <td class="px-4 py-3 text-gray-900">
+      <%= expense.category %>
+      <% if expense.auto_logged? %>
+        <span class="ml-1 inline-block rounded-full bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5">витрачено на замовлення</span>
+      <% end %>
+    </td>
+    <td class="px-4 py-3 text-gray-600"><%= expense.description.presence || "—" %></td>
+    <td class="px-4 py-3 text-gray-900 whitespace-nowrap"><%= money(expense.amount) %></td>
+    <td class="px-4 py-3 text-right whitespace-nowrap">
+      <%= link_to t("actions.edit"), expenses_path(edit: expense.id), class: "text-gray-400 hover:text-brand-600 mr-3" %>
+      <%= button_to t("actions.delete"), expense_path(expense), method: :delete,
+            data: { turbo_confirm: "Видалити витрату «#{expense.category}»?" },
+            class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+    </td>
+  </tr>
+<% end %>
+
+<% if expenses.none? %>
+  <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Витрат ще немає</td></tr>
+<% end %>

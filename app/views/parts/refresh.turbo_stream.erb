@@ -1,0 +1,9 @@
+<%= turbo_stream.update "parts_rows" do %>
+  <%= render "rows", parts: @parts, category_id: params[:category_id] %>
+<% end %>
+
+<%= turbo_stream.replace "part_form" do %>
+  <div id="part_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>

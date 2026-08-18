@@ -27,8 +27,6 @@ Rails.application.routes.draw do
   resources :expenses, only: %i[ index create update destroy ]
 
   resources :orders, only: %i[ index new create show update ] do
-    get :receipt, on: :member
-    get :invoice, on: :member
     resource :status, only: %i[ edit update ], controller: "order_statuses"
     resource :payment, only: %i[ edit update ], controller: "order_payments"
     resource :closure, only: %i[ edit update ], controller: "order_closures"

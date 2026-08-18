@@ -10,10 +10,15 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
-      redirect_to users_path, notice: "Користувача додано."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to users_path, notice: "Користувача додано." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -21,10 +26,15 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
 
     if @user.update(user_params.compact_blank)
-      redirect_to users_path, notice: "Користувача оновлено."
+      respond_to do |format|
+        format.turbo_stream { load_index_data_and_reset_form; render :refresh }
+        format.html { redirect_to users_path, notice: "Користувача оновлено." }
+      end
     else
-      load_index_data
-      render :index, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render :form_error, status: :unprocessable_entity }
+        format.html { load_index_data; render :index, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -35,5 +45,10 @@ class UsersController < ApplicationController
 
     def load_index_data
       @users = User.order(:name)
+    end
+
+    def load_index_data_and_reset_form
+      load_index_data
+      @user = User.new
     end
 end

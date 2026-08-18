@@ -12,7 +12,8 @@
     <% end %>
   </div>
 
-  <%= turbo_frame_tag "order_part_search_results", class: "block empty:hidden" %>
+  <%= turbo_frame_tag "order_part_search_results", src: search_parts_path(order_id: @order.id),
+        class: "block empty:hidden max-h-44 overflow-y-auto divide-y divide-gray-100" %>
 
   <div class="text-center text-xs text-gray-400">або</div>
 

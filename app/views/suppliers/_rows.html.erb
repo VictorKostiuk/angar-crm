@@ -1,0 +1,18 @@
+<%# locals: (suppliers:) %>
+<% suppliers.each do |supplier| %>
+  <tr class="hover:bg-gray-50" id="supplier_row_<%= supplier.id %>">
+    <td class="px-4 py-3 text-gray-900"><%= supplier.name %></td>
+    <td class="px-4 py-3 text-gray-600"><%= supplier.phone.presence || "—" %></td>
+    <td class="px-4 py-3 text-gray-600"><%= supplier.email.presence || "—" %></td>
+    <td class="px-4 py-3 text-right whitespace-nowrap">
+      <%= link_to t("actions.edit"), suppliers_path(edit: supplier.id), class: "text-gray-400 hover:text-brand-600 mr-3" %>
+      <%= button_to t("actions.archive"), supplier_path(supplier), method: :delete,
+            data: { turbo_confirm: "Архівувати постачальника «#{supplier.name}»?" },
+            class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+    </td>
+  </tr>
+<% end %>
+
+<% if suppliers.none? %>
+  <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Постачальників ще немає</td></tr>
+<% end %>

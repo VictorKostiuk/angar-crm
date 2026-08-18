@@ -1,6 +1,5 @@
 class OrdersController < ApplicationController
-  layout "print", only: %i[ receipt invoice ]
-  before_action :set_order, only: %i[ show update receipt invoice ]
+  before_action :set_order, only: %i[ show update ]
 
   # Every order (open, closed, cancelled) — unlike the board (P5.1), which
   # only ever shows open_orders. Don't "simplify" this to open_orders.
@@ -67,12 +66,6 @@ class OrdersController < ApplicationController
       @mechanics = User.active.order(:name)
       render :show, status: :unprocessable_entity
     end
-  end
-
-  def receipt
-  end
-
-  def invoice
   end
 
   private

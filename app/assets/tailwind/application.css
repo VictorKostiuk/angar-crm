@@ -22,4 +22,11 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
+
+  /* Turbo injects its own default (blue) progress-bar style at runtime,
+     after this stylesheet is already in <head> — !important is the only
+     reliable way to win that cascade order, not just specificity. */
+  .turbo-progress-bar {
+    background-color: var(--color-brand-600) !important;
+  }
 }

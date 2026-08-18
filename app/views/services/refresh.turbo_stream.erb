@@ -1,0 +1,9 @@
+<%= turbo_stream.update "services_rows" do %>
+  <%= render "rows", services: @services, category_id: params[:category_id] %>
+<% end %>
+
+<%= turbo_stream.replace "service_form" do %>
+  <div id="service_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>
