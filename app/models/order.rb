@@ -22,6 +22,22 @@ class Order < ApplicationRecord
 
   scope :open_orders, -> { where(status: OPEN_STATUSES) }
 
+  # A purely-numeric query (optionally "#123") matches the order number or a
+  # client phone substring; anything else matches the client name — same
+  # digits-vs-text branch as Client.search, mirrored for consistency.
+  scope :search, ->(query) {
+    return all if query.blank?
+
+    digits = query.gsub(/\D/, "")
+    relation = left_joins(:client)
+
+    if digits.present? && digits == query.delete("#").gsub(/\s/, "")
+      relation.where("orders.number::text = :digits OR clients.phone LIKE :like", digits: digits, like: "%#{digits}%")
+    else
+      relation.where("clients.name ILIKE ?", "%#{query}%")
+    end
+  }
+
   validates :accepted_at, presence: true
   validates :cancel_reason, presence: true, if: :cancelled?
   validates :payment_method, presence: true, if: :paid?

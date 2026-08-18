@@ -7,7 +7,7 @@
 
     <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
       <%= render "shared/nav_item", label: t("nav.workshop"), path: root_path, active: current_page?(root_path) %>
-      <%= render "shared/nav_item", label: t("nav.orders") %>
+      <%= render "shared/nav_item", label: t("nav.orders"), path: orders_path, active: request.path.start_with?(orders_path) %>
       <%= render "shared/nav_item", label: t("nav.clients"), path: clients_path, active: request.path.start_with?(clients_path) %>
       <%= render "shared/nav_item", label: t("nav.bikes") %>
       <%= render "shared/nav_item", label: t("nav.services"), path: services_path, active: request.path.start_with?(services_path) %>
@@ -37,10 +37,10 @@
 
   <div class="flex-1 flex flex-col min-w-0">
     <header class="h-16 shrink-0 bg-white border-b border-gray-200 flex items-center gap-4 px-6">
-      <div class="flex-1 max-w-md">
-        <input type="search" disabled placeholder="<%= t('actions.search') %>…"
-               class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
-      </div>
+      <%= form_with url: orders_path, method: :get, class: "flex-1 max-w-md" do %>
+        <%= search_field_tag :q, params[:q], placeholder: "#{t('actions.search')} замовлення…",
+              class: "w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-brand-600" %>
+      <% end %>
     </header>
 
     <main class="flex-1 overflow-y-auto p-6">

@@ -1,0 +1,36 @@
+<%# locals: (order:) %>
+<div id="board_card_<%= order.id %>" class="bg-white border border-gray-200 rounded-xl p-4">
+  <h3 class="font-bold text-gray-900"><%= order.bike.name %></h3>
+  <div class="mt-2 space-y-1 text-sm text-gray-600">
+    <p><%= order.client.name %> · <%= order.client.formatted_phone %></p>
+    <p>Механік: <%= order.mechanic&.name || "не призначено" %></p>
+    <p>Прийнято: <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
+    <% if order.problem.present? %>
+      <p class="truncate">Проблема: <%= order.problem %></p>
+    <% end %>
+    <p class="font-medium text-gray-900">
+      <%= order.waiting_pickup? ? "Сума до оплати" : "Попередня оцінка" %>:
+      <%= order.total.positive? ? money(order.total) : "—" %>
+    </p>
+  </div>
+
+  <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2">
+    <%= link_to "Відкрити", order, class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+
+    <% if order.waiting_approval? %>
+      <%= button_to "Позначити як погоджено", approve_workshop_order_path(order), method: :patch,
+            data: { turbo_stream: true },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+    <% end %>
+
+    <% if order.waiting_pickup? %>
+      <%= link_to "Сформувати чек", edit_order_payment_path(order), data: { turbo_frame: "modal" },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+      <%= link_to "Закрити замовлення", edit_order_closure_path(order), data: { turbo_frame: "modal" },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+    <% else %>
+      <%= link_to "Змінити статус", edit_order_status_path(order), data: { turbo_frame: "modal" },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+    <% end %>
+  </div>
+</div>

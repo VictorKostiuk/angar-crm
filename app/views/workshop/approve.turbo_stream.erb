@@ -1,0 +1,12 @@
+<% if @order.errors.empty? %>
+  <%= turbo_stream.remove "board_card_#{@order.id}" %>
+
+  <% if @order.open_status? %>
+    <%= turbo_stream.prepend "board_section_#{@order.status}_cards" do %>
+      <%= render "workshop/order_card", order: @order %>
+    <% end %>
+    <%= turbo_stream.update "board_section_#{@order.status}_count", Order.where(status: @order.status).count %>
+  <% end %>
+
+  <%= turbo_stream.update "board_section_waiting_approval_count", Order.where(status: :waiting_approval).count %>
+<% end %>

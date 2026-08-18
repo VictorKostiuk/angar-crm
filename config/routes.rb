@@ -23,7 +23,7 @@ Rails.application.routes.draw do
     get :search, on: :collection
   end
 
-  resources :orders, only: %i[ new create show update ] do
+  resources :orders, only: %i[ index new create show update ] do
     resource :status, only: %i[ edit update ], controller: "order_statuses"
     resource :payment, only: %i[ edit update ], controller: "order_payments"
     resource :closure, only: %i[ edit update ], controller: "order_closures"
@@ -32,6 +32,8 @@ Rails.application.routes.draw do
     resources :order_works, only: %i[ new create update destroy ]
     resources :order_parts, only: %i[ new create update destroy ]
   end
+
+  patch "workshop/:id/approve", to: "workshop#approve", as: :approve_workshop_order
 
   # Defines the root path route ("/")
   root "workshop#index"

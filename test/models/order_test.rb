@@ -71,4 +71,19 @@ class OrderTest < ActiveSupport::TestCase
     assert_not order.valid?
     assert_includes order.errors[:cancel_reason], "не може бути порожнім"
   end
+
+  test "search matches by order number, client name, or client phone" do
+    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current, status: :intake)
+
+    other_client = Client.create!(name: "Оксана Лисенко", phone: "380638765432")
+    other_bike = other_client.bikes.create!(name: "Cube Aim")
+    other_order = Order.create!(client: other_client, bike: other_bike, accepted_by: @owner, accepted_at: Time.current, status: :intake)
+
+    assert_equal [ order ], Order.search(order.number.to_s).to_a
+    assert_equal [ order ], Order.search("##{order.number}").to_a
+    assert_equal [ order ], Order.search("петренко").to_a
+    assert_equal [ order ], Order.search("0971234567").to_a
+    assert_equal [ other_order ], Order.search("лисенко").to_a
+    assert_equal [ order, other_order ].sort_by(&:id), Order.search("").to_a.sort_by(&:id)
+  end
 end

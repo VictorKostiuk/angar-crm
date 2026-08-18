@@ -1,6 +1,23 @@
 class OrdersController < ApplicationController
   before_action :set_order, only: %i[ show update ]
 
+  # Every order (open, closed, cancelled) — unlike the board (P5.1), which
+  # only ever shows open_orders. Don't "simplify" this to open_orders.
+  def index
+    scope = Order.search(params[:q]).includes(:client, :bike, :mechanic)
+    scope = scope.where(status: params[:status]) if Order.statuses.key?(params[:status])
+    scope = scope.where(payment_status: params[:payment_status]) if Order.payment_statuses.key?(params[:payment_status])
+    scope = scope.where(mechanic_id: params[:mechanic_id]) if params[:mechanic_id].present?
+
+    from = parse_date(params[:from])
+    to = parse_date(params[:to])
+    scope = scope.where(accepted_at: from.beginning_of_day..to.end_of_day) if from && to
+
+    @total_count = scope.count
+    @orders = scope.order(accepted_at: :desc).paginate(page: params[:page])
+    @mechanics = User.active.order(:name)
+  end
+
   def new
     @order = Order.new
     @client = params[:client_id].present? ? Client.find(params[:client_id]) : nil
@@ -53,6 +70,12 @@ class OrdersController < ApplicationController
   private
     def set_order
       @order = Order.find(params[:id])
+    end
+
+    def parse_date(value)
+      Date.parse(value) if value.present?
+    rescue ArgumentError
+      nil
     end
 
     def order_params

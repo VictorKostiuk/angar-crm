@@ -11,7 +11,7 @@ class ClientsController < ApplicationController
 
   def show
     @bikes = @client.bikes.active.order(:name)
-    @orders = @client.orders.order(created_at: :desc)
+    @orders = @client.orders.order(accepted_at: :desc)
   end
 
   def new
