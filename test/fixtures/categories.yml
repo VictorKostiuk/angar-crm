@@ -1,0 +1,11 @@
+transmission:
+  kind: service
+  name: Трансмісія
+  position: 0
+  active: true
+
+chains:
+  kind: part
+  name: Ланцюги
+  position: 0
+  active: true

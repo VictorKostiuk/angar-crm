@@ -15,6 +15,14 @@
 default: &default
   adapter: postgresql
   encoding: unicode
+  # The cluster's default "C" locale does not case-fold Cyrillic, which silently
+  # breaks ILIKE/ORDER BY on Ukrainian text (docs/PLAN.md D2). New databases are
+  # created with the uk_UA.UTF-8 libc locale instead; template0 has no locale-
+  # specific data, so it's required whenever collation/ctype differ from the
+  # cluster default.
+  template: template0
+  collation: uk_UA.UTF-8
+  ctype: uk_UA.UTF-8
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>

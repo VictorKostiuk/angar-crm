@@ -1,0 +1,8 @@
+<%# locals: (order:) %>
+<% order.order_parts.order(:position, :id).each do |order_part| %>
+  <%= render "orders/order_part_row", order_part: order_part %>
+<% end %>
+
+<% if order.order_parts.none? %>
+  <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Деталі ще не додані</td></tr>
+<% end %>

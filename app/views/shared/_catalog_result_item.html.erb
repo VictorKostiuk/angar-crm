@@ -1,0 +1,19 @@
+<%# locals: (name:, price:, add_url: nil, add_params: nil) %>
+<% if add_url %>
+  <%= button_to add_url, params: add_params,
+        class: "w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-left cursor-pointer bg-transparent" do %>
+    <span class="text-sm text-gray-900"><%= name %></span>
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-gray-500"><%= money(price) %></span>
+      <span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-100 text-brand-700 text-sm">+</span>
+    </div>
+  <% end %>
+<% else %>
+  <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md">
+    <span class="text-sm text-gray-900"><%= name %></span>
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-gray-500"><%= money(price) %></span>
+      <span class="w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 text-sm">+</span>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,17 @@
+<%# locals: (order_work:) %>
+<tr class="hover:bg-gray-50">
+  <td class="px-4 py-2 text-gray-900"><%= order_work.name %></td>
+  <td class="px-4 py-2 text-gray-600">
+    <%= form_with model: [ order_work.order, order_work ], method: :patch, data: { controller: "autosubmit" }, class: "contents" do |f| %>
+      <%= f.number_field :quantity, step: "any", min: "0.01",
+            data: { action: "change->autosubmit#submit" },
+            class: "w-16 rounded-md border border-gray-300 px-2 py-1 text-sm" %>
+    <% end %>
+  </td>
+  <td class="px-4 py-2 text-gray-600"><%= money(order_work.price) %></td>
+  <td class="px-4 py-2 text-gray-900 font-medium"><%= money(order_work.total) %></td>
+  <td class="px-4 py-2 text-right">
+    <%= button_to "✕", order_order_work_path(order_work.order, order_work), method: :delete,
+          class: "text-gray-400 hover:text-red-600 bg-transparent cursor-pointer" %>
+  </td>
+</tr>

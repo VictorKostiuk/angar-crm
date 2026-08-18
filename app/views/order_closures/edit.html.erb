@@ -1,0 +1,50 @@
+<% blockers = Orders::Close.new(order: @order).blockers %>
+
+<%= render "shared/modal_header", title: "Закрити замовлення" %>
+
+<%= form_with url: order_closure_path(@order), method: :patch, class: "contents" do %>
+  <div class="p-6 space-y-4">
+    <% if @order.errors.any? %>
+      <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <% @order.errors.full_messages.each do |message| %>
+          <p><%= message %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% unless @order.open_status? %>
+      <div class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+        Замовлення вже закрито або скасовано — статус більше не можна змінити.
+      </div>
+    <% end %>
+
+    <ul class="space-y-2 text-sm">
+      <% [
+           [ "Роботи чи деталі додані", @order.order_works.any? || @order.order_parts.any? ],
+           [ "Механік призначений", @order.mechanic_id.present? ],
+           [ "Замовлення оплачено", @order.paid? ]
+         ].each do |label, ok| %>
+        <li class="flex items-center gap-2">
+          <span class="<%= ok ? "text-green-600" : "text-gray-300" %>">✓</span>
+          <span class="<%= ok ? "text-gray-900" : "text-gray-400" %>"><%= label %></span>
+        </li>
+      <% end %>
+    </ul>
+
+    <div class="rounded-lg bg-gray-50 p-3">
+      <%= render "orders/totals", order: @order %>
+    </div>
+
+    <p class="text-xs text-gray-500">
+      Натискаючи «Закрити замовлення», ви підтверджуєте, що велосипед видано клієнту. Замовлення зникне з дошки «Майстерня» та потрапить в історію й звіти.
+    </p>
+  </div>
+
+  <div class="flex justify-end gap-2 px-6 py-4 border-t border-gray-200">
+    <button type="button" data-action="dialog#close" class="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 cursor-pointer"><%= t("actions.cancel") %></button>
+    <button type="submit" <%= "disabled" if blockers.any? %>
+            class="rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+      Закрити замовлення
+    </button>
+  </div>
+<% end %>

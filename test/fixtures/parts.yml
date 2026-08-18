@@ -1,0 +1,6 @@
+kmc_chain:
+  category: chains
+  name: Ланцюг КМС X10
+  base_price: 950.0
+  active: true
+  position: 0

@@ -1,0 +1,53 @@
+<% content_for :title, t("nav.parts") %>
+
+<h1 class="text-2xl font-bold text-gray-900 mb-6"><%= t("nav.parts") %></h1>
+
+<div class="flex flex-wrap gap-2 mb-6">
+  <%= link_to "Усі", parts_path,
+        class: class_names("rounded-full px-4 py-1.5 text-sm font-medium",
+                            @selected_category.nil? ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50") %>
+  <% @categories.each do |category| %>
+    <%= link_to category.name, parts_path(category_id: category.id),
+          class: class_names("rounded-full px-4 py-1.5 text-sm font-medium",
+                              @selected_category == category ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50") %>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+  <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left text-gray-500">
+        <tr>
+          <th class="px-4 py-3 font-medium">Назва позиції</th>
+          <th class="px-4 py-3 font-medium">Категорія</th>
+          <th class="px-4 py-3 font-medium">Ціна</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @parts.each do |part| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-900"><%= part.name %></td>
+            <td class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
+            <td class="px-4 py-3 text-gray-600"><%= money(part.base_price) %></td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <%= link_to t("actions.edit"), parts_path(edit: part.id, category_id: params[:category_id]),
+                    class: "text-gray-400 hover:text-brand-600 mr-3" %>
+              <%= button_to t("actions.archive"), part_path(part, category_id: params[:category_id]), method: :delete,
+                    data: { turbo_confirm: "Архівувати «#{part.name}»?" },
+                    class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+            </td>
+          </tr>
+        <% end %>
+
+        <% if @parts.none? %>
+          <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Немає позицій у цій категорії</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+</div>

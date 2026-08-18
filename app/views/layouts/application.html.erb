@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Angar Crm" %></title>
+    <title><%= content_for(:title) || t("app.name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Angar Crm">
+    <meta name="application-name" content="<%= t('app.name') %>">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -18,11 +18,20 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%# Propshaft's :app symbol includes every CSS file under app/assets/**,
+        which covers both app/assets/stylesheets/application.css and the
+        Tailwind build at app/assets/builds/tailwind.css. %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <% if authenticated? %>
+      <%= render "shared/shell" do %>
+        <%= yield %>
+      <% end %>
+    <% else %>
+      <%= yield %>
+    <% end %>
   </body>
 </html>

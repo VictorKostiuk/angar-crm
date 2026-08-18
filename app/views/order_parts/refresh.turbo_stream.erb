@@ -1,0 +1,15 @@
+<%= turbo_stream.update "order_parts_rows" do %>
+  <%= render "orders/order_part_rows", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "modal_order_part_rows" do %>
+  <%= render "orders/order_part_rows", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "order_totals" do %>
+  <%= render "orders/totals", order: @order %>
+<% end %>
+
+<%= turbo_stream.replace "order_part_custom_form" do %>
+  <%= render "order_parts/custom_form", order: @order, order_part: @order.order_parts.new %>
+<% end %>

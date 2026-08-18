@@ -1,0 +1,153 @@
+uk:
+  app:
+    name: "Ангар"
+    tagline: "Веломайстерня"
+
+  nav:
+    workshop: "Майстерня"
+    orders: "Замовлення"
+    clients: "Клієнти"
+    bikes: "Велосипеди"
+    services: "Роботи"
+    parts: "Деталі / матеріали"
+    mechanics: "Механіки"
+    reports: "Звіти"
+    settings: "Налаштування"
+    stock: "Склад"
+    suppliers: "Постачальники"
+    finances: "Фінанси"
+
+  actions:
+    save: "Зберегти"
+    cancel: "Скасувати"
+    edit: "Редагувати"
+    delete: "Видалити"
+    archive: "Архівувати"
+    add: "Додати"
+    back: "Назад"
+    close: "Закрити"
+    confirm: "Підтвердити"
+    search: "Пошук"
+    reset_filters: "Скинути фільтри"
+    sign_in: "Увійти"
+    sign_out: "Вийти"
+
+  roles:
+    mechanic: "Механік"
+    admin: "Адміністратор"
+    owner: "Власник"
+
+  statuses:
+    order:
+      intake: "Нове"
+      waiting_approval: "Очікує погодження"
+      in_progress: "В роботі"
+      waiting_parts: "Очікує запчастини"
+      waiting_pickup: "Очікує видачі"
+      closed: "Закрито"
+      cancelled: "Скасовано"
+    payment:
+      unpaid: "Не оплачено"
+      paid: "Оплачено"
+    order_descriptions:
+      intake: "Велосипед прийнятий, але ще не взятий у роботу"
+      waiting_approval: "Потрібно погодити роботи, деталі або суму"
+      in_progress: "Велосипед зараз ремонтується"
+      waiting_parts: "Очікуємо деталі або матеріали для продовження"
+      waiting_pickup: "Ремонт завершений, велосипед готовий до видачі"
+
+  payment_methods:
+    cash: "Готівка"
+    card: "Картка"
+    transfer: "Переказ"
+
+  session:
+    email_address: "Email"
+    password: "Пароль"
+    invalid: "Невірний email або пароль"
+
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: "не може бути порожнім"
+      taken: "вже використовується"
+      invalid: "недійсне значення"
+      too_short: "закоротке (мінімум %{count} символів)"
+      too_long: "задовге (максимум %{count} символів)"
+      not_a_number: "має бути числом"
+      greater_than: "має бути більше %{count}"
+      greater_than_or_equal_to: "має бути не менше %{count}"
+      less_than_or_equal_to: "має бути не більше %{count}"
+      not_an_integer: "має бути цілим числом"
+
+  activerecord:
+    models:
+      client: "Клієнт"
+      bike: "Велосипед"
+      user: "Користувач"
+      category: "Категорія"
+      service: "Робота"
+      part: "Деталь / матеріал"
+      order: "Замовлення"
+      order_work: "Робота в замовленні"
+      order_part: "Деталь в замовленні"
+      order_status_change: "Зміна статусу замовлення"
+    attributes:
+      client:
+        name: "Ім'я"
+        phone: "Телефон"
+        email: "Email"
+        city: "Місто"
+        notes: "Примітки"
+      bike:
+        name: "Назва"
+        brand: "Бренд"
+        model: "Модель"
+        color: "Колір"
+        size: "Розмір"
+        notes: "Примітки"
+      user:
+        name: "Ім'я"
+        email_address: "Email"
+        password: "Пароль"
+      category:
+        name: "Назва"
+        kind: "Тип"
+      service:
+        name: "Назва роботи"
+        base_price: "Базова ціна"
+        category: "Категорія"
+      part:
+        name: "Назва позиції"
+        base_price: "Базова ціна"
+        category: "Категорія"
+        sku: "Артикул"
+      order:
+        client: "Клієнт"
+        bike: "Велосипед"
+        mechanic: "Механік"
+        accepted_by: "Прийняв"
+        problem: "Проблема"
+        comment: "Коментар"
+        accepted_at: "Прийнято"
+        expected_ready_on: "Очікувана готовність"
+        cancel_reason: "Причина скасування"
+        payment_method: "Спосіб оплати"
+        receipt_number: "Номер чека"
+        discount: "Знижка"
+      order_work:
+        order: "Замовлення"
+        name: "Назва роботи"
+        quantity: "Кількість"
+        price: "Ціна"
+      order_part:
+        order: "Замовлення"
+        name: "Назва деталі"
+        quantity: "Кількість"
+        price: "Ціна"
+      order_status_change:
+        order: "Замовлення"
+        user: "Користувач"
+        from_status: "Попередній статус"
+        to_status: "Новий статус"
+        comment: "Коментар"

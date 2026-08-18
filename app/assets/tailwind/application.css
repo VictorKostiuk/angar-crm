@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (docs/PLAN.md D4: light theme, white sidebar, blue-600 accent).
+ * `brand-*` is a semantic alias over the stock blue scale so the shop's
+ * accent color can change later by editing these lines only.
+ */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-brand-50: var(--color-blue-50);
+  --color-brand-100: var(--color-blue-100);
+  --color-brand-200: var(--color-blue-200);
+  --color-brand-500: var(--color-blue-500);
+  --color-brand-600: var(--color-blue-600);
+  --color-brand-700: var(--color-blue-700);
+}
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}

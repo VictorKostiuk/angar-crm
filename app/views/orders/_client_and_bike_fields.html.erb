@@ -1,0 +1,72 @@
+<%# locals: (client:, order:) %>
+<% attempted_client = order.client || Client.new %>
+<% attempted_bike = order.bike || Bike.new %>
+
+<% if client %>
+  <input type="hidden" name="client_id" value="<%= client.id %>">
+
+  <div class="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 mb-4">
+    <div>
+      <p class="text-sm font-medium text-gray-900"><%= client.name %></p>
+      <p class="text-sm text-gray-500"><%= client.formatted_phone %></p>
+    </div>
+    <%= link_to "Змінити", new_order_path, data: { turbo_frame: "client_and_bike" }, class: "text-sm text-brand-600 hover:underline" %>
+  </div>
+<% else %>
+  <label class="block text-sm font-medium text-gray-700 mb-1">Пошук клієнта</label>
+  <%= form_with url: search_clients_path, method: :get, data: { controller: "debounce", turbo_frame: "client_search_results" }, class: "mb-2" do |f| %>
+    <%= f.text_field :q, placeholder: "Введіть телефон або ім'я клієнта", autocomplete: "off",
+          data: { action: "input->debounce#submit" },
+          class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  <% end %>
+
+  <%= turbo_frame_tag "client_search_results", class: "block mb-4 empty:mb-0" %>
+
+  <% if attempted_client.errors.any? %>
+    <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 mb-2">
+      <% attempted_client.errors.full_messages.each do |message| %>
+        <p><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <p class="text-sm text-gray-500 mb-2">Клієнта не знайдено? Введіть дані вручну:</p>
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Ім'я клієнта</label>
+      <%= text_field_tag "client_name", attempted_client.name, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+      <%= text_field_tag "client_phone", attempted_client.phone, placeholder: "097 123 45 67", class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+    </div>
+  </div>
+<% end %>
+
+<div class="mt-5 pt-5 border-t border-gray-100">
+  <h3 class="font-bold text-gray-900 mb-3">2. Велосипед</h3>
+
+  <% if client && client.bikes.active.any? %>
+    <p class="text-sm text-gray-500 mb-2">Якщо у клієнта вже є велосипеди:</p>
+    <div class="flex flex-wrap gap-3 mb-3">
+      <% client.bikes.active.order(:name).each do |bike| %>
+        <label class="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm cursor-pointer has-checked:border-brand-600 has-checked:bg-brand-50">
+          <input type="radio" name="bike_id" value="<%= bike.id %>" <%= "checked" if attempted_bike.persisted? && attempted_bike.id == bike.id %>>
+          <%= bike.display_name %>
+        </label>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if attempted_bike.errors.any? %>
+    <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 mb-2">
+      <% attempted_bike.errors.full_messages.each do |message| %>
+        <p><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <label class="block text-sm font-medium text-gray-700 mb-1">Велосипед (новий, або якщо не обрано вище)</label>
+  <%= text_field_tag "bike_name", (attempted_bike.persisted? ? nil : attempted_bike.name), placeholder: "Trek Marlin 7, чорний, червоні грипси",
+        class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+</div>

@@ -1,0 +1,51 @@
+<% content_for :title, t("nav.clients") %>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900"><%= t("nav.clients") %></h1>
+  <%= link_to t("actions.add") + " клієнта", new_client_path, data: { turbo_frame: "modal" },
+        class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2" %>
+</div>
+
+<%= form_with url: clients_path, method: :get, data: { controller: "debounce" }, class: "mb-4" do |f| %>
+  <%= f.text_field :q, value: params[:q], placeholder: "Введіть ім'я або номер телефону",
+        data: { action: "input->debounce#submit" },
+        class: "w-full max-w-md rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-brand-600" %>
+<% end %>
+
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 text-left text-gray-500">
+      <tr>
+        <th class="px-4 py-3 font-medium">Клієнт</th>
+        <th class="px-4 py-3 font-medium">Телефон</th>
+        <th class="px-4 py-3 font-medium">Велосипеди</th>
+        <th class="px-4 py-3 font-medium">Замовлення</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      <% @clients.each do |client| %>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <%= link_to client.name, client, class: "font-medium text-gray-900 hover:text-brand-600" %>
+          </td>
+          <td class="px-4 py-3 text-gray-600"><%= client.formatted_phone %></td>
+          <td class="px-4 py-3 text-gray-600"><%= client.bikes_count %></td>
+          <td class="px-4 py-3 text-gray-600"><%= client.orders_count %></td>
+          <td class="px-4 py-3 text-right">
+            <%= link_to t("actions.edit"), edit_client_path(client), data: { turbo_frame: "modal" },
+                  class: "text-gray-400 hover:text-brand-600 text-sm" %>
+          </td>
+        </tr>
+      <% end %>
+
+      <% if @clients.none? %>
+        <tr>
+          <td colspan="5" class="px-4 py-10 text-center text-gray-400">Клієнтів не знайдено</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= render "shared/pagination", page: params[:page], per_page: Client::PER_PAGE, total_count: @total_count %>

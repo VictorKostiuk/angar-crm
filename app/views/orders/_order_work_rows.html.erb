@@ -1,0 +1,8 @@
+<%# locals: (order:) %>
+<% order.order_works.order(:position, :id).each do |order_work| %>
+  <%= render "orders/order_work_row", order_work: order_work %>
+<% end %>
+
+<% if order.order_works.none? %>
+  <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Роботи ще не додані</td></tr>
+<% end %>

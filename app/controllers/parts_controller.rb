@@ -1,0 +1,52 @@
+class PartsController < ApplicationController
+  def index
+    load_index_data
+    @part = params[:edit].present? ? Part.find(params[:edit]) : Part.new
+  end
+
+  def create
+    @part = Part.new(part_params)
+
+    if @part.save
+      redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал додано."
+    else
+      load_index_data
+      render :index, status: :unprocessable_entity
+    end
+  end
+
+  def update
+    @part = Part.find(params[:id])
+
+    if @part.update(part_params)
+      redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал оновлено."
+    else
+      load_index_data
+      render :index, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    Part.find(params[:id]).update!(active: false)
+    redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал архівовано."
+  end
+
+  # Reused by the order "Додати деталь / матеріал" modal (P3) to look up catalog items as-you-type.
+  def search
+    @parts = Part.active.search(params[:q]).ordered.limit(10)
+    @order = Order.find(params[:order_id]) if params[:order_id].present?
+    render layout: false
+  end
+
+  private
+    def part_params
+      params.expect(part: %i[ name category_id base_price sku ])
+    end
+
+    def load_index_data
+      @categories = Category.part.active.ordered
+      @selected_category = @categories.find_by(id: params[:category_id])
+      @parts = Part.active.ordered
+      @parts = @parts.where(category: @selected_category) if @selected_category
+    end
+end

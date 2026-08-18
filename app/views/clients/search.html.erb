@@ -1,0 +1,11 @@
+<% if @clients.any? %>
+  <% @clients.each do |client| %>
+    <%= link_to new_order_path(client_id: client.id), data: { turbo_frame: "client_and_bike" },
+          class: "block px-3 py-2 hover:bg-gray-50 rounded-md" do %>
+      <span class="text-sm text-gray-900"><%= client.name %></span>
+      <span class="text-sm text-gray-500 ml-2"><%= client.formatted_phone %></span>
+    <% end %>
+  <% end %>
+<% else %>
+  <p class="px-3 py-2 text-sm text-gray-400">Клієнта не знайдено. Створіть нового або введіть дані вручну.</p>
+<% end %>

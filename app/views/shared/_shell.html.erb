@@ -1,0 +1,53 @@
+<div class="min-h-screen flex bg-gray-50">
+  <aside class="w-64 shrink-0 bg-white border-r border-gray-200 flex flex-col">
+    <div class="px-5 py-5 border-b border-gray-200">
+      <p class="font-bold text-gray-900 leading-tight"><%= t("app.name") %></p>
+      <p class="text-xs text-gray-500 leading-tight"><%= t("app.tagline") %></p>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+      <%= render "shared/nav_item", label: t("nav.workshop"), path: root_path, active: current_page?(root_path) %>
+      <%= render "shared/nav_item", label: t("nav.orders") %>
+      <%= render "shared/nav_item", label: t("nav.clients"), path: clients_path, active: request.path.start_with?(clients_path) %>
+      <%= render "shared/nav_item", label: t("nav.bikes") %>
+      <%= render "shared/nav_item", label: t("nav.services"), path: services_path, active: request.path.start_with?(services_path) %>
+      <%= render "shared/nav_item", label: t("nav.parts"), path: parts_path, active: request.path.start_with?(parts_path) %>
+      <%= render "shared/nav_item", label: t("nav.mechanics") %>
+      <%= render "shared/nav_item", label: t("nav.reports") %>
+
+      <div class="my-2 border-t border-gray-100"></div>
+
+      <%= render "shared/nav_item", label: t("nav.settings") %>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 shrink-0 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-medium text-sm">
+          <%= Current.user.name.first %>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-gray-900 truncate"><%= Current.user.name %></p>
+          <p class="text-xs text-gray-500"><%= t("roles.#{Current.user.role}") %></p>
+        </div>
+        <%= button_to t("actions.sign_out"), session_path, method: :delete,
+              class: "text-gray-400 hover:text-gray-600 text-sm shrink-0 bg-transparent" %>
+      </div>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="h-16 shrink-0 bg-white border-b border-gray-200 flex items-center gap-4 px-6">
+      <div class="flex-1 max-w-md">
+        <input type="search" disabled placeholder="<%= t('actions.search') %>…"
+               class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+  </div>
+
+  <turbo-frame id="modal"></turbo-frame>
+</div>

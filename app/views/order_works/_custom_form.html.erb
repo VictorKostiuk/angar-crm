@@ -1,0 +1,23 @@
+<%# locals: (order:, order_work:) %>
+<div id="order_work_custom_form">
+  <%= form_with model: [ order, order_work ], url: order_order_works_path(order), class: "space-y-2" do |f| %>
+    <% if order_work.errors.any? %>
+      <div class="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+        <% order_work.errors.full_messages.each do |message| %>
+          <p><%= message %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-[1fr_5rem_6rem] gap-2">
+      <%= f.text_field :name, placeholder: "Назва роботи", value: order_work.name,
+            class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+      <%= f.number_field :quantity, value: (order_work.quantity || 1), step: "any", min: "0.01",
+            class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+      <%= f.number_field :price, value: order_work.price, step: "any", min: 0, placeholder: "Ціна",
+            class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    </div>
+    <%= f.submit "+ Додати нестандартну роботу",
+          class: "w-full rounded-md border border-gray-300 text-sm font-medium px-3 py-2 hover:bg-gray-50 cursor-pointer" %>
+  <% end %>
+</div>

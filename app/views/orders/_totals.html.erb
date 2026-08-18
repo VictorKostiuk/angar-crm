@@ -1,0 +1,21 @@
+<%# locals: (order:) %>
+<dl class="space-y-2 text-sm">
+  <div class="flex justify-between">
+    <dt class="text-gray-500">Роботи</dt>
+    <dd class="text-gray-900"><%= money(order.works_total) %></dd>
+  </div>
+  <div class="flex justify-between">
+    <dt class="text-gray-500">Деталі / матеріали</dt>
+    <dd class="text-gray-900"><%= money(order.parts_total) %></dd>
+  </div>
+  <% if order.discount.positive? %>
+    <div class="flex justify-between">
+      <dt class="text-gray-500">Знижка</dt>
+      <dd class="text-red-600">−<%= money(order.discount) %></dd>
+    </div>
+  <% end %>
+  <div class="flex justify-between pt-2 border-t border-gray-100 font-bold text-base">
+    <dt class="text-gray-900">Разом до оплати</dt>
+    <dd class="text-gray-900"><%= money(order.total) %></dd>
+  </div>
+</dl>

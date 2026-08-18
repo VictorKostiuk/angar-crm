@@ -1,0 +1,75 @@
+require "test_helper"
+
+class Orders::CloseTest < ActiveSupport::TestCase
+  setup do
+    @client = clients(:ivan)
+    @bike = bikes(:trek)
+    @owner = users(:owner)
+    @mechanic = users(:andrii)
+    @order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current, status: :waiting_pickup)
+  end
+
+  test "blocked when unpaid, no mechanic, or no lines" do
+    assert_equal [
+      "Замовлення не оплачено",
+      "Не призначено механіка замовлення",
+      "До замовлення не додано жодної роботи чи деталі"
+    ], Orders::Close.new(order: @order).blockers
+
+    order = Orders::Close.call(order: @order)
+    refute order.closed?
+  end
+
+  test "closes when paid, mechanic assigned, and at least one line exists" do
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
+
+    order = Orders::Close.call(order: @order)
+
+    assert order.closed?
+    assert order.closed_at.present?
+  end
+
+  test "backfills nil mechanic_id on work lines from the order's mechanic at close time" do
+    work = @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
+    assert_nil work.mechanic_id
+
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    Orders::Close.call(order: @order)
+
+    assert_equal @mechanic.id, work.reload.mechanic_id
+  end
+
+  test "does not overwrite an existing mechanic_id on a work line" do
+    other_mechanic = User.create!(name: "Інший", email_address: "other@fixtures.test", password: "password123", role: :mechanic, payroll_percent: 20, active: true)
+    work = @order.order_works.create!(name: "Робота", quantity: 1, price: 250, mechanic: other_mechanic)
+
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    Orders::Close.call(order: @order)
+
+    assert_equal other_mechanic.id, work.reload.mechanic_id
+  end
+
+  test "double close does not overwrite closed_at" do
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
+
+    order = Orders::Close.call(order: @order)
+    first_closed_at = order.closed_at
+
+    order = Orders::Close.call(order: order)
+
+    assert_equal first_closed_at, order.closed_at
+    assert_equal [ "Замовлення вже закрито або скасовано" ], Orders::Close.new(order: order).blockers
+  end
+
+  test "a $0 warranty order with at least one line can close" do
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    @order.order_works.create!(name: "Гарантійний ремонт", quantity: 1, price: 0)
+
+    order = Orders::Close.call(order: @order)
+
+    assert order.closed?
+    assert_equal 0, order.total
+  end
+end

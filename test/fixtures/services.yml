@@ -1,0 +1,6 @@
+chain_replacement:
+  category: transmission
+  name: Заміна ланцюга
+  base_price: 250.0
+  active: true
+  position: 0

@@ -1,0 +1,19 @@
+<%# locals: (status_changes:) %>
+<% if status_changes.any? %>
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <h2 class="font-bold text-gray-900 mb-3">Історія статусів</h2>
+    <ul class="space-y-3">
+      <% status_changes.each do |change| %>
+        <li class="text-sm border-l-2 border-gray-200 pl-3">
+          <p class="text-gray-900">
+            <%= t("statuses.order.#{change.from_status}") %> → <span class="font-medium"><%= t("statuses.order.#{change.to_status}") %></span>
+          </p>
+          <p class="text-xs text-gray-500"><%= change.user.name %> · <%= change.created_at.strftime("%d.%m.%Y %H:%M") %></p>
+          <% if change.comment.present? %>
+            <p class="text-xs text-gray-600 mt-1 whitespace-pre-line"><%= change.comment %></p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

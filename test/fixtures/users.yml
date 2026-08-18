@@ -1,0 +1,15 @@
+owner:
+  name: Власник
+  email_address: owner@fixtures.test
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  role: owner
+  payroll_percent: 0
+  active: true
+
+andrii:
+  name: Андрій
+  email_address: andrii@fixtures.test
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  role: mechanic
+  payroll_percent: 35
+  active: true

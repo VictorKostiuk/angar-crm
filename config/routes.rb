@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  resource :session
+  resources :passwords, param: :token
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -9,6 +11,28 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  resources :clients do
+    resources :bikes, only: %i[ new create ]
+    get :search, on: :collection
+  end
+
+  resources :services, only: %i[ index create update destroy ] do
+    get :search, on: :collection
+  end
+  resources :parts, only: %i[ index create update destroy ] do
+    get :search, on: :collection
+  end
+
+  resources :orders, only: %i[ new create show update ] do
+    resource :status, only: %i[ edit update ], controller: "order_statuses"
+    resource :payment, only: %i[ edit update ], controller: "order_payments"
+    resource :closure, only: %i[ edit update ], controller: "order_closures"
+    resource :cancellation, only: %i[ edit update ], controller: "order_cancellations"
+
+    resources :order_works, only: %i[ new create update destroy ]
+    resources :order_parts, only: %i[ new create update destroy ]
+  end
+
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "workshop#index"
 end
