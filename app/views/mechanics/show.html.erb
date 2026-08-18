@@ -33,6 +33,38 @@
   </div>
 </div>
 
+<% if Current.user.owner? %>
+  <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-bold text-gray-900">Виплати</h2>
+      <%= link_to "Записати виплату", new_mechanic_payroll_payout_path(@mechanic), data: { turbo_frame: "modal" },
+            class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-1.5" %>
+    </div>
+
+    <% if @outstanding %>
+      <p class="text-sm text-gray-500 mb-4">
+        Залишок до виплати за <%= @period.from.strftime("%m.%Y") %>:
+        <span class="font-bold <%= @outstanding.positive? ? "text-green-700" : "text-gray-900" %>"><%= money(@outstanding) %></span>
+      </p>
+    <% end %>
+
+    <% if @payouts.any? %>
+      <div class="divide-y divide-gray-100 text-sm">
+        <% @payouts.each do |payout| %>
+          <div class="flex items-center justify-between py-2">
+            <span class="text-gray-500"><%= payout.period_month.strftime("%m.%Y") %></span>
+            <span class="font-medium text-gray-900"><%= money(payout.amount) %></span>
+            <span class="text-gray-500"><%= payout.recorded_by.name %></span>
+            <span class="text-gray-400"><%= payout.note %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-400">Виплат ще не було.</p>
+    <% end %>
+  </div>
+<% end %>
+
 <div class="mb-6">
   <h2 class="font-bold text-gray-900 mb-3">Зараз в роботі</h2>
   <% if @open_orders.any? %>

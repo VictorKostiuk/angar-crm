@@ -1,0 +1,45 @@
+<h2 class="font-bold text-gray-900 mb-4"><%= @expense.persisted? ? "Редагувати витрату" : "Додати витрату" %></h2>
+
+<%= form_with model: @expense, url: (@expense.persisted? ? expense_path(@expense) : expenses_path), class: "space-y-4" do |f| %>
+  <% if @expense.errors.any? %>
+    <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+      <% @expense.errors.full_messages.each do |message| %>
+        <p><%= message %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @expense.auto_logged? %>
+    <div class="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
+      Створено автоматично з надходження на склад.
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :category, "Категорія", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :category, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :amount, "Сума", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.number_field :amount, step: 0.01, min: 0, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :date, "Дата", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.date_field :date, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div>
+    <%= f.label :description, "Опис", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_area :description, rows: 2, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  </div>
+
+  <div class="flex gap-2 pt-2">
+    <% if @expense.persisted? %>
+      <%= link_to t("actions.cancel"), expenses_path,
+            class: "flex-1 text-center rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-300" %>
+    <% end %>
+    <%= f.submit t("actions.save"), class: "flex-1 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+  </div>
+<% end %>

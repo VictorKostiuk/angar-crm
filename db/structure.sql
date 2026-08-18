@@ -136,6 +136,42 @@ ALTER SEQUENCE public.clients_id_seq OWNED BY public.clients.id;
 
 
 --
+-- Name: expenses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.expenses (
+    id bigint NOT NULL,
+    category character varying NOT NULL,
+    amount numeric(12,2) NOT NULL,
+    description character varying,
+    date date NOT NULL,
+    user_id bigint NOT NULL,
+    stock_movement_id bigint,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: expenses_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.expenses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: expenses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.expenses_id_seq OWNED BY public.expenses.id;
+
+
+--
 -- Name: order_number_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -349,6 +385,41 @@ ALTER SEQUENCE public.parts_id_seq OWNED BY public.parts.id;
 
 
 --
+-- Name: payroll_payouts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.payroll_payouts (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    recorded_by_id bigint NOT NULL,
+    amount numeric(12,2) NOT NULL,
+    period_month date NOT NULL,
+    note character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: payroll_payouts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.payroll_payouts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: payroll_payouts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.payroll_payouts_id_seq OWNED BY public.payroll_payouts.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -555,6 +626,13 @@ ALTER TABLE ONLY public.clients ALTER COLUMN id SET DEFAULT nextval('public.clie
 
 
 --
+-- Name: expenses id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expenses ALTER COLUMN id SET DEFAULT nextval('public.expenses_id_seq'::regclass);
+
+
+--
 -- Name: order_parts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -587,6 +665,13 @@ ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.order
 --
 
 ALTER TABLE ONLY public.parts ALTER COLUMN id SET DEFAULT nextval('public.parts_id_seq'::regclass);
+
+
+--
+-- Name: payroll_payouts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payroll_payouts ALTER COLUMN id SET DEFAULT nextval('public.payroll_payouts_id_seq'::regclass);
 
 
 --
@@ -657,6 +742,14 @@ ALTER TABLE ONLY public.clients
 
 
 --
+-- Name: expenses expenses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expenses
+    ADD CONSTRAINT expenses_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: order_parts order_parts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -694,6 +787,14 @@ ALTER TABLE ONLY public.orders
 
 ALTER TABLE ONLY public.parts
     ADD CONSTRAINT parts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: payroll_payouts payroll_payouts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payroll_payouts
+    ADD CONSTRAINT payroll_payouts_pkey PRIMARY KEY (id);
 
 
 --
@@ -777,6 +878,20 @@ CREATE INDEX index_clients_on_name ON public.clients USING btree (name);
 --
 
 CREATE UNIQUE INDEX index_clients_on_phone ON public.clients USING btree (phone);
+
+
+--
+-- Name: index_expenses_on_stock_movement_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_expenses_on_stock_movement_id ON public.expenses USING btree (stock_movement_id);
+
+
+--
+-- Name: index_expenses_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_expenses_on_user_id ON public.expenses USING btree (user_id);
 
 
 --
@@ -927,6 +1042,20 @@ CREATE INDEX index_parts_on_supplier_id ON public.parts USING btree (supplier_id
 
 
 --
+-- Name: index_payroll_payouts_on_recorded_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_payroll_payouts_on_recorded_by_id ON public.payroll_payouts USING btree (recorded_by_id);
+
+
+--
+-- Name: index_payroll_payouts_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_payroll_payouts_on_user_id ON public.payroll_payouts USING btree (user_id);
+
+
+--
 -- Name: index_services_on_active; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1038,6 +1167,22 @@ ALTER TABLE ONLY public.order_parts
 
 
 --
+-- Name: expenses fk_rails_3abf476668; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expenses
+    ADD CONSTRAINT fk_rails_3abf476668 FOREIGN KEY (stock_movement_id) REFERENCES public.stock_movements(id);
+
+
+--
+-- Name: payroll_payouts fk_rails_597acc77d9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payroll_payouts
+    ADD CONSTRAINT fk_rails_597acc77d9 FOREIGN KEY (recorded_by_id) REFERENCES public.users(id);
+
+
+--
 -- Name: services fk_rails_5a36fd9326; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1067,6 +1212,14 @@ ALTER TABLE ONLY public.order_works
 
 ALTER TABLE ONLY public.sessions
     ADD CONSTRAINT fk_rails_758836b4f0 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: payroll_payouts fk_rails_826a8f4298; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payroll_payouts
+    ADD CONSTRAINT fk_rails_826a8f4298 FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -1110,6 +1263,14 @@ ALTER TABLE ONLY public.stock_movements
 
 
 --
+-- Name: expenses fk_rails_c3ee69df61; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expenses
+    ADD CONSTRAINT fk_rails_c3ee69df61 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: bikes fk_rails_cf97b7d60d; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1148,6 +1309,8 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260818123251'),
+('20260818122545'),
 ('20260818114218'),
 ('20260818113513'),
 ('20260818113500'),

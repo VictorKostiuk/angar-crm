@@ -105,6 +105,8 @@ uk:
       order_status_change: "Зміна статусу замовлення"
       supplier: "Постачальник"
       stock_movement: "Рух складу"
+      expense: "Витрата"
+      payroll_payout: "Виплата"
     attributes:
       client:
         name: "Ім'я"
@@ -176,4 +178,14 @@ uk:
         part: "Деталь / матеріал"
         kind: "Тип руху"
         quantity: "Кількість"
+        note: "Примітка"
+      expense:
+        category: "Категорія"
+        amount: "Сума"
+        description: "Опис"
+        date: "Дата"
+      payroll_payout:
+        user: "Механік"
+        amount: "Сума"
+        period_month: "За який місяць"
         note: "Примітка"

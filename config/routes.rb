@@ -24,6 +24,7 @@ Rails.application.routes.draw do
     resources :stock_movements, only: %i[ new create ]
   end
   resources :suppliers, only: %i[ index create update destroy ]
+  resources :expenses, only: %i[ index create update destroy ]
 
   resources :orders, only: %i[ index new create show update ] do
     resource :status, only: %i[ edit update ], controller: "order_statuses"
@@ -38,8 +39,11 @@ Rails.application.routes.draw do
   patch "workshop/:id/approve", to: "workshop#approve", as: :approve_workshop_order
 
   resources :users, only: %i[ index create update ]
-  resources :mechanics, only: %i[ index show ]
+  resources :mechanics, only: %i[ index show ] do
+    resources :payroll_payouts, only: %i[ new create ]
+  end
   get "reports", to: "reports#index"
+  get "finances", to: "finances#index"
 
   # Defines the root path route ("/")
   root "workshop#index"

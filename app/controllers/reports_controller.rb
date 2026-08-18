@@ -9,9 +9,19 @@ class ReportsController < ApplicationController
 
     @orders = filtered_orders
 
-    @works_total = OrderWork.where(order_id: @orders.select(:id)).sum(:total)
-    @parts_total = OrderPart.where(order_id: @orders.select(:id)).sum(:total)
-    @order_count = @orders.count
+    if @status == "closed" && @mechanic.nil?
+      # Same computation Фінанси's P&L uses (Reports::ClosedRevenue, D30) —
+      # kept identical here on purpose so the two screens can't disagree
+      # about "revenue" for the common case (closed, no mechanic filter).
+      totals = Reports::ClosedRevenue.call(range: @period.range)
+      @works_total = totals[:works_total]
+      @parts_total = totals[:parts_total]
+      @order_count = totals[:order_count]
+    else
+      @works_total = OrderWork.where(order_id: @orders.select(:id)).sum(:total)
+      @parts_total = OrderPart.where(order_id: @orders.select(:id)).sum(:total)
+      @order_count = @orders.count
+    end
 
     @income_by_mechanic = @mechanics.map { |mechanic| income_row(mechanic) }
 

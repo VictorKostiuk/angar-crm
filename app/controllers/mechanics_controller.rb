@@ -25,6 +25,11 @@ class MechanicsController < ApplicationController
                               .includes(:client, :bike).order(closed_at: :desc)
     @works_by_order = OrderWork.where(mechanic_id: @mechanic.id, order_id: @closed_orders.map(&:id))
                                 .group(:order_id).sum(:total)
+
+    return unless Current.user.owner?
+
+    @payouts = @mechanic.payroll_payouts.ordered
+    @outstanding = Finances::OutstandingPayroll.call(mechanic: @mechanic, month: @period.from.to_date) if @period.period == "month"
   end
 
   private
