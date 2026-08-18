@@ -1,0 +1,10 @@
+shimano:
+  name: Shimano Ukraine
+  phone: "0441234567"
+  email: orders@shimano-ua.example
+  active: true
+
+archived:
+  name: Старий постачальник
+  phone: "0440000000"
+  active: false

@@ -13,9 +13,11 @@
       <% if Current.user.admin? || Current.user.owner? %>
         <%= render "shared/nav_item", label: t("nav.services"), path: services_path, active: request.path.start_with?(services_path) %>
         <%= render "shared/nav_item", label: t("nav.parts"), path: parts_path, active: request.path.start_with?(parts_path) %>
+        <%= render "shared/nav_item", label: t("nav.suppliers"), path: suppliers_path, active: request.path.start_with?(suppliers_path) %>
       <% else %>
         <%= render "shared/nav_item", label: t("nav.services") %>
         <%= render "shared/nav_item", label: t("nav.parts") %>
+        <%= render "shared/nav_item", label: t("nav.suppliers") %>
       <% end %>
       <% if Current.user.owner? || Current.user.mechanic? %>
         <%= render "shared/nav_item", label: t("nav.mechanics"), path: mechanics_path, active: request.path.start_with?(mechanics_path) %>

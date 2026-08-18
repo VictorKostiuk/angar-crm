@@ -2,6 +2,13 @@
 
 <h1 class="text-2xl font-bold text-gray-900 mb-6"><%= t("nav.parts") %></h1>
 
+<% if params[:low_stock].present? %>
+  <div class="flex items-center justify-between mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+    <span>Показано лише позиції з малим залишком</span>
+    <%= link_to "Показати всі", parts_path(category_id: params[:category_id]), class: "underline hover:no-underline" %>
+  </div>
+<% end %>
+
 <div class="flex flex-wrap gap-2 mb-6">
   <%= link_to "Усі", parts_path,
         class: class_names("rounded-full px-4 py-1.5 text-sm font-medium",
@@ -21,6 +28,7 @@
           <th class="px-4 py-3 font-medium">Назва позиції</th>
           <th class="px-4 py-3 font-medium">Категорія</th>
           <th class="px-4 py-3 font-medium">Ціна</th>
+          <th class="px-4 py-3 font-medium">На складі</th>
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
@@ -30,7 +38,15 @@
             <td class="px-4 py-3 text-gray-900"><%= part.name %></td>
             <td class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
             <td class="px-4 py-3 text-gray-600"><%= money(part.base_price) %></td>
+            <td class="px-4 py-3">
+              <span class="<%= class_names("font-medium", part.low_stock? ? "text-red-600" : "text-gray-900") %>"><%= part.stock_quantity %></span>
+              <% if part.low_stock? %>
+                <span class="ml-1 inline-block rounded-full bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5">Мало на складі</span>
+              <% end %>
+            </td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
+              <%= link_to "Рух складу", new_part_stock_movement_path(part), data: { turbo_frame: "modal" },
+                    class: "text-gray-400 hover:text-brand-600 mr-3" %>
               <%= link_to t("actions.edit"), parts_path(edit: part.id, category_id: params[:category_id]),
                     class: "text-gray-400 hover:text-brand-600 mr-3" %>
               <%= button_to t("actions.archive"), part_path(part, category_id: params[:category_id]), method: :delete,
@@ -41,7 +57,7 @@
         <% end %>
 
         <% if @parts.none? %>
-          <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Немає позицій у цій категорії</td></tr>
+          <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Немає позицій у цій категорії</td></tr>
         <% end %>
       </tbody>
     </table>

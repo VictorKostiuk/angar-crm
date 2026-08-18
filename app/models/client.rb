@@ -9,11 +9,16 @@ class Client < ApplicationRecord
   validates :name, presence: true
   validates :phone, presence: true, uniqueness: true, format: { with: /\A\d{12}\z/, message: "недійсний номер телефону" }
 
+  # Phone-substring matching only kicks in at 4+ digits — a 1-2 digit query
+  # is too short to mean anything as a phone fragment (any 12-digit number
+  # is overwhelmingly likely to contain any given single digit somewhere),
+  # so a shorter numeric query falls through to (and correctly finds
+  # nothing in) the name search instead of returning nearly every client.
   scope :search, ->(query) {
     return all if query.blank?
 
     digits = query.gsub(/\D/, "")
-    if digits.present?
+    if digits.present? && digits.length >= 4
       where("phone LIKE ?", "%#{digits}%")
     else
       where("name ILIKE ?", "%#{query}%")

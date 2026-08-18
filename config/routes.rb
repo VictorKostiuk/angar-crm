@@ -21,7 +21,9 @@ Rails.application.routes.draw do
   end
   resources :parts, only: %i[ index create update destroy ] do
     get :search, on: :collection
+    resources :stock_movements, only: %i[ new create ]
   end
+  resources :suppliers, only: %i[ index create update destroy ]
 
   resources :orders, only: %i[ index new create show update ] do
     resource :status, only: %i[ edit update ], controller: "order_statuses"

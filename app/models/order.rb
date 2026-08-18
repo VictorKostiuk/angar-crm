@@ -22,9 +22,15 @@ class Order < ApplicationRecord
 
   scope :open_orders, -> { where(status: OPEN_STATUSES) }
 
-  # A purely-numeric query (optionally "#123") matches the order number or a
-  # client phone substring; anything else matches the client name — same
-  # digits-vs-text branch as Client.search, mirrored for consistency.
+  # A purely-numeric query (optionally "#123") matches the order number
+  # exactly, or a client phone substring; anything else matches the client
+  # name — same digits-vs-text branch as Client.search, mirrored for
+  # consistency. The phone-substring match only kicks in at 4+ digits: a
+  # short numeric query like "2" is a perfectly normal order number (#002),
+  # but as a *phone* substring it matches nearly every client (any 12-digit
+  # phone number is overwhelmingly likely to contain any single digit
+  # somewhere) — caught by a flaky test where a low sequence-assigned order
+  # number happened to match an unrelated client's phone digits.
   scope :search, ->(query) {
     return all if query.blank?
 
@@ -32,7 +38,11 @@ class Order < ApplicationRecord
     relation = left_joins(:client)
 
     if digits.present? && digits == query.delete("#").gsub(/\s/, "")
-      relation.where("orders.number::text = :digits OR clients.phone LIKE :like", digits: digits, like: "%#{digits}%")
+      if digits.length >= 4
+        relation.where("orders.number::text = :digits OR clients.phone LIKE :like", digits: digits, like: "%#{digits}%")
+      else
+        relation.where("orders.number::text = ?", digits)
+      end
     else
       relation.where("clients.name ILIKE ?", "%#{query}%")
     end

@@ -321,7 +321,11 @@ CREATE TABLE public.parts (
     name character varying NOT NULL,
     "position" integer DEFAULT 0 NOT NULL,
     sku character varying,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    supplier_id bigint,
+    purchase_price numeric(12,2),
+    stock_quantity integer DEFAULT 0 NOT NULL,
+    min_stock_level integer DEFAULT 0 NOT NULL
 );
 
 
@@ -419,6 +423,77 @@ CREATE SEQUENCE public.sessions_id_seq
 --
 
 ALTER SEQUENCE public.sessions_id_seq OWNED BY public.sessions.id;
+
+
+--
+-- Name: stock_movements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.stock_movements (
+    id bigint NOT NULL,
+    part_id bigint NOT NULL,
+    user_id bigint,
+    order_id bigint,
+    kind integer NOT NULL,
+    quantity integer NOT NULL,
+    note character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: stock_movements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.stock_movements_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: stock_movements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.stock_movements_id_seq OWNED BY public.stock_movements.id;
+
+
+--
+-- Name: suppliers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.suppliers (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    phone character varying,
+    email character varying,
+    notes text,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: suppliers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.suppliers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: suppliers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.suppliers_id_seq OWNED BY public.suppliers.id;
 
 
 --
@@ -529,6 +604,20 @@ ALTER TABLE ONLY public.sessions ALTER COLUMN id SET DEFAULT nextval('public.ses
 
 
 --
+-- Name: stock_movements id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stock_movements ALTER COLUMN id SET DEFAULT nextval('public.stock_movements_id_seq'::regclass);
+
+
+--
+-- Name: suppliers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers ALTER COLUMN id SET DEFAULT nextval('public.suppliers_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -629,6 +718,22 @@ ALTER TABLE ONLY public.services
 
 ALTER TABLE ONLY public.sessions
     ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: stock_movements stock_movements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stock_movements
+    ADD CONSTRAINT stock_movements_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: suppliers suppliers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.suppliers
+    ADD CONSTRAINT suppliers_pkey PRIMARY KEY (id);
 
 
 --
@@ -815,6 +920,13 @@ CREATE INDEX index_parts_on_name ON public.parts USING btree (name);
 
 
 --
+-- Name: index_parts_on_supplier_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_parts_on_supplier_id ON public.parts USING btree (supplier_id);
+
+
+--
 -- Name: index_services_on_active; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -840,6 +952,27 @@ CREATE INDEX index_services_on_name ON public.services USING btree (name);
 --
 
 CREATE INDEX index_sessions_on_user_id ON public.sessions USING btree (user_id);
+
+
+--
+-- Name: index_stock_movements_on_order_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_stock_movements_on_order_id ON public.stock_movements USING btree (order_id);
+
+
+--
+-- Name: index_stock_movements_on_part_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_stock_movements_on_part_id ON public.stock_movements USING btree (part_id);
+
+
+--
+-- Name: index_stock_movements_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_stock_movements_on_user_id ON public.stock_movements USING btree (user_id);
 
 
 --
@@ -937,11 +1070,43 @@ ALTER TABLE ONLY public.sessions
 
 
 --
+-- Name: stock_movements fk_rails_99bcc2c44a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stock_movements
+    ADD CONSTRAINT fk_rails_99bcc2c44a FOREIGN KEY (part_id) REFERENCES public.parts(id);
+
+
+--
+-- Name: parts fk_rails_a6f95ed203; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parts
+    ADD CONSTRAINT fk_rails_a6f95ed203 FOREIGN KEY (supplier_id) REFERENCES public.suppliers(id);
+
+
+--
 -- Name: order_works fk_rails_a7099870b2; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.order_works
     ADD CONSTRAINT fk_rails_a7099870b2 FOREIGN KEY (mechanic_id) REFERENCES public.users(id);
+
+
+--
+-- Name: stock_movements fk_rails_a739cce371; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stock_movements
+    ADD CONSTRAINT fk_rails_a739cce371 FOREIGN KEY (order_id) REFERENCES public.orders(id);
+
+
+--
+-- Name: stock_movements fk_rails_c399f74509; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stock_movements
+    ADD CONSTRAINT fk_rails_c399f74509 FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -983,6 +1148,9 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260818114218'),
+('20260818113513'),
+('20260818113500'),
 ('20260817222816'),
 ('20260817214148'),
 ('20260817214147'),

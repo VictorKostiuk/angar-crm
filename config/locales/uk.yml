@@ -3,6 +3,12 @@ uk:
     name: "Ангар"
     tagline: "Веломайстерня"
 
+  low_stock_banner:
+    one: "%{count} деталь закінчується на складі"
+    few: "%{count} деталі закінчуються на складі"
+    many: "%{count} деталей закінчується на складі"
+    other: "%{count} деталі закінчується на складі"
+
   nav:
     workshop: "Майстерня"
     orders: "Замовлення"
@@ -55,6 +61,11 @@ uk:
       in_progress: "Велосипед зараз ремонтується"
       waiting_parts: "Очікуємо деталі або матеріали для продовження"
       waiting_pickup: "Ремонт завершений, велосипед готовий до видачі"
+    stock_movement:
+      receipt: "Надходження"
+      write_off: "Списання"
+      consumption: "Використано в замовленні"
+      adjustment: "Коригування"
 
   payment_methods:
     cash: "Готівка"
@@ -92,6 +103,8 @@ uk:
       order_work: "Робота в замовленні"
       order_part: "Деталь в замовленні"
       order_status_change: "Зміна статусу замовлення"
+      supplier: "Постачальник"
+      stock_movement: "Рух складу"
     attributes:
       client:
         name: "Ім'я"
@@ -122,6 +135,9 @@ uk:
         base_price: "Базова ціна"
         category: "Категорія"
         sku: "Артикул"
+        supplier: "Постачальник"
+        purchase_price: "Закупівельна ціна"
+        min_stock_level: "Мінімальний залишок"
       order:
         client: "Клієнт"
         bike: "Велосипед"
@@ -151,3 +167,13 @@ uk:
         from_status: "Попередній статус"
         to_status: "Новий статус"
         comment: "Коментар"
+      supplier:
+        name: "Назва"
+        phone: "Телефон"
+        email: "Email"
+        notes: "Примітки"
+      stock_movement:
+        part: "Деталь / матеріал"
+        kind: "Тип руху"
+        quantity: "Кількість"
+        note: "Примітка"

@@ -17,6 +17,7 @@ module Orders
         # doesn't need to fire per line here — update_all is a deliberate,
         # one-off bypass of the OrderWork callbacks (§6 rule 7 backfill).
         @order.order_works.where(mechanic_id: nil).update_all(mechanic_id: @order.mechanic_id)
+        consume_parts_stock
         @order.update!(status: :closed, closed_at: Time.current)
       end
 
@@ -32,5 +33,17 @@ module Orders
       list << "До замовлення не додано жодної роботи чи деталі" if @order.order_works.none? && @order.order_parts.none?
       list
     end
+
+    private
+      # D26: catalog-linked parts consume stock on close (custom/non-catalog
+      # lines have no part_id, nothing to decrement). Never blocks the close.
+      # Relies on the same open_status? guard as the rest of #call for
+      # double-close idempotency — a repeat close short-circuits in
+      # `blockers` before this ever runs again, so stock only ever moves once.
+      def consume_parts_stock
+        @order.order_parts.where.not(part_id: nil).each do |order_part|
+          order_part.part.stock_movements.create!(kind: :consumption, quantity: -order_part.quantity, order: @order)
+        end
+      end
   end
 end

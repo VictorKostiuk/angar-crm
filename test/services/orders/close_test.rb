@@ -50,17 +50,50 @@ class Orders::CloseTest < ActiveSupport::TestCase
     assert_equal other_mechanic.id, work.reload.mechanic_id
   end
 
-  test "double close does not overwrite closed_at" do
+  test "double close does not overwrite closed_at, and does not double-consume stock" do
+    part = parts(:kmc_chain)
+    part.stock_movements.create!(user: @owner, kind: :receipt, quantity: 10)
+
     @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
     @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
+    @order.order_parts.create!(part: part, quantity: 2)
 
     order = Orders::Close.call(order: @order)
     first_closed_at = order.closed_at
+    assert_equal 8, part.reload.stock_quantity
 
     order = Orders::Close.call(order: order)
 
     assert_equal first_closed_at, order.closed_at
     assert_equal [ "Замовлення вже закрито або скасовано" ], Orders::Close.new(order: order).blockers
+    assert_equal 8, part.reload.stock_quantity, "a repeat close must not consume stock a second time"
+    assert_equal 1, StockMovement.where(part: part, kind: :consumption, order: order).count
+  end
+
+  test "consumes stock for catalog-linked parts only, not custom lines" do
+    part = parts(:kmc_chain)
+    part.stock_movements.create!(user: @owner, kind: :receipt, quantity: 5)
+
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    @order.order_parts.create!(part: part, quantity: 2)
+    @order.order_parts.create!(name: "Нестандартна деталь", quantity: 1, price: 100) # no part_id
+
+    Orders::Close.call(order: @order)
+
+    assert_equal 3, part.reload.stock_quantity
+  end
+
+  test "closing does not block when stock would go negative" do
+    part = parts(:kmc_chain)
+    part.stock_movements.create!(user: @owner, kind: :receipt, quantity: 1)
+
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    @order.order_parts.create!(part: part, quantity: 5)
+
+    order = Orders::Close.call(order: @order)
+
+    assert order.closed?
+    assert_equal(-4, part.reload.stock_quantity)
   end
 
   test "a $0 warranty order with at least one line can close" do
