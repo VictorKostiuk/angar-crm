@@ -1,0 +1,10 @@
+<div class="mb-8 pb-4 border-b border-gray-300">
+  <p class="text-lg font-bold"><%= t("app.name") %></p>
+  <p class="text-sm text-gray-500"><%= t("app.tagline") %></p>
+  <% if t("app.address").present? %>
+    <p class="text-sm text-gray-500"><%= t("app.address") %></p>
+  <% end %>
+  <% if t("app.phone").present? %>
+    <p class="text-sm text-gray-500"><%= t("app.phone") %></p>
+  <% end %>
+</div>

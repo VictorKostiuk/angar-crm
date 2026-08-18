@@ -1,0 +1,42 @@
+<% content_for :title, "Акт прийому — #{order_number(@order)}" %>
+
+<%= render "shared/print_header" %>
+
+<h1 class="text-xl font-bold mb-1">Акт прийому велосипеда</h1>
+<p class="text-sm text-gray-500 mb-6"><%= order_number(@order) %> від <%= @order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
+
+<div class="grid grid-cols-2 gap-6 mb-6 text-sm">
+  <div>
+    <p class="text-gray-500">Клієнт</p>
+    <p class="font-medium"><%= @order.client.name %></p>
+    <p><%= @order.client.formatted_phone %></p>
+  </div>
+  <div>
+    <p class="text-gray-500">Велосипед</p>
+    <p class="font-medium"><%= @order.bike.name %></p>
+    <% if @order.bike.brand.present? || @order.bike.model.present? %>
+      <p><%= [ @order.bike.brand, @order.bike.model ].compact_blank.join(" ") %></p>
+    <% end %>
+  </div>
+</div>
+
+<% if @order.problem.present? %>
+  <div class="mb-6 text-sm">
+    <p class="text-gray-500 mb-1">Заявлена несправність</p>
+    <p class="whitespace-pre-line"><%= @order.problem %></p>
+  </div>
+<% end %>
+
+<% if @order.comment.present? %>
+  <div class="mb-6 text-sm">
+    <p class="text-gray-500 mb-1">Коментар</p>
+    <p class="whitespace-pre-line"><%= @order.comment %></p>
+  </div>
+<% end %>
+
+<p class="text-sm text-gray-500 mb-16">Прийняв: <%= @order.accepted_by.name %></p>
+
+<div class="grid grid-cols-2 gap-12 text-sm">
+  <div class="border-t border-gray-400 pt-2">Підпис майстерні</div>
+  <div class="border-t border-gray-400 pt-2">Підпис клієнта</div>
+</div>

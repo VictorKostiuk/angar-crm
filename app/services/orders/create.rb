@@ -6,7 +6,7 @@ module Orders
     def self.call(...) = new(...).call
 
     def initialize(accepted_by:, client_id: nil, client_name: nil, client_phone: nil,
-                    bike_id: nil, bike_name: nil, problem: nil, comment: nil)
+                    bike_id: nil, bike_name: nil, problem: nil, comment: nil, photos: nil)
       @accepted_by = accepted_by
       @client_id = client_id
       @client_name = client_name
@@ -15,6 +15,7 @@ module Orders
       @bike_name = bike_name
       @problem = problem
       @comment = comment
+      @photos = photos
     end
 
     def call
@@ -33,6 +34,7 @@ module Orders
         raise ActiveRecord::Rollback if bike.new_record? && !bike.save
         order.bike_id = bike.id # same reason
 
+        order.photos.attach(@photos) if @photos.present?
         raise ActiveRecord::Rollback unless order.save
       end
 

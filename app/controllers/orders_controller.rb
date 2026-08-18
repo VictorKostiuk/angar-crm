@@ -1,5 +1,6 @@
 class OrdersController < ApplicationController
-  before_action :set_order, only: %i[ show update ]
+  layout "print", only: %i[ receipt invoice ]
+  before_action :set_order, only: %i[ show update receipt invoice ]
 
   # Every order (open, closed, cancelled) — unlike the board (P5.1), which
   # only ever shows open_orders. Don't "simplify" this to open_orders.
@@ -35,7 +36,8 @@ class OrdersController < ApplicationController
       bike_id: params[:bike_id],
       bike_name: params[:bike_name],
       problem: params[:problem],
-      comment: params[:comment]
+      comment: params[:comment],
+      photos: params[:photos]
     )
 
     if order.persisted?
@@ -65,6 +67,12 @@ class OrdersController < ApplicationController
       @mechanics = User.active.order(:name)
       render :show, status: :unprocessable_entity
     end
+  end
+
+  def receipt
+  end
+
+  def invoice
   end
 
   private

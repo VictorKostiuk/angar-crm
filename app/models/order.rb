@@ -7,6 +7,7 @@ class Order < ApplicationRecord
   has_many :order_works, -> { order(:position) }, dependent: :destroy, inverse_of: :order
   has_many :order_parts, -> { order(:position) }, dependent: :destroy, inverse_of: :order
   has_many :order_status_changes, -> { order(created_at: :desc) }, dependent: :destroy, inverse_of: :order
+  has_many_attached :photos
 
   # NOTE: the "new order" status is intentionally NOT named :new — Rails enum
   # generates a class-level scope with that name, which would silently shadow
@@ -52,6 +53,7 @@ class Order < ApplicationRecord
   validates :cancel_reason, presence: true, if: :cancelled?
   validates :payment_method, presence: true, if: :paid?
   validate :bike_belongs_to_client
+  validate :photos_must_be_images
 
   def open_status?
     OPEN_STATUSES.include?(status)
@@ -62,5 +64,11 @@ class Order < ApplicationRecord
       return if bike.nil? || client.nil? || bike.client_id == client_id
 
       errors.add(:bike, "належить іншому клієнту")
+    end
+
+    def photos_must_be_images
+      return unless photos.attached?
+
+      errors.add(:photos, "має бути зображенням") unless photos.all? { |photo| photo.content_type.start_with?("image/") }
     end
 end

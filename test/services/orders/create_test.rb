@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Orders::CreateTest < ActiveSupport::TestCase
+  include ActionDispatch::TestProcess::FixtureFile
+
   setup do
     @owner = users(:owner)
   end
@@ -59,5 +61,27 @@ class Orders::CreateTest < ActiveSupport::TestCase
 
     assert_not @order.persisted?
     assert_includes @order.bike.errors[:name], "не може бути порожнім"
+  end
+
+  test "attaches photos to the created order" do
+    photo = fixture_file_upload("test_photo.png", "image/png")
+
+    @order = Orders::Create.call(accepted_by: @owner, client_id: clients(:ivan).id, bike_id: bikes(:trek).id,
+                                  problem: "з фото", photos: [ photo ])
+
+    assert @order.persisted?
+    assert_equal 1, @order.photos.count
+  end
+
+  test "rolls back the whole order (and does not attach anything) when a photo is not an image" do
+    not_a_photo = fixture_file_upload("not_an_image.txt", "text/plain")
+
+    assert_no_difference [ "Client.count", "Bike.count", "Order.count" ] do
+      @order = Orders::Create.call(accepted_by: @owner, client_id: clients(:ivan).id, bike_id: bikes(:trek).id,
+                                    problem: "поганий файл", photos: [ not_a_photo ])
+    end
+
+    assert_not @order.persisted?
+    assert_includes @order.errors[:photos], "має бути зображенням"
   end
 end

@@ -14,6 +14,12 @@
   <div class="text-right">
     <p class="text-sm text-gray-400 mb-1"><%= order_number(@order) %></p>
     <%= render "shared/status_badge", order: @order %>
+    <div class="mt-2 flex items-center justify-end gap-3">
+      <%= link_to "Друк акту", receipt_order_path(@order), target: "_blank", rel: "noopener",
+            class: "text-xs font-medium text-gray-500 hover:underline" %>
+      <%= link_to "Друк рахунку", invoice_order_path(@order), target: "_blank", rel: "noopener",
+            class: "text-xs font-medium text-gray-500 hover:underline" %>
+    </div>
     <% if @order.open_status? %>
       <div class="mt-2 flex items-center justify-end gap-3">
         <%= link_to "Змінити статус", edit_order_status_path(@order), data: { turbo_frame: "modal" },
@@ -57,6 +63,27 @@
         <p class="text-sm text-gray-900 whitespace-pre-line"><%= @order.comment %></p>
       </div>
     <% end %>
+
+    <div>
+      <p class="text-xs text-gray-500 mb-1">Фото</p>
+      <% if @order.photos.attached? %>
+        <div class="grid grid-cols-3 gap-2 mb-2">
+          <% @order.photos.each do |photo| %>
+            <div class="relative group">
+              <%= image_tag photo.variant(resize_to_limit: [ 150, 150 ]), class: "rounded-md border border-gray-200 aspect-square object-cover w-full" %>
+              <%= button_to "×", order_photo_path(@order, photo), method: :delete,
+                    data: { turbo_confirm: "Видалити фото?" },
+                    class: "absolute top-1 right-1 w-5 h-5 rounded-full bg-gray-900/70 text-white text-xs leading-none cursor-pointer" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <%= form_with url: order_photos_path(@order), multipart: true, class: "flex items-center gap-2" do %>
+        <%= file_field_tag "photos[]", multiple: true, accept: "image/*",
+              class: "block w-full text-xs text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-gray-200" %>
+        <%= submit_tag "Додати", class: "shrink-0 rounded-md border border-gray-300 text-xs font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+      <% end %>
+    </div>
   </div>
 
   <div class="lg:col-span-2 space-y-6">
