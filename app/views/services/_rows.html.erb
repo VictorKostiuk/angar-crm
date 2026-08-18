@@ -5,11 +5,17 @@
     <td class="px-4 py-3 text-gray-600"><%= service.category.name %></td>
     <td class="px-4 py-3 text-gray-600"><%= money(service.base_price) %></td>
     <td class="px-4 py-3 text-right whitespace-nowrap">
-      <%= link_to t("actions.edit"), services_path(edit: service.id, category_id: category_id),
-            class: "text-gray-400 hover:text-brand-600 mr-3" %>
-      <%= button_to t("actions.archive"), service_path(service, category_id: category_id), method: :delete,
+      <%= link_to services_path(edit: service.id, category_id: category_id),
+            title: t("actions.edit"), "aria-label": t("actions.edit"),
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>
+        <%= render "shared/icon", name: :edit %>
+      <% end %>
+      <%= button_to service_path(service, category_id: category_id), method: :delete,
+            title: t("actions.archive"), "aria-label": t("actions.archive"), form_class: "inline-block",
             data: { turbo_confirm: "Архівувати роботу «#{service.name}»?" },
-            class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 bg-transparent cursor-pointer" do %>
+        <%= render "shared/icon", name: :archive %>
+      <% end %>
     </td>
   </tr>
 <% end %>

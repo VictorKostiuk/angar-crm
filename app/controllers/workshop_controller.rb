@@ -3,11 +3,6 @@ class WorkshopController < ApplicationController
     orders = Order.open_orders.includes(:client, :bike, :mechanic).with_attached_photos.order(accepted_at: :asc)
     grouped = orders.group_by(&:status)
     @orders_by_status = Order::OPEN_STATUSES.index_with { |status| grouped[status] || [] }
-
-    # Stock management is admin/owner-only (§7), so only they get a link
-    # they can actually act on — a mechanic already sees low-stock notes
-    # inline in the add-part modal search results (P7.3).
-    @low_stock_count = Part.active.low_stock.count if Current.user.admin? || Current.user.owner?
   end
 
   # Quick "approve" action for the Очікує погодження section (mockup 01) —

@@ -3,8 +3,7 @@
     <% @parts.each do |part| %>
       <%= render "shared/catalog_result_item", name: part.name, price: part.base_price,
             add_url: (@order ? order_order_parts_path(@order) : nil),
-            add_params: (@order ? { order_part: { part_id: part.id } } : nil),
-            stock_note: (part.low_stock? ? "Мало на складі: #{part.stock_quantity} шт." : nil) %>
+            add_params: (@order ? { order_part: { part_id: part.id } } : nil) %>
     <% end %>
   <% else %>
     <p class="px-3 py-2 text-sm text-gray-400">Нічого не знайдено</p>

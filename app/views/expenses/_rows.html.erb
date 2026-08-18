@@ -11,10 +11,17 @@
     <td class="px-4 py-3 text-gray-600"><%= expense.description.presence || "—" %></td>
     <td class="px-4 py-3 text-gray-900 whitespace-nowrap"><%= money(expense.amount) %></td>
     <td class="px-4 py-3 text-right whitespace-nowrap">
-      <%= link_to t("actions.edit"), expenses_path(edit: expense.id), class: "text-gray-400 hover:text-brand-600 mr-3" %>
-      <%= button_to t("actions.delete"), expense_path(expense), method: :delete,
+      <%= link_to expenses_path(edit: expense.id),
+            title: t("actions.edit"), "aria-label": t("actions.edit"),
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>
+        <%= render "shared/icon", name: :edit %>
+      <% end %>
+      <%= button_to expense_path(expense), method: :delete,
+            title: t("actions.delete"), "aria-label": t("actions.delete"), form_class: "inline-block",
             data: { turbo_confirm: "Видалити витрату «#{expense.category}»?" },
-            class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 bg-transparent cursor-pointer" do %>
+        <%= render "shared/icon", name: :delete %>
+      <% end %>
     </td>
   </tr>
 <% end %>

@@ -17,9 +17,12 @@
 
     <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
       <%= render "shared/nav_item", label: t("nav.workshop"), path: root_path, active: current_page?(root_path) %>
-      <%= render "shared/nav_item", label: t("nav.orders"), path: orders_path, active: request.path.start_with?(orders_path) %>
+      <%= render "shared/nav_item", label: t("nav.orders"), path: orders_path,
+            active: request.path.start_with?(orders_path) && params[:status] != "closed" %>
+      <%= render "shared/nav_item", label: t("nav.archive"), path: orders_path(status: "closed"),
+            active: request.path.start_with?(orders_path) && params[:status] == "closed" %>
       <%= render "shared/nav_item", label: t("nav.clients"), path: clients_path, active: request.path.start_with?(clients_path) %>
-      <%= render "shared/nav_item", label: t("nav.bikes") %>
+      <%= render "shared/nav_item", label: t("nav.bikes"), path: bikes_path, active: request.path.start_with?(bikes_path) %>
       <% if Current.user.admin? || Current.user.owner? %>
         <%= render "shared/nav_item", label: t("nav.services"), path: services_path, active: request.path.start_with?(services_path) %>
         <%= render "shared/nav_item", label: t("nav.parts"), path: parts_path, active: request.path.start_with?(parts_path) %>

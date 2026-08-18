@@ -8,24 +8,28 @@ class Part < ApplicationRecord
   validates :name, presence: true
   validates :base_price, numericality: { greater_than_or_equal_to: 0 }
   validates :purchase_price, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
-  validates :min_stock_level, numericality: { greater_than_or_equal_to: 0, only_integer: true }
   validate :category_must_be_a_part_category
+
+  after_update :backfill_missed_expenses, if: :saved_change_to_purchase_price?
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:position, :name) }
   scope :search, ->(query) { query.present? ? where("name ILIKE ?", "%#{query}%") : all }
-  # min_stock_level: 0 means "no threshold set" (the column default), not
-  # "warn the instant stock hits zero" — without the > 0 guard, every part
-  # that's never had stock tracked (quantity: 0, level: 0) would count as
-  # low stock from day one, which is noise, not a warning.
-  scope :low_stock, -> { where("min_stock_level > 0 AND stock_quantity <= min_stock_level") }
-
-  def low_stock?
-    min_stock_level.positive? && stock_quantity <= min_stock_level
-  end
 
   private
     def category_must_be_a_part_category
       errors.add(:category, "має бути категорією деталей") if category && !category.part?
+    end
+
+    # D28's known gap: consumption before purchase_price was set never got
+    # an expense. Setting/changing the price can't rewrite the past, but it
+    # can catch every consumption movement still missing one and log it now,
+    # using today's date and the price you just entered.
+    def backfill_missed_expenses
+      return if purchase_price.blank?
+
+      stock_movements.consumption.where.missing(:expense).find_each do |movement|
+        Finances::LogExpenseFromConsumption.call(movement)
+      end
     end
 end

@@ -2,6 +2,7 @@ class StockMovement < ApplicationRecord
   belongs_to :part
   belongs_to :user, optional: true # nil for system-generated consumption
   belongs_to :order, optional: true # set only when kind: consumption
+  has_one :expense, dependent: :nullify
 
   enum :kind, { receipt: 0, write_off: 1, consumption: 2, adjustment: 3 }
 

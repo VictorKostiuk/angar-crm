@@ -84,7 +84,7 @@
     <thead class="bg-gray-50 text-left text-gray-500">
       <tr>
         <th class="px-4 py-3 font-medium">Механік</th>
-        <th class="px-4 py-3 font-medium">База ЗП</th>
+        <th class="px-4 py-3 font-medium">Сума замовлень</th>
         <th class="px-4 py-3 font-medium">% ЗП</th>
         <th class="px-4 py-3 font-medium">До виплати</th>
       </tr>
@@ -93,7 +93,7 @@
       <% @payroll_rows.each do |row| %>
         <tr>
           <td class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
-          <td class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
+          <td class="px-4 py-3 text-gray-600"><%= money(row.total) %></td>
           <td class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
           <td class="px-4 py-3 font-medium text-green-700"><%= money(row.payout) %></td>
         </tr>
@@ -104,8 +104,5 @@
       <% end %>
     </tbody>
   </table>
-  <p class="px-5 py-3 bg-brand-50 text-brand-800 text-xs border-t border-gray-100">
-    База ЗП рахується лише від суми сервісних робіт у закритих замовленнях. Деталі / матеріали не входять у базу зарплати.
-  </p>
 </div>
 <% end %>

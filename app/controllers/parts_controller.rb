@@ -62,7 +62,7 @@ class PartsController < ApplicationController
 
   private
     def part_params
-      params.expect(part: %i[ name category_id base_price sku supplier_id purchase_price min_stock_level ])
+      params.expect(part: %i[ name category_id base_price sku supplier_id purchase_price ])
     end
 
     def load_index_data
@@ -70,7 +70,6 @@ class PartsController < ApplicationController
       @selected_category = @categories.find_by(id: params[:category_id])
       @parts = Part.active.ordered
       @parts = @parts.where(category: @selected_category) if @selected_category
-      @parts = @parts.low_stock if params[:low_stock].present?
       @suppliers = Supplier.active.ordered
     end
 

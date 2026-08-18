@@ -71,7 +71,7 @@ class Reports::MechanicStatsTest < ActiveSupport::TestCase
     assert_equal 0, row.completed_count
   end
 
-  test "payout is works_total times payroll_percent, zero for a 0% mechanic" do
+  test "payout is (works_total + parts_total) times payroll_percent, zero for a 0% mechanic" do
     close_order!(mechanic: @mechanic_a, closed_at: Time.zone.today.middle_of_day,
                  works: [ { name: "Робота", quantity: 1, price: 1000 } ])
     zero_pct = User.create!(name: "Нуль", email_address: "zero@fixtures.test", password: "password123",
@@ -82,6 +82,23 @@ class Reports::MechanicStatsTest < ActiveSupport::TestCase
     stats = Reports::MechanicStats.new(range: @range)
     assert_equal 350, stats.row_for(@mechanic_a).payout # andrii fixture is 35%
     assert_equal 0, stats.row_for(zero_pct).payout
+  end
+
+  test "payout includes parts_total, not just works_total (D32)" do
+    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
+                           status: :in_progress, mechanic: @mechanic_a)
+    order.order_works.create!(name: "Робота", quantity: 1, price: 1000)
+    order.order_parts.create!(name: "Деталь", quantity: 1, price: 1000)
+    order.update!(payment_status: :paid, payment_method: :cash)
+    order = Orders::Close.call(order: order)
+    assert order.closed?
+    order.update_column(:closed_at, Time.zone.today.middle_of_day)
+
+    row = Reports::MechanicStats.new(range: @range).row_for(@mechanic_a)
+
+    assert_equal 1000, row.works_total
+    assert_equal 1000, row.parts_total
+    assert_equal 700, row.payout # (1000 + 1000) * 35%
   end
 
   test "in_progress_count is live, not period-scoped" do

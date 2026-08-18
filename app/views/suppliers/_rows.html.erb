@@ -5,10 +5,17 @@
     <td class="px-4 py-3 text-gray-600"><%= supplier.phone.presence || "—" %></td>
     <td class="px-4 py-3 text-gray-600"><%= supplier.email.presence || "—" %></td>
     <td class="px-4 py-3 text-right whitespace-nowrap">
-      <%= link_to t("actions.edit"), suppliers_path(edit: supplier.id), class: "text-gray-400 hover:text-brand-600 mr-3" %>
-      <%= button_to t("actions.archive"), supplier_path(supplier), method: :delete,
+      <%= link_to suppliers_path(edit: supplier.id),
+            title: t("actions.edit"), "aria-label": t("actions.edit"),
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>
+        <%= render "shared/icon", name: :edit %>
+      <% end %>
+      <%= button_to supplier_path(supplier), method: :delete,
+            title: t("actions.archive"), "aria-label": t("actions.archive"), form_class: "inline-block",
             data: { turbo_confirm: "Архівувати постачальника «#{supplier.name}»?" },
-            class: "text-gray-400 hover:text-red-600 bg-transparent inline cursor-pointer" %>
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 bg-transparent cursor-pointer" do %>
+        <%= render "shared/icon", name: :archive %>
+      <% end %>
     </td>
   </tr>
 <% end %>

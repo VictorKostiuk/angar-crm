@@ -1,0 +1,9 @@
+<%= turbo_stream.update "bikes_rows" do %>
+  <%= render "rows", bikes: @bikes %>
+<% end %>
+
+<%= turbo_stream.replace "bike_form" do %>
+  <div id="bike_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>

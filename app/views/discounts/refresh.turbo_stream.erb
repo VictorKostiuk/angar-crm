@@ -1,0 +1,9 @@
+<%= turbo_stream.update "discounts_rows" do %>
+  <%= render "rows", discounts: @discounts %>
+<% end %>
+
+<%= turbo_stream.replace "discount_form" do %>
+  <div id="discount_form" class="bg-white border border-gray-200 rounded-xl p-5">
+    <%= render "form" %>
+  </div>
+<% end %>

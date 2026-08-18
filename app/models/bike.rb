@@ -7,6 +7,12 @@ class Bike < ApplicationRecord
   validates :name, presence: true
 
   scope :active, -> { where(active: true) }
+  scope :ordered, -> { order(:name) }
+  scope :search, ->(query) {
+    next all if query.blank?
+
+    left_joins(:client).where("bikes.name ILIKE :q OR clients.name ILIKE :q", q: "%#{query}%")
+  }
 
   def display_name
     [ name, size ].compact_blank.join(", ")

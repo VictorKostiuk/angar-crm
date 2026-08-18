@@ -1,11 +1,17 @@
 class OrdersController < ApplicationController
   before_action :set_order, only: %i[ show update ]
 
-  # Every order (open, closed, cancelled) — unlike the board (P5.1), which
-  # only ever shows open_orders. Don't "simplify" this to open_orders.
+  # Default view excludes closed orders — they live in Архів
+  # (orders_path(status: "closed")) since that's already a one-click nav
+  # shortcut to them. Explicitly filtering by any status, including
+  # "Закрито" via the dropdown or the Архів link, still works.
   def index
     scope = Order.search(params[:q]).includes(:client, :bike, :mechanic)
-    scope = scope.where(status: params[:status]) if Order.statuses.key?(params[:status])
+    if Order.statuses.key?(params[:status])
+      scope = scope.where(status: params[:status])
+    else
+      scope = scope.where.not(status: :closed)
+    end
     scope = scope.where(payment_status: params[:payment_status]) if Order.payment_statuses.key?(params[:payment_status])
     scope = scope.where(mechanic_id: params[:mechanic_id]) if params[:mechanic_id].present?
 
@@ -15,13 +21,13 @@ class OrdersController < ApplicationController
 
     @total_count = scope.count
     @orders = scope.order(accepted_at: :desc).paginate(page: params[:page])
-    @mechanics = User.active.order(:name)
+    @mechanics = User.mechanic.active.order(:name)
   end
 
   def new
     @order = Order.new
     @client = params[:client_id].present? ? Client.find(params[:client_id]) : nil
-    @mechanics = User.active.order(:name)
+    @mechanics = User.mechanic.active.order(:name)
   end
 
   def create
@@ -44,7 +50,7 @@ class OrdersController < ApplicationController
     else
       @order = order
       @client = order.client&.persisted? ? order.client : nil
-      @mechanics = User.active.order(:name)
+      @mechanics = User.mechanic.active.order(:name)
       render :new, status: :unprocessable_entity
     end
   end
@@ -53,7 +59,8 @@ class OrdersController < ApplicationController
     @order_works = @order.order_works.order(:position)
     @order_parts = @order.order_parts.order(:position)
     @order_status_changes = @order.order_status_changes.includes(:user)
-    @mechanics = User.active.order(:name)
+    @mechanics = User.mechanic.active.order(:name)
+    @discounts = Discount.active.ordered
   end
 
   def update
@@ -63,7 +70,8 @@ class OrdersController < ApplicationController
       @order_works = @order.order_works.order(:position)
       @order_parts = @order.order_parts.order(:position)
       @order_status_changes = @order.order_status_changes.includes(:user)
-      @mechanics = User.active.order(:name)
+      @mechanics = User.mechanic.active.order(:name)
+      @discounts = Discount.active.ordered
       render :show, status: :unprocessable_entity
     end
   end

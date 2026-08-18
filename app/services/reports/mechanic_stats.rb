@@ -3,12 +3,15 @@ module Reports
   # mechanics list, the mechanic card, and the reports payroll table, so
   # the same number never gets computed two different (and disagreeing) ways.
   #
-  # §6 rule 7: payroll base is Σ order_works.total *by the work line's own
-  # mechanic_id*, not the order's mechanic_id — a line can be attributed to
-  # a different mechanic than the order it lives on (backfilled at close
-  # time only for lines that were still nil). Parts have no per-line
-  # mechanic (D11 is works-only), so parts_total is attributed by order
-  # ownership (order.mechanic_id) instead.
+  # works_total is attributed by the work line's own mechanic_id, not the
+  # order's mechanic_id — a line can be attributed to a different mechanic
+  # than the order it lives on (backfilled at close time only for lines
+  # that were still nil). Parts have no per-line mechanic (D11 is
+  # works-only), so parts_total is attributed by order ownership
+  # (order.mechanic_id) instead.
+  #
+  # D32 (supersedes D12/§6 rule 7): payout is the full order total — works
+  # and parts — times the mechanic's payroll %, not works alone.
   class MechanicStats
     Row = Struct.new(:mechanic, :accepted_count, :in_progress_count, :completed_count, :works_total, :parts_total, keyword_init: true) do
       def total
@@ -16,7 +19,7 @@ module Reports
       end
 
       def payout
-        (works_total * mechanic.payroll_percent / 100).round(2)
+        (total * mechanic.payroll_percent / 100).round(2)
       end
     end
 

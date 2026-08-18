@@ -38,6 +38,22 @@
               class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       <% end %>
     </div>
+    <div>
+      <p class="text-xs text-gray-500 mb-1">Знижка</p>
+      <%= form_with model: @order, class: "contents",
+            data: { controller: "discount-picker", discount_picker_subtotal_value: (@order.works_total + @order.parts_total) } do |f| %>
+        <select data-discount-picker-target="select" data-action="change->discount-picker#apply"
+                class="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm">
+          <option value="">Без знижки</option>
+          <% @discounts.each do |discount| %>
+            <option value="<%= discount.id %>" data-kind="<%= discount.kind %>" data-value="<%= discount.value %>">
+              <%= discount.name %> (<%= discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %>)
+            </option>
+          <% end %>
+        </select>
+        <%= f.hidden_field :discount, data: { discount_picker_target: "amount" } %>
+      <% end %>
+    </div>
     <% if @order.problem.present? %>
       <div>
         <p class="text-xs text-gray-500">Проблема</p>

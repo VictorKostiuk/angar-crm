@@ -37,7 +37,7 @@ class Orders::ChangeStatusTest < ActiveSupport::TestCase
   end
 
   test "refuses to change status on an already closed order" do
-    @order.update!(mechanic: @owner, payment_status: :paid, payment_method: :cash)
+    @order.update!(mechanic: users(:andrii), payment_status: :paid, payment_method: :cash)
     @order.order_works.create!(name: "Робота", quantity: 1, price: 100)
     Orders::Close.call(order: @order)
     assert @order.closed?

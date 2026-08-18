@@ -1,0 +1,25 @@
+<%# locals: (bikes:) %>
+<% bikes.each do |bike| %>
+  <tr class="hover:bg-gray-50" id="bike_row_<%= bike.id %>">
+    <td class="px-4 py-3 text-gray-900"><%= bike.name %></td>
+    <td class="px-4 py-3 text-gray-600"><%= link_to bike.client.name, bike.client, class: "hover:underline" %></td>
+    <td class="px-4 py-3 text-gray-600"><%= [ bike.brand, bike.model ].compact_blank.join(" ").presence || "—" %></td>
+    <td class="px-4 py-3 text-right whitespace-nowrap">
+      <%= link_to bikes_path(edit: bike.id, q: params[:q]),
+            title: t("actions.edit"), "aria-label": t("actions.edit"),
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>
+        <%= render "shared/icon", name: :edit %>
+      <% end %>
+      <%= button_to bike_path(bike, q: params[:q]), method: :delete,
+            title: t("actions.archive"), "aria-label": t("actions.archive"), form_class: "inline-block",
+            data: { turbo_confirm: "Архівувати велосипед «#{bike.name}»?" },
+            class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 bg-transparent cursor-pointer" do %>
+        <%= render "shared/icon", name: :archive %>
+      <% end %>
+    </td>
+  </tr>
+<% end %>
+
+<% if bikes.none? %>
+  <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Велосипедів не знайдено</td></tr>
+<% end %>

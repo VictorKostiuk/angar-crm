@@ -1,6 +1,7 @@
 <% content_for :title, t("nav.settings") %>
 
-<h1 class="text-2xl font-bold text-gray-900 mb-6">Користувачі</h1>
+<h1 class="text-2xl font-bold text-gray-900 mb-6"><%= t("nav.settings") %></h1>
+<%= render "shared/settings_tabs", active: :users %>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
   <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">

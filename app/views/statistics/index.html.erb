@@ -1,0 +1,105 @@
+<% content_for :title, "Статистика" %>
+
+<h1 class="text-2xl font-bold text-gray-900 mb-6"><%= t("nav.settings") %></h1>
+<%= render "shared/settings_tabs", active: :statistics %>
+
+<div class="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+  <%= render "shared/period_filter", path: statistics_path, period: @period.period, from: @period.from.to_date, to: @period.to.to_date %>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Дохід</p>
+    <p class="text-xl font-bold text-gray-900"><%= money(@revenue) %></p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Витрати</p>
+    <p class="text-xl font-bold text-gray-900"><%= money(@expenses_total) %></p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Прибуток до виплат</p>
+    <p class="text-xl font-bold <%= @profit_before_payouts.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@profit_before_payouts) %></p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Виплати механікам</p>
+    <p class="text-xl font-bold text-gray-900"><%= money(@payouts_total) %></p>
+    <p class="mt-1 text-xs text-gray-400">Виплати за місяці, що повністю потрапляють в обраний період.</p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Чистий прибуток</p>
+    <p class="text-xl font-bold <%= @net_profit.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@net_profit) %></p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Кількість замовлень</p>
+    <p class="text-xl font-bold text-gray-900"><%= @order_count %></p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <h2 class="font-bold text-gray-900 mb-3">Дохід, витрати, прибуток</h2>
+    <div class="h-64">
+      <canvas data-controller="chart" data-chart-config-value="<%= @summary_chart.to_json %>"></canvas>
+    </div>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <h2 class="font-bold text-gray-900 mb-3">Доходи по механіках</h2>
+    <div class="h-64">
+      <canvas data-controller="chart" data-chart-config-value="<%= @mechanic_chart.to_json %>"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
+  <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Доходи по механіках</h2>
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 text-left text-gray-500">
+      <tr>
+        <th class="px-4 py-3 font-medium">Механік</th>
+        <th class="px-4 py-3 font-medium">Замовлень</th>
+        <th class="px-4 py-3 font-medium">Роботи</th>
+        <th class="px-4 py-3 font-medium">Деталі</th>
+        <th class="px-4 py-3 font-medium">Разом чеків</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      <% @income_by_mechanic.each do |row| %>
+        <tr>
+          <td class="px-4 py-3 text-gray-900"><%= row[:mechanic].name %></td>
+          <td class="px-4 py-3 text-gray-600"><%= row[:order_count] %></td>
+          <td class="px-4 py-3 text-gray-600"><%= money(row[:works_total]) %></td>
+          <td class="px-4 py-3 text-gray-600"><%= money(row[:parts_total]) %></td>
+          <td class="px-4 py-3 font-medium text-gray-900"><%= money(row[:works_total] + row[:parts_total]) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Розрахунок виробітки механіків</h2>
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 text-left text-gray-500">
+      <tr>
+        <th class="px-4 py-3 font-medium">Механік</th>
+        <th class="px-4 py-3 font-medium">Сума замовлень</th>
+        <th class="px-4 py-3 font-medium">% ЗП</th>
+        <th class="px-4 py-3 font-medium">До виплати</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      <% @payroll_rows.each do |row| %>
+        <tr>
+          <td class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
+          <td class="px-4 py-3 text-gray-600"><%= money(row.total) %></td>
+          <td class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
+          <td class="px-4 py-3 font-medium text-green-700"><%= money(row.payout) %></td>
+        </tr>
+      <% end %>
+
+      <% if @payroll_rows.empty? %>
+        <tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Немає механіків</td></tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

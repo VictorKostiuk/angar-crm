@@ -36,7 +36,21 @@ class Reports::ClosedRevenueTest < ActiveSupport::TestCase
   end
 
   test "does not silently drop an order whose mechanic_id is not actually a mechanic (D30)" do
-    close_order!(mechanic: @owner, price: 400)
+    # Order#mechanic_must_be_a_mechanic blocks this going forward, but a
+    # mechanic's role can still change to owner/admin *after* order_works
+    # already inherited their id at line-creation time (§6 rule 7) — bypass
+    # validation to simulate exactly that (this is how the real bug behind
+    # that validation was first found: order_works.mechanic_id, not just
+    # orders.mechanic_id, ends up pointing at the non-mechanic).
+    order = Order.new(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
+                       status: :in_progress, mechanic: @owner)
+    order.save!(validate: false)
+    order.order_works.create!(name: "Робота", quantity: 1, price: 400)
+    order.order_parts.create!(name: "Деталь", quantity: 1, price: 100)
+    # Bypassing Orders::Close entirely (not update!) since it would re-run
+    # the same validation this test is deliberately working around.
+    order.update_columns(payment_status: :paid, payment_method: :cash,
+                          status: Order.statuses[:closed], closed_at: Time.zone.today.middle_of_day)
 
     totals = Reports::ClosedRevenue.call(range: @range)
 

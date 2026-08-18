@@ -235,6 +235,40 @@ ALTER SEQUENCE public.clients_id_seq OWNED BY public.clients.id;
 
 
 --
+-- Name: discounts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.discounts (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    kind integer DEFAULT 0 NOT NULL,
+    value numeric(8,2) NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: discounts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.discounts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: discounts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.discounts_id_seq OWNED BY public.discounts.id;
+
+
+--
 -- Name: expenses; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -459,8 +493,7 @@ CREATE TABLE public.parts (
     updated_at timestamp(6) without time zone NOT NULL,
     supplier_id bigint,
     purchase_price numeric(12,2),
-    stock_quantity integer DEFAULT 0 NOT NULL,
-    min_stock_level integer DEFAULT 0 NOT NULL
+    stock_quantity integer DEFAULT 0 NOT NULL
 );
 
 
@@ -746,6 +779,13 @@ ALTER TABLE ONLY public.clients ALTER COLUMN id SET DEFAULT nextval('public.clie
 
 
 --
+-- Name: discounts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discounts ALTER COLUMN id SET DEFAULT nextval('public.discounts_id_seq'::regclass);
+
+
+--
 -- Name: expenses id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -883,6 +923,14 @@ ALTER TABLE ONLY public.categories
 
 ALTER TABLE ONLY public.clients
     ADD CONSTRAINT clients_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: discounts discounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discounts
+    ADD CONSTRAINT discounts_pkey PRIMARY KEY (id);
 
 
 --
@@ -1497,6 +1545,8 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260818190722'),
+('20260818180317'),
 ('20260818150720'),
 ('20260818125557'),
 ('20260818123251'),

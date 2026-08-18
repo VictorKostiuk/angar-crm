@@ -39,6 +39,17 @@ class OrderTest < ActiveSupport::TestCase
     assert_equal 0, order.total
   end
 
+  test "changing discount on an order that already has lines recalculates the total" do
+    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current, status: :intake)
+    order.order_works.create!(name: "Робота", quantity: 1, price: 1000)
+    order.reload
+    assert_equal 1000, order.total
+
+    order.update!(discount: 200)
+    order.reload
+    assert_equal 800, order.total
+  end
+
   test "bike must belong to the order's client" do
     other_client = Client.create!(name: "Інший клієнт", phone: "0501112233")
 
@@ -46,6 +57,20 @@ class OrderTest < ActiveSupport::TestCase
 
     assert_not order.valid?
     assert_includes order.errors[:bike], "належить іншому клієнту"
+  end
+
+  test "mechanic must actually have the mechanic role" do
+    order = Order.new(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
+                       status: :intake, mechanic: @owner)
+
+    assert_not order.valid?
+    assert_includes order.errors[:mechanic], "має бути механіком"
+
+    order.mechanic = users(:andrii)
+    assert order.valid?
+
+    order.mechanic = nil
+    assert order.valid?
   end
 
   test "intake status does not shadow ActiveRecord::Base.new" do

@@ -18,17 +18,17 @@ viktor = User.find_or_initialize_by(email_address: "vityok.kostiuk@gmail.com")
 viktor.assign_attributes(
   name: "Viktor",
   password: "vityok.kostiuk@gmail.com",
-  role: :admin,
+  role: :owner,
   payroll_percent: 35,
   active: true
 )
 viktor.save!
 
-puts "Admin account ready: #{viktor.email_address}"
+puts "Owner account ready: #{viktor.email_address}"
 
 SERVICE_CATEGORIES = %w[ Загальне\ ТО Трансмісія Гальма Колеса Рульове\ управління Підвіска Палки\ і\ аксесуари ]
 PART_CATEGORIES = [
-  "Ланцюги", "Касети / тріщітки", "Троси / рубашки", "Гальмівні колодки",
+  "Ланцюги", "Касети / тріскалки", "Троси / рубашки", "Гальмівні колодки",
   "Камери", "Покришки", "Мастила / герметики", "Підшипники", "Каретки", "Інше"
 ]
 

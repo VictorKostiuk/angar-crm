@@ -54,16 +54,34 @@ class Order < ApplicationRecord
   validates :payment_method, presence: true, if: :paid?
   validate :bike_belongs_to_client
   validate :photos_must_be_images
+  validate :mechanic_must_be_a_mechanic
+
+  # order_works/order_parts trigger Orders::RecalculateTotals on their own
+  # save/destroy (§6) — discount lives on the order itself, so it needs its
+  # own trigger, or editing it silently no-ops on the stored total.
+  after_save :recalculate_totals, if: :saved_change_to_discount?
 
   def open_status?
     OPEN_STATUSES.include?(status)
   end
 
   private
+    def recalculate_totals
+      Orders::RecalculateTotals.call(self)
+    end
+
     def bike_belongs_to_client
       return if bike.nil? || client.nil? || bike.client_id == client_id
 
       errors.add(:bike, "належить іншому клієнту")
+    end
+
+    # A non-mechanic (admin/owner) assigned as mechanic_id would silently
+    # drop out of every mechanic-keyed report/payroll table, since those are
+    # all keyed by User.mechanic — happened for real once (an owner account
+    # got picked from an unfiltered dropdown before this validation existed).
+    def mechanic_must_be_a_mechanic
+      errors.add(:mechanic, "має бути механіком") if mechanic && !mechanic.mechanic?
     end
 
     def photos_must_be_images

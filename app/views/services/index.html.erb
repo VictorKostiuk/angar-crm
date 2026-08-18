@@ -11,6 +11,8 @@
           class: class_names("rounded-full px-4 py-1.5 text-sm font-medium",
                               @selected_category == category ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50") %>
   <% end %>
+  <%= link_to "+ категорія", new_category_path(kind: :service), data: { turbo_frame: "modal" },
+        class: "rounded-full px-4 py-1.5 text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50" %>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

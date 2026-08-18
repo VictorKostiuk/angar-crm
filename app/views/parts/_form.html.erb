@@ -49,11 +49,6 @@
     </div>
   </div>
 
-  <div>
-    <%= f.label :min_stock_level, "Мінімальний залишок", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= f.number_field :min_stock_level, step: 1, min: 0, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
-  </div>
-
   <div class="flex gap-2 pt-2">
     <% if @part.persisted? %>
       <%= link_to t("actions.cancel"), parts_path(category_id: params[:category_id]),
