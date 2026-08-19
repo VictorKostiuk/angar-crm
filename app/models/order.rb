@@ -81,7 +81,7 @@ class Order < ApplicationRecord
     # all keyed by User.mechanic — happened for real once (an owner account
     # got picked from an unfiltered dropdown before this validation existed).
     def mechanic_must_be_a_mechanic
-      errors.add(:mechanic, "має бути механіком") if mechanic && !mechanic.mechanic?
+      errors.add(:mechanic, "має бути механіком") if mechanic && !mechanic.assignable_as_mechanic?
     end
 
     def photos_must_be_images

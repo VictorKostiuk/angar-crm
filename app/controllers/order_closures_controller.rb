@@ -10,7 +10,10 @@ class OrderClosuresController < ApplicationController
     @order = Orders::Close.call(order: @order)
 
     if @order.closed?
-      redirect_to @order, notice: "Замовлення закрито."
+      respond_to do |format|
+        format.turbo_stream { flash.now[:notice] = "Замовлення закрито."; render "orders/refresh" }
+        format.html { redirect_to @order, notice: "Замовлення закрито." }
+      end
     else
       render :edit, status: :unprocessable_entity
     end

@@ -7,7 +7,7 @@
 <% end %>
 
 <%= turbo_stream.update "order_totals" do %>
-  <%= render "orders/totals", order: @order %>
+  <%= render "orders/totals_panel", order: @order %>
 <% end %>
 
 <%= turbo_stream.replace "order_work_custom_form" do %>

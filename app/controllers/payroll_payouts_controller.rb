@@ -18,13 +18,13 @@ class PayrollPayoutsController < ApplicationController
     if @payout.save
       redirect_to mechanic_path(@mechanic), notice: "Виплату записано."
     else
-      render :new, status: :unprocessable_entity
+      render "shared/modal_form_error", locals: { form_template: "payroll_payouts/new" }, status: :unprocessable_entity
     end
   end
 
   private
     def set_mechanic
-      @mechanic = User.mechanic.find(params[:mechanic_id])
+      @mechanic = User.assignable_as_mechanic.find(params[:mechanic_id])
     end
 
     def payout_params

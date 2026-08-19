@@ -30,6 +30,16 @@
           {}, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
   </div>
 
+  <%# Lets the owner (or an admin) take orders as a mechanic without changing
+      their role — permissions stay tied to the role, work assignment doesn't. %>
+  <div class="flex items-start gap-2">
+    <%= f.check_box :works_as_mechanic, class: "mt-0.5 rounded border-gray-300" %>
+    <div>
+      <%= f.label :works_as_mechanic, "Також виконує роботи як механік", class: "text-sm text-gray-700" %>
+      <p class="text-xs text-gray-500">Зʼявиться у списках механіків і у звітах. Права доступу не змінюються.</p>
+    </div>
+  </div>
+
   <div>
     <%= f.label :payroll_percent, "% від суми робіт (для механіків)", class: "block text-sm font-medium text-gray-700 mb-1" %>
     <%= f.number_field :payroll_percent, step: 1, min: 0, max: 100, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>

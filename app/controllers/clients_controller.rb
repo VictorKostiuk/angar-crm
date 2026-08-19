@@ -24,7 +24,7 @@ class ClientsController < ApplicationController
     if @client.save
       redirect_to @client, notice: "Клієнта додано."
     else
-      render :new, status: :unprocessable_entity
+      render "shared/modal_form_error", locals: { form_template: "clients/new" }, status: :unprocessable_entity
     end
   end
 
@@ -35,7 +35,7 @@ class ClientsController < ApplicationController
     if @client.update(client_params)
       redirect_to @client, notice: "Клієнта оновлено."
     else
-      render :edit, status: :unprocessable_entity
+      render "shared/modal_form_error", locals: { form_template: "clients/edit" }, status: :unprocessable_entity
     end
   end
 

@@ -713,7 +713,8 @@ CREATE TABLE public.users (
     payroll_percent numeric(5,2) DEFAULT 0.0 NOT NULL,
     phone character varying,
     role integer DEFAULT 0 NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    works_as_mechanic boolean DEFAULT false NOT NULL
 );
 
 
@@ -1545,6 +1546,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260819092009'),
 ('20260818190722'),
 ('20260818180317'),
 ('20260818150720'),

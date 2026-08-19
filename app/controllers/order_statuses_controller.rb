@@ -10,7 +10,10 @@ class OrderStatusesController < ApplicationController
     @order = Orders::ChangeStatus.call(order: @order, status: params[:status], user: Current.user, comment: params[:comment])
 
     if @order.errors.empty?
-      redirect_to @order, notice: "Статус оновлено."
+      respond_to do |format|
+        format.turbo_stream { flash.now[:notice] = "Статус оновлено."; render "orders/refresh" }
+        format.html { redirect_to @order, notice: "Статус оновлено." }
+      end
     else
       render :edit, status: :unprocessable_entity
     end

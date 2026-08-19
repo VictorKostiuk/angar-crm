@@ -1,6 +1,6 @@
 <%= render "shared/modal_header", title: "Додати велосипед" %>
 
-<%= form_with model: [ @client, @bike ], class: "contents" do |f| %>
+<%= form_with model: [ @client, @bike ], class: "contents", data: { turbo_frame: "_top" } do |f| %>
   <div class="p-6 space-y-4">
     <% if @bike.errors.any? %>
       <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">

@@ -1,0 +1,20 @@
+<%# locals: (order:) %>
+<%# Inner content of #order_totals — re-rendered by every turbo_stream that
+    touches the order's money or payment state (parts, works, payment). %>
+<%= render "orders/totals", order: order %>
+
+<div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+  <div>
+    <%= render "shared/payment_badge", order: order %>
+    <% if order.paid? %>
+      <span class="text-xs text-gray-500 ml-1">
+        <%= t("payment_methods.#{order.payment_method}") %><% if order.receipt_number.present? %>, чек №<%= order.receipt_number %><% end %>
+      </span>
+    <% end %>
+  </div>
+  <% unless order.cancelled? %>
+    <%= link_to (order.paid? ? "Змінити оплату" : "Оплата"), edit_order_payment_path(order), data: { turbo_frame: "modal" },
+          class: class_names("rounded-md text-sm font-medium px-4 py-2",
+                              order.paid? ? "border border-gray-300 text-gray-700 hover:bg-gray-50" : "bg-brand-600 hover:bg-brand-700 text-white") %>
+  <% end %>
+</div>

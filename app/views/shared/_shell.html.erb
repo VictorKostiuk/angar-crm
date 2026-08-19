@@ -16,42 +16,42 @@
     </div>
 
     <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
-      <%= render "shared/nav_item", label: t("nav.workshop"), path: root_path, active: current_page?(root_path) %>
-      <%= render "shared/nav_item", label: t("nav.orders"), path: orders_path,
+      <%= render "shared/nav_item", label: t("nav.workshop"), icon: :board, path: root_path, active: current_page?(root_path) %>
+      <%= render "shared/nav_item", label: t("nav.orders"), icon: :orders, path: orders_path,
             active: request.path.start_with?(orders_path) && params[:status] != "closed" %>
-      <%= render "shared/nav_item", label: t("nav.archive"), path: orders_path(status: "closed"),
+      <%= render "shared/nav_item", label: t("nav.archive"), icon: :archive, path: orders_path(status: "closed"),
             active: request.path.start_with?(orders_path) && params[:status] == "closed" %>
-      <%= render "shared/nav_item", label: t("nav.clients"), path: clients_path, active: request.path.start_with?(clients_path) %>
-      <%= render "shared/nav_item", label: t("nav.bikes"), path: bikes_path, active: request.path.start_with?(bikes_path) %>
+      <%= render "shared/nav_item", label: t("nav.clients"), icon: :users, path: clients_path, active: request.path.start_with?(clients_path) %>
+      <%= render "shared/nav_item", label: t("nav.bikes"), icon: :bike, path: bikes_path, active: request.path.start_with?(bikes_path) %>
       <% if Current.user.admin? || Current.user.owner? %>
-        <%= render "shared/nav_item", label: t("nav.services"), path: services_path, active: request.path.start_with?(services_path) %>
-        <%= render "shared/nav_item", label: t("nav.parts"), path: parts_path, active: request.path.start_with?(parts_path) %>
-        <%= render "shared/nav_item", label: t("nav.suppliers"), path: suppliers_path, active: request.path.start_with?(suppliers_path) %>
-        <%= render "shared/nav_item", label: t("nav.finances"), path: finances_path,
+        <%= render "shared/nav_item", label: t("nav.services"), icon: :wrench, path: services_path, active: request.path.start_with?(services_path) %>
+        <%= render "shared/nav_item", label: t("nav.parts"), icon: :package, path: parts_path, active: request.path.start_with?(parts_path) %>
+        <%= render "shared/nav_item", label: t("nav.suppliers"), icon: :truck, path: suppliers_path, active: request.path.start_with?(suppliers_path) %>
+        <%= render "shared/nav_item", label: t("nav.finances"), icon: :banknote, path: finances_path,
               active: request.path.start_with?(finances_path) || request.path.start_with?(expenses_path) %>
       <% else %>
-        <%= render "shared/nav_item", label: t("nav.services") %>
-        <%= render "shared/nav_item", label: t("nav.parts") %>
-        <%= render "shared/nav_item", label: t("nav.suppliers") %>
-        <%= render "shared/nav_item", label: t("nav.finances") %>
+        <%= render "shared/nav_item", label: t("nav.services"), icon: :wrench %>
+        <%= render "shared/nav_item", label: t("nav.parts"), icon: :package %>
+        <%= render "shared/nav_item", label: t("nav.suppliers"), icon: :truck %>
+        <%= render "shared/nav_item", label: t("nav.finances"), icon: :banknote %>
       <% end %>
       <% if Current.user.owner? || Current.user.mechanic? %>
-        <%= render "shared/nav_item", label: t("nav.mechanics"), path: mechanics_path, active: request.path.start_with?(mechanics_path) %>
+        <%= render "shared/nav_item", label: t("nav.mechanics"), icon: :hardhat, path: mechanics_path, active: request.path.start_with?(mechanics_path) %>
       <% else %>
-        <%= render "shared/nav_item", label: t("nav.mechanics") %>
+        <%= render "shared/nav_item", label: t("nav.mechanics"), icon: :hardhat %>
       <% end %>
       <% if Current.user.admin? || Current.user.owner? %>
-        <%= render "shared/nav_item", label: t("nav.reports"), path: reports_path, active: request.path.start_with?(reports_path) %>
+        <%= render "shared/nav_item", label: t("nav.reports"), icon: :chart, path: reports_path, active: request.path.start_with?(reports_path) %>
       <% else %>
-        <%= render "shared/nav_item", label: t("nav.reports") %>
+        <%= render "shared/nav_item", label: t("nav.reports"), icon: :chart %>
       <% end %>
 
       <div class="my-2 border-t border-gray-100"></div>
 
       <% if Current.user.owner? %>
-        <%= render "shared/nav_item", label: t("nav.settings"), path: users_path, active: request.path.start_with?(users_path) %>
+        <%= render "shared/nav_item", label: t("nav.settings"), icon: :settings, path: users_path, active: request.path.start_with?(users_path) %>
       <% else %>
-        <%= render "shared/nav_item", label: t("nav.settings") %>
+        <%= render "shared/nav_item", label: t("nav.settings"), icon: :settings %>
       <% end %>
     </nav>
 
@@ -84,9 +84,13 @@
     </header>
 
     <main class="flex-1 overflow-y-auto p-6">
-      <%= render "shared/flash" %>
       <%= yield %>
     </main>
+  </div>
+
+  <%# Fixed so a flash never reflows the page underneath it. %>
+  <div id="flash" class="fixed top-4 right-4 z-50 w-full max-w-sm space-y-2 pointer-events-none">
+    <%= render "shared/flash" %>
   </div>
 
   <turbo-frame id="modal"></turbo-frame>

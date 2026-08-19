@@ -1,0 +1,10 @@
+<%# locals: (form_template:) %>
+<%# Modal forms that navigate on success carry data-turbo-frame="_top", so a
+    plain `render :new` would come back as a full-page response and replace the
+    page with a bare dialog. A Turbo Stream is the one response Turbo applies
+    regardless of where the form was aimed, so errors land back in the dialog. %>
+<%= turbo_stream.update "modal" do %>
+  <%= render layout: "shared/modal_dialog" do %>
+    <%= render template: form_template, formats: [ :html ] %>
+  <% end %>
+<% end %>

@@ -21,13 +21,13 @@ class OrdersController < ApplicationController
 
     @total_count = scope.count
     @orders = scope.order(accepted_at: :desc).paginate(page: params[:page])
-    @mechanics = User.mechanic.active.order(:name)
+    @mechanics = User.assignable_as_mechanic.active.order(:name)
   end
 
   def new
     @order = Order.new
     @client = params[:client_id].present? ? Client.find(params[:client_id]) : nil
-    @mechanics = User.mechanic.active.order(:name)
+    @mechanics = User.assignable_as_mechanic.active.order(:name)
   end
 
   def create
@@ -50,7 +50,7 @@ class OrdersController < ApplicationController
     else
       @order = order
       @client = order.client&.persisted? ? order.client : nil
-      @mechanics = User.mechanic.active.order(:name)
+      @mechanics = User.assignable_as_mechanic.active.order(:name)
       render :new, status: :unprocessable_entity
     end
   end
@@ -59,7 +59,7 @@ class OrdersController < ApplicationController
     @order_works = @order.order_works.order(:position)
     @order_parts = @order.order_parts.order(:position)
     @order_status_changes = @order.order_status_changes.includes(:user)
-    @mechanics = User.mechanic.active.order(:name)
+    @mechanics = User.assignable_as_mechanic.active.order(:name)
     @discounts = Discount.active.ordered
   end
 
@@ -70,7 +70,7 @@ class OrdersController < ApplicationController
       @order_works = @order.order_works.order(:position)
       @order_parts = @order.order_parts.order(:position)
       @order_status_changes = @order.order_status_changes.includes(:user)
-      @mechanics = User.mechanic.active.order(:name)
+      @mechanics = User.assignable_as_mechanic.active.order(:name)
       @discounts = Discount.active.ordered
       render :show, status: :unprocessable_entity
     end

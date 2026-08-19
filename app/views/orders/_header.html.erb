@@ -1,0 +1,17 @@
+<%# locals: (order:) %>
+<%# Inner content of #order_header — re-rendered by orders/refresh whenever a
+    modal changes the status, since the badge and the action buttons both
+    depend on it. %>
+<div>
+  <h1 class="text-2xl font-bold text-gray-900"><%= order.bike.name %></h1>
+  <p class="text-gray-500 text-sm mt-1">
+    <%= link_to order.client.name, order.client, class: "hover:underline" %> · <%= order.client.formatted_phone %>
+  </p>
+</div>
+<div class="sm:text-right">
+  <p class="text-sm text-gray-400 mb-1"><%= order_number(order) %></p>
+  <%= render "shared/status_badge", order: order %>
+  <div class="mt-2 sm:flex sm:justify-end">
+    <%= render "orders/action_buttons", order: order %>
+  </div>
+</div>

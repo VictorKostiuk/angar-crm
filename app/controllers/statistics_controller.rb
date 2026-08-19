@@ -18,7 +18,7 @@ class StatisticsController < ApplicationController
     @payouts_total = PayrollPayout.where(period_month: @period.range).sum(:amount)
     @net_profit = @profit_before_payouts - @payouts_total
 
-    @mechanics = User.mechanic.order(:name)
+    @mechanics = User.assignable_as_mechanic.order(:name)
     @income_by_mechanic = @mechanics.map { |mechanic| income_row(mechanic) }
     @payroll_rows = Reports::MechanicStats.new(range: @period.range).call
 

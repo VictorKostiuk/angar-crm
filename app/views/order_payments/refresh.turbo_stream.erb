@@ -1,0 +1,17 @@
+<%# Modal forms live inside the #modal Turbo Frame, so a plain redirect would
+    only swap that frame back to empty and leave the page behind it stale.
+    Stream the regions that actually changed instead, then clear the modal. %>
+<%= turbo_stream.update "flash" do %>
+  <%= render "shared/flash" %>
+<% end %>
+
+<%= turbo_stream.update "order_totals" do %>
+  <%= render "orders/totals_panel", order: @order %>
+<% end %>
+
+<%# Present only when the modal was opened from the workshop board. %>
+<%= turbo_stream.replace "board_card_#{@order.id}" do %>
+  <%= render "workshop/order_card", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "modal", "" %>

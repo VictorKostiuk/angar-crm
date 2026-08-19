@@ -42,7 +42,7 @@ class MechanicsController < ApplicationController
     end
 
     def set_mechanic
-      @mechanic = User.mechanic.find(params[:id])
+      @mechanic = User.assignable_as_mechanic.find(params[:id])
     end
 
     def deny_admin

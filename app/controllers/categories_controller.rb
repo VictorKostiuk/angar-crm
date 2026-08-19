@@ -12,7 +12,7 @@ class CategoriesController < ApplicationController
     if @category.save
       redirect_to (@category.service? ? services_path : parts_path), notice: "Категорію додано."
     else
-      render :new, status: :unprocessable_entity
+      render "shared/modal_form_error", locals: { form_template: "categories/new" }, status: :unprocessable_entity
     end
   end
 

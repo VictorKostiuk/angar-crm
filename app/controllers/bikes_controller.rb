@@ -17,7 +17,7 @@ class BikesController < ApplicationController
     if @bike.save
       redirect_to @client, notice: "Велосипед додано."
     else
-      render :new, status: :unprocessable_entity
+      render "shared/modal_form_error", locals: { form_template: "bikes/new" }, status: :unprocessable_entity
     end
   end
 

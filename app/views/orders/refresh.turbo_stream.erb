@@ -1,0 +1,41 @@
+<%# Shared by the status / closure / cancellation modals. Those forms live in
+    the #modal Turbo Frame, so a plain redirect would only swap that frame back
+    to empty and leave the page behind it stale. Stream the regions that a
+    status change touches instead, then clear the modal.
+
+    Targets from both screens are emitted unconditionally — a turbo_stream
+    against a missing id is a no-op, so the order page ignores the board's
+    targets and vice versa. %>
+<%= turbo_stream.update "flash" do %>
+  <%= render "shared/flash" %>
+<% end %>
+
+<%# Order page. %>
+<%= turbo_stream.update "order_header" do %>
+  <%= render "orders/header", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "order_totals" do %>
+  <%= render "orders/totals_panel", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "order_status_timeline" do %>
+  <%= render "orders/status_timeline", status_changes: @order.order_status_changes.includes(:user) %>
+<% end %>
+
+<%# Workshop board: the card moves to another section, or leaves the board
+    entirely once the order is closed/cancelled. Mirrors workshop/approve. %>
+<%= turbo_stream.remove "board_card_#{@order.id}" %>
+
+<% if @order.open_status? %>
+  <%= turbo_stream.prepend "board_section_#{@order.status}_cards" do %>
+    <%= render "workshop/order_card", order: @order %>
+  <% end %>
+<% end %>
+
+<% counts = Order.open_orders.group(:status).count %>
+<% Order::OPEN_STATUSES.each do |status| %>
+  <%= turbo_stream.update "board_section_#{status}_count", counts.fetch(status, 0) %>
+<% end %>
+
+<%= turbo_stream.update "modal", "" %>

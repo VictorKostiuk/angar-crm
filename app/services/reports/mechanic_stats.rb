@@ -30,7 +30,7 @@ module Reports
     end
 
     def call
-      User.mechanic.order(:name).map { |mechanic| row_for(mechanic) }
+      User.assignable_as_mechanic.order(:name).map { |mechanic| row_for(mechanic) }
     end
 
     def row_for(mechanic)

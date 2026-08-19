@@ -1,6 +1,14 @@
-<% if (notice = flash[:notice]) %>
-  <p class="mb-4 rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700" id="notice"><%= notice %></p>
-<% end %>
-<% if (alert = flash[:alert]) %>
-  <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700" id="alert"><%= alert %></p>
+<%# Toasts. The #flash container in shared/_shell is fixed-positioned, so these
+    overlay the page instead of pushing content down — which also means they
+    have to clear themselves (see flash_controller.js). %>
+<% {
+     notice: "bg-green-50 border-green-200 text-green-800",
+     alert: "bg-red-50 border-red-200 text-red-800"
+   }.each do |key, colors| %>
+  <% if (message = flash[key]) %>
+    <div id="<%= key %>" data-controller="flash" data-action="click->flash#dismiss"
+         class="pointer-events-auto cursor-pointer rounded-lg border px-4 py-3 text-sm font-medium shadow-lg <%= colors %>">
+      <%= message %>
+    </div>
+  <% end %>
 <% end %>

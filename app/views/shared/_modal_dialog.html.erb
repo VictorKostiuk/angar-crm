@@ -1,0 +1,8 @@
+<%# Rendered as a block layout — by layouts/modal for the initial frame load,
+    and by shared/modal_form_error when a rejected form has to rebuild the
+    dialog from a Turbo Stream. %>
+<dialog data-controller="dialog"
+        data-action="close->dialog#clearFrame click->dialog#closeOnBackdrop"
+        class="w-full max-w-lg rounded-xl p-0 m-auto backdrop:bg-gray-900/50">
+  <%= yield %>
+</dialog>

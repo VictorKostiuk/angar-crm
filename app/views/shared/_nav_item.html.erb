@@ -1,11 +1,15 @@
-<%# locals: (label:, path: nil, active: false) %>
+<%# locals: (label:, icon:, path: nil, active: false) %>
 <% if path %>
   <%= link_to path, class: class_names(
-        "block rounded-lg px-3 py-2 text-sm font-medium",
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
         active ? "bg-brand-50 text-brand-700" : "text-gray-700 hover:bg-gray-100"
       ) do %>
+    <%= render "shared/icon", name: icon, class: "w-5 h-5 shrink-0" %>
     <%= label %>
   <% end %>
 <% else %>
-  <span class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-300 cursor-not-allowed"><%= label %></span>
+  <span class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-300 cursor-not-allowed">
+    <%= render "shared/icon", name: icon, class: "w-5 h-5 shrink-0" %>
+    <%= label %>
+  </span>
 <% end %>

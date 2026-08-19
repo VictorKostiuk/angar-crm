@@ -3,7 +3,7 @@ class ReportsController < ApplicationController
 
   def index
     @period = PeriodFilter.new(**period_params)
-    @mechanics = User.mechanic.order(:name)
+    @mechanics = User.assignable_as_mechanic.order(:name)
     @mechanic = @mechanics.find_by(id: params[:mechanic_id])
     @status = Order.statuses.key?(params[:status]) ? params[:status] : "closed"
 

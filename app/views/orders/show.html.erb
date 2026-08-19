@@ -4,20 +4,8 @@
   <%= link_to "← Назад", :back, class: "text-sm text-gray-500 hover:text-gray-700" %>
 </div>
 
-<div class="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-  <div>
-    <h1 class="text-2xl font-bold text-gray-900"><%= @order.bike.name %></h1>
-    <p class="text-gray-500 text-sm mt-1">
-      <%= link_to @order.client.name, @order.client, class: "hover:underline" %> · <%= @order.client.formatted_phone %>
-    </p>
-  </div>
-  <div class="sm:text-right">
-    <p class="text-sm text-gray-400 mb-1"><%= order_number(@order) %></p>
-    <%= render "shared/status_badge", order: @order %>
-    <div class="mt-2 sm:flex sm:justify-end">
-      <%= render "orders/action_buttons", order: @order %>
-    </div>
-  </div>
+<div id="order_header" class="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+  <%= render "orders/header", order: @order %>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -135,25 +123,11 @@
     </div>
 
     <div class="bg-white border border-gray-200 rounded-xl p-5" id="order_totals">
-      <%= render "orders/totals", order: @order %>
-
-      <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-        <div>
-          <%= render "shared/payment_badge", order: @order %>
-          <% if @order.paid? %>
-            <span class="text-xs text-gray-500 ml-1">
-              <%= t("payment_methods.#{@order.payment_method}") %><% if @order.receipt_number.present? %>, чек №<%= @order.receipt_number %><% end %>
-            </span>
-          <% end %>
-        </div>
-        <% unless @order.cancelled? %>
-          <%= link_to (@order.paid? ? "Змінити оплату" : "Оплата"), edit_order_payment_path(@order), data: { turbo_frame: "modal" },
-                class: class_names("rounded-md text-sm font-medium px-4 py-2",
-                                    @order.paid? ? "border border-gray-300 text-gray-700 hover:bg-gray-50" : "bg-brand-600 hover:bg-brand-700 text-white") %>
-        <% end %>
-      </div>
+      <%= render "orders/totals_panel", order: @order %>
     </div>
 
-    <%= render "orders/status_timeline", status_changes: @order_status_changes %>
+    <div id="order_status_timeline">
+      <%= render "orders/status_timeline", status_changes: @order_status_changes %>
+    </div>
   </div>
 </div>

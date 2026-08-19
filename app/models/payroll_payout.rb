@@ -17,6 +17,6 @@ class PayrollPayout < ApplicationRecord
     end
 
     def user_must_be_a_mechanic
-      errors.add(:user, "має бути механіком") if user && !user.mechanic?
+      errors.add(:user, "має бути механіком") if user && !user.assignable_as_mechanic?
     end
 end

@@ -4,7 +4,7 @@
     <td class="px-4 py-3 text-gray-900"><%= user.name %></td>
     <td class="px-4 py-3 text-gray-600"><%= user.email_address %></td>
     <td class="px-4 py-3 text-gray-600"><%= t("roles.#{user.role}") %></td>
-    <td class="px-4 py-3 text-gray-600"><%= user.mechanic? ? "#{user.payroll_percent.to_i}%" : "—" %></td>
+    <td class="px-4 py-3 text-gray-600"><%= user.assignable_as_mechanic? ? "#{user.payroll_percent.to_i}%" : "—" %></td>
     <td class="px-4 py-3">
       <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= user.active? ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500" %>">
         <%= user.active? ? "Активний" : "Деактивований" %>

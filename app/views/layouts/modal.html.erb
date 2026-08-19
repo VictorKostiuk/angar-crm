@@ -1,7 +1,3 @@
 <turbo-frame id="modal">
-  <dialog data-controller="dialog"
-          data-action="close->dialog#clearFrame click->dialog#closeOnBackdrop"
-          class="w-full max-w-lg rounded-xl p-0 m-auto backdrop:bg-gray-900/50">
-    <%= yield %>
-  </dialog>
+  <%= render layout: "shared/modal_dialog" do %><%= yield %><% end %>
 </turbo-frame>
