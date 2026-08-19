@@ -30,3 +30,54 @@
     background-color: var(--color-brand-600) !important;
   }
 }
+
+/*
+ * Header ticker — a dot-matrix destination sign. The LED grid is a repeating
+ * radial-gradient laid over the text rather than a bitmap font, so any string
+ * the owner types renders as "pixels".
+ *
+ * --led-width is the single source of truth for the box width AND the minimum
+ * width of each marquee copy. The track holds two copies and animates to
+ * -50%, i.e. exactly one copy — which only loops seamlessly while the track
+ * is wider than the box, hence the copies never being narrower than it.
+ */
+@layer components {
+  .led-ticker {
+    --led-width: 20rem;
+    width: var(--led-width);
+    background-color: #14110c;
+    box-shadow: inset 0 1px 4px rgb(0 0 0 / 0.9);
+  }
+
+  .led-ticker::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgb(0 0 0 / 0.55) 45%, transparent 46%);
+    background-size: 3px 3px;
+  }
+
+  .led-ticker__track {
+    display: flex;
+    width: max-content;
+    animation: led-scroll var(--led-duration, 16s) linear infinite;
+  }
+
+  .led-ticker__copy {
+    flex: none;
+    min-width: var(--led-width);
+    padding-right: 3rem;
+    white-space: nowrap;
+    text-shadow: 0 0 6px rgb(251 146 60 / 0.7);
+  }
+
+  @keyframes led-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .led-ticker__track { animation: none; }
+  }
+}

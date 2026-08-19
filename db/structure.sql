@@ -114,6 +114,38 @@ ALTER SEQUENCE public.active_storage_variant_records_id_seq OWNED BY public.acti
 
 
 --
+-- Name: announcements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.announcements (
+    id bigint NOT NULL,
+    text character varying,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: announcements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.announcements_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: announcements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.announcements_id_seq OWNED BY public.announcements.id;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -759,6 +791,13 @@ ALTER TABLE ONLY public.active_storage_variant_records ALTER COLUMN id SET DEFAU
 
 
 --
+-- Name: announcements id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.announcements ALTER COLUMN id SET DEFAULT nextval('public.announcements_id_seq'::regclass);
+
+
+--
 -- Name: bikes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -892,6 +931,14 @@ ALTER TABLE ONLY public.active_storage_blobs
 
 ALTER TABLE ONLY public.active_storage_variant_records
     ADD CONSTRAINT active_storage_variant_records_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: announcements announcements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.announcements
+    ADD CONSTRAINT announcements_pkey PRIMARY KEY (id);
 
 
 --
@@ -1546,6 +1593,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260819095631'),
 ('20260819092009'),
 ('20260818190722'),
 ('20260818180317'),

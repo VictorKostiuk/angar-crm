@@ -42,6 +42,8 @@ Rails.application.routes.draw do
 
   resources :users, only: %i[ index create update ]
   resources :discounts, only: %i[ index create update destroy ]
+  # Singleton: one shop, one header ticker.
+  resource :announcement, only: %i[ edit update ]
   resources :mechanics, only: %i[ index show ] do
     resources :payroll_payouts, only: %i[ new create ]
   end

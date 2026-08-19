@@ -1,0 +1,17 @@
+<%# Rendered for every authenticated user — display is universal, only editing
+    is owner-gated (Налаштування → Оголошення). Desktop only: at the mobile
+    widths where the sidebar collapses there is no room beside the search box.
+
+    The text is output twice, through normal escaping both times, to give the
+    marquee a seamless loop. Never build the track by concatenating strings. %>
+<% announcement = Announcement.current %>
+<% if announcement.visible? %>
+  <div class="led-ticker relative ml-auto hidden lg:block shrink-0 h-9 overflow-hidden rounded-md"
+       style="--led-duration: <%= announcement.scroll_duration %>s"
+       role="status" aria-label="Оголошення">
+    <div class="led-ticker__track h-full items-center font-mono text-sm font-bold tracking-wider text-amber-400">
+      <span class="led-ticker__copy"><%= announcement.text %></span>
+      <span class="led-ticker__copy" aria-hidden="true"><%= announcement.text %></span>
+    </div>
+  </div>
+<% end %>
