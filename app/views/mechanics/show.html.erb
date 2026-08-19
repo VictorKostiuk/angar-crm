@@ -16,7 +16,7 @@
 
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
   <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">Сума робіт</p>
+    <p class="text-sm text-gray-500">Сума послуг</p>
     <p class="text-xl font-bold text-gray-900"><%= money(@row.works_total) %></p>
   </div>
   <div class="bg-white border border-gray-200 rounded-xl p-4">
@@ -93,7 +93,7 @@
           <span class="font-medium text-brand-600"><%= link_to order_number(order), order %></span>
           <span class="text-gray-900"><%= order.bike.name %></span>
           <span class="text-gray-500"><%= order.closed_at.strftime("%d.%m") %></span>
-          <span class="text-gray-600">Роботи: <%= money(@works_by_order[order.id] || 0) %></span>
+          <span class="text-gray-600">Послуги: <%= money(@works_by_order[order.id] || 0) %></span>
           <span class="font-medium text-gray-900">Разом: <%= money(order.total) %></span>
           <%= link_to "Відкрити замовлення →", order, class: "text-gray-400 hover:text-brand-600" %>
         </div>

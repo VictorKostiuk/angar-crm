@@ -30,7 +30,7 @@ module Orders
       list = []
       list << "Замовлення не оплачено" unless @order.paid?
       list << "Не призначено механіка замовлення" if @order.mechanic_id.nil?
-      list << "До замовлення не додано жодної роботи чи деталі" if @order.order_works.none? && @order.order_parts.none?
+      list << "До замовлення не додано жодної послуги чи запчастини" if @order.order_works.none? && @order.order_parts.none?
       list
     end
 

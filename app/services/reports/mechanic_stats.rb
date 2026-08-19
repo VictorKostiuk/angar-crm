@@ -18,8 +18,12 @@ module Reports
         works_total + parts_total
       end
 
+      # Rounded to whole hryvnia, NOT kopiykas: money() renders whole hryvnia
+      # everywhere, so a 1977.50 obligation displays as "1 978 грн", gets paid
+      # as the 1978 the owner sees, and leaves a −0.50 residual that shows up
+      # on the mechanic's card as an unpayable "-1 грн".
       def payout
-        (total * mechanic.payroll_percent / 100).round(2)
+        (total * mechanic.payroll_percent / 100).round
       end
     end
 

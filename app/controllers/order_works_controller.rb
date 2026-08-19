@@ -4,6 +4,7 @@ class OrderWorksController < ApplicationController
   before_action :set_order
 
   def new
+    @categories = Category.service.active.ordered
     @order_work = @order.order_works.new
   end
 

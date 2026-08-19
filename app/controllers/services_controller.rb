@@ -55,7 +55,9 @@ class ServicesController < ApplicationController
 
   # Reused by the order "Додати роботу" modal (P3) to look up catalog items as-you-type.
   def search
-    @services = Service.active.search(params[:q]).ordered.limit(10)
+    scope = Service.active.search(params[:q])
+    scope = scope.where(category_id: params[:category_id]) if params[:category_id].present?
+    @services = scope.ordered.limit(10)
     @order = Order.find(params[:order_id]) if params[:order_id].present?
     render layout: false
   end

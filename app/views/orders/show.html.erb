@@ -80,14 +80,14 @@
   <div class="lg:col-span-2 space-y-6">
     <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <h2 class="font-bold text-gray-900">Роботи</h2>
-        <%= link_to "+ Додати роботу", new_order_order_work_path(@order), data: { turbo_frame: "modal" },
+        <h2 class="font-bold text-gray-900">Послуги</h2>
+        <%= link_to "+ Додати послугу", new_order_order_work_path(@order), data: { turbo_frame: "modal" },
               class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
       </div>
       <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-500">
           <tr>
-            <th class="px-4 py-2 font-medium">Робота</th>
+            <th class="px-4 py-2 font-medium">Послуга</th>
             <th class="px-4 py-2 font-medium">К-сть</th>
             <th class="px-4 py-2 font-medium">Ціна</th>
             <th class="px-4 py-2 font-medium">Сума</th>
@@ -102,14 +102,14 @@
 
     <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <h2 class="font-bold text-gray-900">Деталі / матеріали</h2>
-        <%= link_to "+ Додати деталь / матеріал", new_order_order_part_path(@order), data: { turbo_frame: "modal" },
+        <h2 class="font-bold text-gray-900">Запчастини</h2>
+        <%= link_to "+ Додати запчастину", new_order_order_part_path(@order), data: { turbo_frame: "modal" },
               class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
       </div>
       <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-500">
           <tr>
-            <th class="px-4 py-2 font-medium">Деталь / матеріал</th>
+            <th class="px-4 py-2 font-medium">Запчастина</th>
             <th class="px-4 py-2 font-medium">К-сть</th>
             <th class="px-4 py-2 font-medium">Ціна</th>
             <th class="px-4 py-2 font-medium">Сума</th>

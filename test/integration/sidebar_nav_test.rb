@@ -16,6 +16,16 @@ class SidebarNavTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "the catalogs are named Послуги and Запчастини" do
+    sign_in(users(:owner))
+    get root_path
+
+    assert_select "nav a", text: "Послуги"
+    assert_select "nav a", text: "Запчастини"
+    assert_select "nav a", text: "Роботи", count: 0
+    assert_select "nav a", text: "Деталі / матеріали", count: 0
+  end
+
   test "every sidebar entry the owner sees carries an icon" do
     sign_in(users(:owner))
     get root_path

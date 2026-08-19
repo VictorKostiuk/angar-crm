@@ -13,6 +13,6 @@ class Service < ApplicationRecord
 
   private
     def category_must_be_a_service_category
-      errors.add(:category, "має бути категорією робіт") if category && !category.service?
+      errors.add(:category, "має бути категорією послуг") if category && !category.service?
     end
 end

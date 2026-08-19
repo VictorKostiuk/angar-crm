@@ -1,19 +1,15 @@
-<%= render "shared/modal_header", title: "Додати роботу" %>
+<%= render "shared/modal_header", title: "Додати послугу" %>
 
-<div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+<div class="p-6 space-y-4 max-h-[70vh] scroll-always">
   <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Пошук роботи</label>
-    <%= form_with url: search_services_path, method: :get,
-          data: { controller: "debounce", turbo_frame: "order_work_search_results" } do |f| %>
-      <%= hidden_field_tag :order_id, @order.id %>
-      <%= f.text_field :q, placeholder: "Наприклад: ланцюг, гальма, каретка", autocomplete: "off",
-            data: { action: "input->debounce#submit" },
-            class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
-    <% end %>
+    <%= render "shared/catalog_search", label: "Пошук послуги",
+          placeholder: "Наприклад: ланцюг, гальма, каретка",
+          url: search_services_path(order_id: @order.id),
+          frame: "order_work_search_results", categories: @categories %>
   </div>
 
   <%= turbo_frame_tag "order_work_search_results", src: search_services_path(order_id: @order.id),
-        class: "block empty:hidden max-h-44 overflow-y-auto divide-y divide-gray-100" %>
+        class: "block empty:hidden max-h-44 scroll-always divide-y divide-gray-100" %>
 
   <div class="text-center text-xs text-gray-400">або</div>
 

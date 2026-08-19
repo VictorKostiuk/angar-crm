@@ -1,4 +1,4 @@
-<h2 class="font-bold text-gray-900 mb-4"><%= @part.persisted? ? "Редагувати деталь / матеріал" : "Додати деталь / матеріал" %></h2>
+<h2 class="font-bold text-gray-900 mb-4"><%= @part.persisted? ? "Редагувати запчастину" : "Додати запчастину" %></h2>
 
 <%= form_with model: @part,
       url: (@part.persisted? ? part_path(@part, category_id: params[:category_id]) : parts_path(category_id: params[:category_id])),

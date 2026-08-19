@@ -12,6 +12,10 @@ class ClientsController < ApplicationController
   def show
     @bikes = @client.bikes.active.order(:name)
     @orders = @client.orders.order(accepted_at: :desc)
+    # Cancelled orders were never billed, so counting them would overstate what
+    # the client has actually spent.
+    @billed_orders = @orders.reject(&:cancelled?)
+    @orders_total = @billed_orders.sum(&:total)
   end
 
   def new

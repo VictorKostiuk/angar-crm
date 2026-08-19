@@ -1,14 +1,17 @@
-<%# locals: (path:, period:, from: nil, to: nil) %>
+<%# locals: (path:, period:, from: nil, to: nil, frame: nil) %>
+<%# `frame` scopes the period change to a Turbo Frame instead of swapping the
+    whole page — see the framed callers (Фінанси, Звіти, Механіки, Статистика). %>
 <div class="flex flex-wrap items-center gap-3">
   <div class="inline-flex rounded-md border border-gray-300 overflow-hidden">
     <% [ [ "day", "День" ], [ "week", "Тиждень" ], [ "month", "Місяць" ] ].each do |value, label| %>
       <%= link_to label, url_for(request.query_parameters.merge(period: value).except("from", "to")),
+            data: { turbo_frame: frame },
             class: class_names("px-3 py-1.5 text-sm font-medium",
                                 period == value ? "bg-gray-900 text-white" : "bg-white text-gray-700 hover:bg-gray-50") %>
     <% end %>
   </div>
 
-  <%= form_with url: path, method: :get, class: "flex items-center gap-2" do %>
+  <%= form_with url: path, method: :get, data: { turbo_frame: frame }, class: "flex items-center gap-2" do %>
     <% request.query_parameters.except("period", "from", "to").each do |key, value| %>
       <%= hidden_field_tag key, value %>
     <% end %>

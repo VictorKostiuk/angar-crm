@@ -75,6 +75,17 @@
             </tr>
           <% end %>
         </tbody>
+        <tfoot class="bg-gray-50 font-medium text-gray-900">
+          <tr>
+            <td class="px-4 py-3" colspan="4">
+              Разом за <%= @billed_orders.size %> <%= t("orders_count", count: @billed_orders.size) %>
+              <% if @billed_orders.size < @orders.size %>
+                <span class="font-normal text-gray-400">(скасовані не враховані)</span>
+              <% end %>
+            </td>
+            <td class="px-4 py-3"><%= money(@orders_total) %></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   <% else %>

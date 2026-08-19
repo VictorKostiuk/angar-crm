@@ -4,6 +4,7 @@ class OrderPartsController < ApplicationController
   before_action :set_order
 
   def new
+    @categories = Category.part.active.ordered
     @order_part = @order.order_parts.new
   end
 
@@ -13,7 +14,7 @@ class OrderPartsController < ApplicationController
     if @order_part.save
       respond_to do |format|
         format.turbo_stream { render "order_parts/refresh" }
-        format.html { redirect_to @order, notice: "Деталь / матеріал додано." }
+        format.html { redirect_to @order, notice: "Запчастину додано." }
       end
     else
       respond_to do |format|

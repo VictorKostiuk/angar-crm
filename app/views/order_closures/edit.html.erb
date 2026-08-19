@@ -20,7 +20,7 @@
 
     <ul class="space-y-2 text-sm">
       <% [
-           [ "Роботи чи деталі додані", @order.order_works.any? || @order.order_parts.any? ],
+           [ "Послуги чи запчастини додані", @order.order_works.any? || @order.order_parts.any? ],
            [ "Механік призначений", @order.mechanic_id.present? ],
            [ "Замовлення оплачено", @order.paid? ]
          ].each do |label, ok| %>

@@ -3,14 +3,20 @@ uk:
     name: "Ангар"
     tagline: "Веломайстерня"
 
+  orders_count:
+    one: "замовлення"
+    few: "замовлення"
+    many: "замовлень"
+    other: "замовлень"
+
   nav:
     workshop: "Майстерня"
     orders: "Замовлення"
     archive: "Архів"
     clients: "Клієнти"
     bikes: "Велосипеди"
-    services: "Роботи"
-    parts: "Деталі / матеріали"
+    services: "Послуги"
+    parts: "Запчастини"
     mechanics: "Механіки"
     reports: "Звіти"
     settings: "Налаштування"
@@ -55,9 +61,9 @@ uk:
       fixed_amount: "Фіксована сума"
     order_descriptions:
       intake: "Велосипед прийнятий, але ще не взятий у роботу"
-      waiting_approval: "Потрібно погодити роботи, деталі або суму"
+      waiting_approval: "Потрібно погодити послуги, запчастини або суму"
       in_progress: "Велосипед зараз ремонтується"
-      waiting_parts: "Очікуємо деталі або матеріали для продовження"
+      waiting_parts: "Очікуємо запчастини для продовження"
       waiting_pickup: "Ремонт завершений, велосипед готовий до видачі"
     stock_movement:
       receipt: "Надходження"
@@ -95,11 +101,11 @@ uk:
       bike: "Велосипед"
       user: "Користувач"
       category: "Категорія"
-      service: "Робота"
-      part: "Деталь / матеріал"
+      service: "Послуга"
+      part: "Запчастина"
       order: "Замовлення"
-      order_work: "Робота в замовленні"
-      order_part: "Деталь в замовленні"
+      order_work: "Послуга в замовленні"
+      order_part: "Запчастина в замовленні"
       order_status_change: "Зміна статусу замовлення"
       supplier: "Постачальник"
       stock_movement: "Рух складу"
@@ -128,7 +134,7 @@ uk:
         name: "Назва"
         kind: "Тип"
       service:
-        name: "Назва роботи"
+        name: "Назва послуги"
         base_price: "Базова ціна"
         category: "Категорія"
       part:
@@ -153,12 +159,12 @@ uk:
         discount: "Знижка"
       order_work:
         order: "Замовлення"
-        name: "Назва роботи"
+        name: "Назва послуги"
         quantity: "Кількість"
         price: "Ціна"
       order_part:
         order: "Замовлення"
-        name: "Назва деталі"
+        name: "Назва запчастини"
         quantity: "Кількість"
         price: "Ціна"
       order_status_change:
@@ -173,7 +179,7 @@ uk:
         email: "Email"
         notes: "Примітки"
       stock_movement:
-        part: "Деталь / матеріал"
+        part: "Запчастина"
         kind: "Тип руху"
         quantity: "Кількість"
         note: "Примітка"

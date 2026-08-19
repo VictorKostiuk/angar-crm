@@ -13,7 +13,7 @@ class Orders::CloseTest < ActiveSupport::TestCase
     assert_equal [
       "Замовлення не оплачено",
       "Не призначено механіка замовлення",
-      "До замовлення не додано жодної роботи чи деталі"
+      "До замовлення не додано жодної послуги чи запчастини"
     ], Orders::Close.new(order: @order).blockers
 
     order = Orders::Close.call(order: @order)

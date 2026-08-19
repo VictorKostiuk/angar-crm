@@ -10,14 +10,14 @@
     <% end %>
 
     <div class="grid grid-cols-[1fr_5rem_6rem] gap-2">
-      <%= f.text_field :name, placeholder: "Назва деталі / матеріалу", value: order_part.name,
+      <%= f.text_field :name, placeholder: "Назва запчастини", value: order_part.name,
             class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       <%= f.number_field :quantity, value: (order_part.quantity || 1), step: 1, min: 1,
             class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       <%= f.number_field :price, value: order_part.price, step: "any", min: 0, placeholder: "Ціна",
             class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
     </div>
-    <%= f.submit "+ Додати нестандартну деталь / матеріал",
+    <%= f.submit "+ Додати нестандартну запчастину",
           class: "w-full rounded-md border border-gray-300 text-sm font-medium px-3 py-2 hover:bg-gray-50 cursor-pointer" %>
   <% end %>
 </div>

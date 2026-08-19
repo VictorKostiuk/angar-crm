@@ -18,7 +18,7 @@ class Part < ApplicationRecord
 
   private
     def category_must_be_a_part_category
-      errors.add(:category, "має бути категорією деталей") if category && !category.part?
+      errors.add(:category, "має бути категорією запчастин") if category && !category.part?
     end
 
     # D28's known gap: consumption before purchase_price was set never got

@@ -15,7 +15,7 @@ class PartsController < ApplicationController
     if @part.save
       respond_to do |format|
         format.turbo_stream { load_index_data_and_reset_form; render :refresh }
-        format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал додано." }
+        format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Запчастину додано." }
       end
     else
       respond_to do |format|
@@ -31,7 +31,7 @@ class PartsController < ApplicationController
     if @part.update(part_params)
       respond_to do |format|
         format.turbo_stream { load_index_data_and_reset_form; render :refresh }
-        format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал оновлено." }
+        format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Запчастину оновлено." }
       end
     else
       respond_to do |format|
@@ -49,13 +49,15 @@ class PartsController < ApplicationController
         load_index_data
         render turbo_stream: turbo_stream.update("parts_rows", partial: "rows", locals: { parts: @parts, category_id: params[:category_id] })
       end
-      format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Деталь / матеріал архівовано." }
+      format.html { redirect_to parts_path(category_id: params[:category_id]), notice: "Запчастину архівовано." }
     end
   end
 
   # Reused by the order "Додати деталь / матеріал" modal (P3) to look up catalog items as-you-type.
   def search
-    @parts = Part.active.search(params[:q]).ordered.limit(10)
+    scope = Part.active.search(params[:q])
+    scope = scope.where(category_id: params[:category_id]) if params[:category_id].present?
+    @parts = scope.ordered.limit(10)
     @order = Order.find(params[:order_id]) if params[:order_id].present?
     render layout: false
   end

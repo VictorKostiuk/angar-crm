@@ -1,11 +1,11 @@
 <%# locals: (order:) %>
 <dl class="space-y-2 text-sm">
   <div class="flex justify-between">
-    <dt class="text-gray-500">Роботи</dt>
+    <dt class="text-gray-500">Послуги</dt>
     <dd class="text-gray-900"><%= money(order.works_total) %></dd>
   </div>
   <div class="flex justify-between">
-    <dt class="text-gray-500">Деталі / матеріали</dt>
+    <dt class="text-gray-500">Запчастини</dt>
     <dd class="text-gray-900"><%= money(order.parts_total) %></dd>
   </div>
   <% if order.discount.positive? %>

@@ -1,4 +1,4 @@
-<h2 class="font-bold text-gray-900 mb-4"><%= @service.persisted? ? "Редагувати роботу" : "Додати роботу" %></h2>
+<h2 class="font-bold text-gray-900 mb-4"><%= @service.persisted? ? "Редагувати послугу" : "Додати послугу" %></h2>
 
 <%= form_with model: @service,
       url: (@service.persisted? ? service_path(@service, category_id: params[:category_id]) : services_path(category_id: params[:category_id])),
@@ -12,7 +12,7 @@
   <% end %>
 
   <div>
-    <%= f.label :name, "Назва роботи", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.label :name, "Назва послуги", class: "block text-sm font-medium text-gray-700 mb-1" %>
     <%= f.text_field :name, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
   </div>
 

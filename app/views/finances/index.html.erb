@@ -5,35 +5,87 @@
   <%= link_to "Витрати →", expenses_path, class: "text-sm text-brand-600 hover:text-brand-700 font-medium" %>
 </div>
 
-<div class="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-  <%= render "shared/period_filter", path: finances_path, period: @period.period, from: @period.from.to_date, to: @period.to.to_date %>
-</div>
+<%= filter_frame "finances_content" do %>
+  <div class="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+    <%= render "shared/period_filter", path: finances_path, period: @period.period,
+        from: @period.from.to_date, to: @period.to.to_date, frame: "finances_content" %>
+  </div>
 
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-  <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">Дохід</p>
-    <p class="text-xl font-bold text-gray-900"><%= money(@revenue) %></p>
-  </div>
-  <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">Витрати</p>
-    <p class="text-xl font-bold text-gray-900"><%= money(@expenses_total) %></p>
-  </div>
-  <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">Прибуток до виплат</p>
-    <p class="text-xl font-bold <%= @profit_before_payouts.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@profit_before_payouts) %></p>
-  </div>
-</div>
-
-<% if Current.user.owner? %>
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
     <div class="bg-white border border-gray-200 rounded-xl p-4">
-      <p class="text-sm text-gray-500">Виплати механікам</p>
-      <p class="text-xl font-bold text-gray-900"><%= money(@payouts_total) %></p>
-      <p class="mt-1 text-xs text-gray-400">Враховано виплати за місяці, що повністю потрапляють в обраний період.</p>
+      <p class="text-sm text-gray-500">Дохід</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@revenue) %></p>
     </div>
     <div class="bg-white border border-gray-200 rounded-xl p-4">
-      <p class="text-sm text-gray-500">Чистий прибуток</p>
-      <p class="text-xl font-bold <%= @net_profit.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@net_profit) %></p>
+      <p class="text-sm text-gray-500">Витрати</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@expenses_total) %></p>
     </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Прибуток до виплат</p>
+      <p class="text-xl font-bold <%= @profit_before_payouts.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@profit_before_payouts) %></p>
+    </div>
+  </div>
+
+  <% if Current.user.owner? %>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <p class="text-sm text-gray-500">Виплати механікам</p>
+        <p class="text-xl font-bold text-gray-900"><%= money(@payouts_total) %></p>
+        <p class="mt-1 text-xs text-gray-400">Враховано виплати за місяці, що повністю потрапляють в обраний період.</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <p class="text-sm text-gray-500">Чистий прибуток</p>
+        <p class="text-xl font-bold <%= @net_profit.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@net_profit) %></p>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mt-6">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="font-bold text-gray-900">Оплачені замовлення</h2>
+      <p class="text-sm text-gray-500">Із чого складається дохід за обраний період.</p>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left text-gray-500">
+        <tr>
+          <th class="px-4 py-3 font-medium">Замовлення</th>
+          <th class="px-4 py-3 font-medium">Клієнт</th>
+          <th class="px-4 py-3 font-medium">Закрито</th>
+          <th class="px-4 py-3 font-medium text-right">Послуги</th>
+          <th class="px-4 py-3 font-medium text-right">Запчастини</th>
+          <th class="px-4 py-3 font-medium text-right">Разом</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @closed_orders.each do |order| %>
+          <% works = @works_by_order[order.id] || 0 %>
+          <% parts = @parts_by_order[order.id] || 0 %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3">
+              <%= link_to order_number(order), order, class: "font-medium text-gray-900 hover:text-brand-600" %>
+            </td>
+            <td class="px-4 py-3 text-gray-600"><%= order.client.name %></td>
+            <td class="px-4 py-3 text-gray-500"><%= order.closed_at.strftime("%d.%m.%Y") %></td>
+            <td class="px-4 py-3 text-right text-gray-600"><%= money(works) %></td>
+            <td class="px-4 py-3 text-right text-gray-600"><%= money(parts) %></td>
+            <td class="px-4 py-3 text-right font-medium text-gray-900"><%= money(works + parts) %></td>
+          </tr>
+        <% end %>
+
+        <% if @closed_orders.none? %>
+          <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">За цей період немає закритих замовлень.</td></tr>
+        <% end %>
+      </tbody>
+      <% if @closed_orders.any? %>
+        <tfoot class="bg-gray-50 font-medium text-gray-900">
+          <tr>
+            <td class="px-4 py-3" colspan="3">Разом</td>
+            <td class="px-4 py-3 text-right"><%= money(@works_by_order.values.sum) %></td>
+            <td class="px-4 py-3 text-right"><%= money(@parts_by_order.values.sum) %></td>
+            <td class="px-4 py-3 text-right"><%= money(@revenue) %></td>
+          </tr>
+        </tfoot>
+      <% end %>
+    </table>
   </div>
 <% end %>

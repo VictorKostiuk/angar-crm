@@ -81,3 +81,30 @@
     .led-ticker__track { animation: none; }
   }
 }
+
+/*
+ * Scroll containers whose bar is always visible. Plain `overflow-y: auto` hides
+ * the bar on macOS until you actually scroll, so a list that continues below
+ * the fold looks like it simply ends. Styling ::-webkit-scrollbar opts out of
+ * the overlay behaviour and keeps the track painted.
+ */
+@layer components {
+  .scroll-always {
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-300) transparent;
+  }
+
+  .scroll-always::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scroll-always::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scroll-always::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-300);
+    border-radius: 9999px;
+  }
+}

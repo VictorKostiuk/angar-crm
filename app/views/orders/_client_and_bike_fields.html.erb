@@ -22,9 +22,11 @@
     <label for="client_search" class="block text-sm font-medium text-gray-700 mb-1">Пошук клієнта</label>
     <div data-controller="frame-search"
          data-frame-search-url-value="<%= search_clients_path %>"
-         data-frame-search-frame-value="client_search_results">
+         data-frame-search-frame-value="client_search_results"
+         data-frame-search-clear-when-blank-value="true">
       <input type="text" id="client_search" autocomplete="off"
              placeholder="Введіть телефон або ім'я клієнта"
+             data-frame-search-target="input"
              data-action="input->frame-search#search"
              class="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600">
     </div>

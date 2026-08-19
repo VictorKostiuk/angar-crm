@@ -57,6 +57,10 @@ class OwnerAsMechanicFlowTest < ActionDispatch::IntegrationTest
     get reports_path
     assert_select "select[name=mechanic_id] option", text: @owner.name
 
+    # The roster is where the owner manages people, so adding one starts here.
+    get mechanics_path
+    assert_select "a[href=?]", users_path, text: "+ Додати користувача"
+
     # The path the user actually clicks — the dropdown rendering is not enough.
     patch order_path(@order), params: { order: { mechanic_id: @owner.id } }
     assert_equal @owner, @order.reload.mechanic
@@ -128,6 +132,7 @@ class OwnerAsMechanicFlowTest < ActionDispatch::IntegrationTest
     sign_in(@mechanic)
     get mechanics_path
     assert_redirected_to mechanic_path(@mechanic)
+    assert_select "a", text: "+ Додати користувача", count: 0
 
     get mechanic_path(@owner)
     assert_redirected_to root_path

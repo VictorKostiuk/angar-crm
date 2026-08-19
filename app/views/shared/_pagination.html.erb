@@ -1,4 +1,6 @@
-<%# locals: (page:, per_page:, total_count:) %>
+<%# locals: (page:, per_page:, total_count:, frame: nil) %>
+<%# `frame` opts the page links into a Turbo Frame navigation. Without it they
+    are ordinary Turbo Drive visits, which is what non-framed callers want. %>
 <% page = page.to_i %>
 <% page = 1 if page < 1 %>
 <% total_pages = (total_count.to_f / per_page).ceil %>
@@ -10,12 +12,14 @@
 
   <div class="flex items-center gap-1">
     <%= link_to "‹", url_for(request.query_parameters.merge(page: page - 1)),
+          data: { turbo_frame: frame },
           class: class_names("w-8 h-8 flex items-center justify-center rounded-md border border-gray-200",
                               page <= 1 ? "text-gray-300 pointer-events-none" : "text-gray-600 hover:bg-gray-50") %>
 
     <span class="w-8 h-8 flex items-center justify-center rounded-md border border-brand-600 bg-brand-50 text-brand-700 font-medium"><%= page %></span>
 
     <%= link_to "›", url_for(request.query_parameters.merge(page: page + 1)),
+          data: { turbo_frame: frame },
           class: class_names("w-8 h-8 flex items-center justify-center rounded-md border border-gray-200",
                               page >= total_pages ? "text-gray-300 pointer-events-none" : "text-gray-600 hover:bg-gray-50") %>
   </div>
