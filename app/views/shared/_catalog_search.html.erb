@@ -4,8 +4,8 @@
 <div data-controller="frame-search"
      data-frame-search-url-value="<%= url %>"
      data-frame-search-frame-value="<%= frame %>">
-  <label class="block text-sm font-medium text-gray-700 mb-1"><%= label %></label>
-  <input type="text" autocomplete="off" placeholder="<%= placeholder %>"
+  <label for="<%= frame %>_query" class="block text-sm font-medium text-gray-700 mb-1"><%= label %></label>
+  <input type="text" id="<%= frame %>_query" autocomplete="off" placeholder="<%= placeholder %>"
          data-frame-search-target="input"
          data-action="input->frame-search#search"
          class="block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600">

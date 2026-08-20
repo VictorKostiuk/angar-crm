@@ -76,6 +76,32 @@ class SalesFlowTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # The form renders the price field from the record, so a column default of 0
+  # meant it submitted "0.0" rather than empty — blank? was false, the part's
+  # price was never substituted, and the sale recorded 0 грн. Found in a browser,
+  # invisible to every params-level test that passed a price explicitly.
+  test "a line with no price typed falls back to the part's price" do
+    sign_in(@seller)
+
+    post sales_path, params: { sale: { sale_items_attributes: {
+      "0" => { part_id: @part.id, quantity: "2", price: SaleItem.new.price.to_s }
+    } } }
+
+    sale = Sale.order(:id).last
+    assert_equal 180, sale.sale_items.first.price, "should fall back to base_price"
+    assert_equal 360, sale.total
+  end
+
+  test "a deliberately free line stays free" do
+    sign_in(@seller)
+
+    post sales_path, params: { sale: { sale_items_attributes: {
+      "0" => { part_id: @part.id, quantity: "1", price: "0" }
+    } } }
+
+    assert_equal 0, Sale.order(:id).last.total
+  end
+
   test "a sale needs at least one line" do
     sign_in(@seller)
 

@@ -95,6 +95,25 @@ class OrderEditingTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Closing/cancelling happens through a modal that streams the page back. The
+  # add buttons live in the card headers and the inline fields in the tbodies —
+  # neither was in that stream, so a just-closed order still looked editable
+  # until a reload, even though the server already refused every edit.
+  test "the refresh stream carries the line sections, not just the totals" do
+    @order.update!(mechanic: @mechanic, status: :waiting_pickup,
+                   payment_status: :paid, payment_method: :cash)
+
+    patch order_closure_path(@order),
+          headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+
+    assert_response :success
+    %w[ order_works_header order_parts_header order_works_rows order_parts_rows ].each do |target|
+      assert_select "turbo-stream[action=update][target=#{target}]", 1,
+        "#{target} must be refreshed or it keeps looking editable"
+    end
+    assert_select "turbo-stream[target=order_works_header] template a", 0, "no add button on a closed order"
+  end
+
   test "an open order still edits freely" do
     assert_difference -> { @order.order_parts.count }, 1 do
       post order_order_parts_path(@order), params: { order_part: { name: "Нова", quantity: 1, price: 10 } }

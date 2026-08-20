@@ -14,6 +14,7 @@ class SaleItem < ApplicationRecord
       return if part.blank?
 
       self.name = part.name if name.blank?
+      # blank, not zero: a deliberately free line stays free.
       self.price = part.base_price if price.blank?
       self.total = price.to_d * quantity.to_i
     end

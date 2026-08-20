@@ -671,7 +671,7 @@ CREATE TABLE public.sale_items (
     part_id bigint NOT NULL,
     name character varying NOT NULL,
     quantity integer DEFAULT 1 NOT NULL,
-    price numeric(12,2) DEFAULT 0.0 NOT NULL,
+    price numeric(12,2) NOT NULL,
     total numeric(12,2) DEFAULT 0.0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
@@ -1967,6 +1967,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260820140038'),
 ('20260820104548'),
 ('20260820104325'),
 ('20260820104247'),

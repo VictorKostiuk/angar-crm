@@ -23,6 +23,25 @@
   <%= render "orders/status_timeline", status_changes: @order.order_status_changes.includes(:user) %>
 <% end %>
 
+<%# Closing or cancelling flips Order#editable?, which changes the add buttons
+    and turns every inline quantity/price field into plain text — so the line
+    sections have to come along or they stay editable-looking until a reload. %>
+<%= turbo_stream.update "order_works_header" do %>
+  <%= render "orders/works_header", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "order_parts_header" do %>
+  <%= render "orders/parts_header", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "order_works_rows" do %>
+  <%= render "orders/order_work_rows", order: @order %>
+<% end %>
+
+<%= turbo_stream.update "order_parts_rows" do %>
+  <%= render "orders/order_part_rows", order: @order %>
+<% end %>
+
 <%# Workshop board: the card moves to another section, or leaves the board
     entirely once the order is closed/cancelled. Mirrors workshop/approve. %>
 <%= turbo_stream.remove "board_card_#{@order.id}" %>
