@@ -1,8 +1,6 @@
 class PartsController < ApplicationController
-  # search is exempt: P3's add-part modal calls it on every keystroke, and a
-  # mechanic building an order must be able to search the catalog even
-  # though they can't edit it (§7).
-  require_role :admin, :owner, except: :search
+  # D38: open to every role. A mechanic needs the price list to build an order
+  # and to quote a customer, and the shop decided they may maintain it too.
 
   def index
     load_index_data

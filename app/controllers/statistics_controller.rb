@@ -17,6 +17,7 @@ class StatisticsController < ApplicationController
     @profit_before_payouts = @revenue - @expenses_total
     @payouts_total = PayrollPayout.paid_in(@period.range).sum(:amount)
     @net_profit = @profit_before_payouts - @payouts_total
+    @mechanic_debt = Finances::MechanicDebt.new.total
 
     @mechanics = User.assignable_as_mechanic.order(:name)
     @income_by_mechanic = @mechanics.map { |mechanic| income_row(mechanic) }

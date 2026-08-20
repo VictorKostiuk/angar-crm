@@ -41,6 +41,6 @@ class SidebarNavTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_every_nav_entry_has_an_icon 11
-    assert_select "nav > span", 5, "services, parts, suppliers, finances and settings are gated"
+    assert_select "nav > span", 3, "suppliers, finances and settings are gated; Послуги and Запчастини are open to all (D38)"
   end
 end

@@ -28,6 +28,7 @@ class MechanicsController < ApplicationController
 
     return unless Current.user.owner?
 
+    @debt = Finances::MechanicDebt.new(mechanic: @mechanic).call.first
     @payouts = @mechanic.payroll_payouts.ordered
     @outstanding = Finances::OutstandingPayroll.call(mechanic: @mechanic, month: @period.from.to_date) if @period.period == "month"
   end

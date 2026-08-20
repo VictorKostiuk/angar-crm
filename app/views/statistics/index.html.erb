@@ -13,6 +13,15 @@
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <p class="text-sm text-gray-500">Дохід</p>
       <p class="text-xl font-bold text-gray-900"><%= money(@revenue) %></p>
+      <p class="mt-1 text-xs text-gray-400">послуги + запчастини</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Послуги</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@works_total) %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Запчастини</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@parts_total) %></p>
     </div>
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <p class="text-sm text-gray-500">Витрати</p>
@@ -26,6 +35,11 @@
       <p class="text-sm text-gray-500">Виплати механікам</p>
       <p class="text-xl font-bold text-gray-900"><%= money(@payouts_total) %></p>
       <p class="mt-1 text-xs text-gray-400">Виплати за місяці, що повністю потрапляють в обраний період.</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Борг перед механіками</p>
+      <p class="text-xl font-bold <%= @mechanic_debt.positive? ? "text-red-600" : "text-gray-900" %>"><%= money(@mechanic_debt) %></p>
+      <p class="mt-1 text-xs text-gray-400">За весь час, не за обраний період.</p>
     </div>
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <p class="text-sm text-gray-500">Чистий прибуток</p>

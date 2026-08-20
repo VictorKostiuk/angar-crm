@@ -21,6 +21,8 @@ class FinancesController < ApplicationController
 
     @payouts_total = PayrollPayout.paid_in(@period.range).sum(:amount)
     @net_profit = @profit_before_payouts - @payouts_total
+    # A standing balance, not a period figure — see Finances::MechanicDebt.
+    @mechanic_debt = Finances::MechanicDebt.new.total
 
     # §7: "see all mechanics' payroll" is owner-only — an admin gets revenue and
     # the income breakdown above, but never individual payouts. Payroll only

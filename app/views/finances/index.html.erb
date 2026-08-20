@@ -27,7 +27,7 @@
   </div>
 
   <% if Current.user.owner? %>
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div class="bg-white border border-gray-200 rounded-xl p-4">
         <p class="text-sm text-gray-500">Виплати механікам</p>
         <p class="text-xl font-bold text-gray-900"><%= money(@payouts_total) %></p>
@@ -36,6 +36,11 @@
       <div class="bg-white border border-gray-200 rounded-xl p-4">
         <p class="text-sm text-gray-500">Чистий прибуток</p>
         <p class="text-xl font-bold <%= @net_profit.negative? ? "text-red-600" : "text-green-700" %>"><%= money(@net_profit) %></p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <p class="text-sm text-gray-500">Борг перед механіками</p>
+        <p class="text-xl font-bold <%= @mechanic_debt.positive? ? "text-red-600" : "text-gray-900" %>"><%= money(@mechanic_debt) %></p>
+        <p class="mt-1 text-xs text-gray-400">За весь час, не за обраний період.</p>
       </div>
     </div>
   <% end %>

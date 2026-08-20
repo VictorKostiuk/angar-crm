@@ -1,5 +1,7 @@
 class CategoriesController < ApplicationController
-  require_role :admin, :owner
+  # D38: reachable from the Послуги/Запчастини pages, which every role can now
+  # use — a visible "+ категорія" button that silently redirects is worse than
+  # no button.
   layout "modal", only: %i[ new create ]
 
   def new

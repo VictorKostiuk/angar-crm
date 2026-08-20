@@ -48,6 +48,14 @@
             class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-1.5" %>
     </div>
 
+    <% if @debt %>
+      <p class="text-sm text-gray-500 mb-2">
+        Борг за весь час:
+        <span class="font-bold <%= @debt.owed? ? "text-red-600" : "text-gray-900" %>"><%= money(@debt.balance) %></span>
+        <span class="text-gray-400">(зароблено <%= money(@debt.earned) %>, виплачено <%= money(@debt.paid) %>)</span>
+      </p>
+    <% end %>
+
     <% if @outstanding %>
       <p class="text-sm text-gray-500 mb-4">
         Залишок до виплати за <%= @period.from.strftime("%m.%Y") %>:
