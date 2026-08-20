@@ -25,11 +25,15 @@
       <%= render "shared/nav_item", label: t("nav.bikes"), icon: :bike, path: bikes_path, active: request.path.start_with?(bikes_path) %>
       <%= render "shared/nav_item", label: t("nav.services"), icon: :wrench, path: services_path, active: request.path.start_with?(services_path) %>
       <%= render "shared/nav_item", label: t("nav.parts"), icon: :package, path: parts_path, active: request.path.start_with?(parts_path) %>
+      <%= render "shared/nav_item", label: t("nav.sales"), icon: :banknote, path: sales_path, active: request.path.start_with?(sales_path) %>
+      <%= render "shared/nav_item", label: t("nav.rentals"), icon: :bike, path: rentals_path, active: request.path.start_with?(rentals_path) %>
       <% if Current.user.admin? || Current.user.owner? %>
+        <%= render "shared/nav_item", label: t("nav.stock"), icon: :package, path: stock_path, active: request.path.start_with?(stock_path) %>
         <%= render "shared/nav_item", label: t("nav.suppliers"), icon: :truck, path: suppliers_path, active: request.path.start_with?(suppliers_path) %>
         <%= render "shared/nav_item", label: t("nav.finances"), icon: :banknote, path: finances_path,
               active: request.path.start_with?(finances_path) || request.path.start_with?(expenses_path) %>
       <% else %>
+        <%= render "shared/nav_item", label: t("nav.stock"), icon: :package %>
         <%= render "shared/nav_item", label: t("nav.suppliers"), icon: :truck %>
         <%= render "shared/nav_item", label: t("nav.finances"), icon: :banknote %>
       <% end %>

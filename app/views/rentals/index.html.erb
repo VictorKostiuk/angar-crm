@@ -1,0 +1,129 @@
+<% content_for :title, t("nav.rentals") %>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900"><%= t("nav.rentals") %></h1>
+  <%= link_to "+ Видати в прокат", new_rental_path, data: { turbo_frame: "modal" },
+        class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2" %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mb-6">
+  <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Парк прокату</h2>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left text-gray-500">
+        <tr>
+          <th class="px-4 py-3 font-medium">Велосипед</th>
+          <th class="px-4 py-3 font-medium">Ставка / доба</th>
+          <th class="px-4 py-3 font-medium">Стан</th>
+          <th class="px-4 py-3 font-medium">У кого</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @bikes.each do |bike| %>
+          <% out = @out_ids.include?(bike.id) %>
+          <% rental = @current_by_bike[bike.id] %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-900"><%= bike.display_name %></td>
+            <td class="px-4 py-3 text-gray-600"><%= money(bike.daily_rate) %></td>
+            <td class="px-4 py-3">
+              <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= out ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700" %>">
+                <%= out ? "У прокаті" : "Доступний" %>
+              </span>
+            </td>
+            <td class="px-4 py-3 text-gray-600">
+              <% if rental %>
+                <%= rental.renter %>
+                <span class="block text-xs text-gray-400">до <%= l rental.rented_to %></span>
+              <% else %>—<% end %>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <% if rental %>
+                <%= button_to "Повернути", rental_path(rental), method: :patch,
+                      class: "rounded-md border border-gray-300 text-xs font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+
+        <% if @bikes.none? %>
+          <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Парк прокату порожній — додайте велосипед праворуч.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if Current.user.admin? || Current.user.owner? %>
+    <div class="bg-white border border-gray-200 rounded-xl p-5">
+      <h2 class="font-bold text-gray-900 mb-4">Додати велосипед</h2>
+      <%= form_with model: @rental_bike, url: rental_bikes_path, class: "space-y-4" do |f| %>
+        <div>
+          <%= f.label :name, "Назва", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :name, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+        </div>
+        <div>
+          <%= f.label :size, "Розмір", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.text_field :size, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+        </div>
+        <div>
+          <%= f.label :daily_rate, "Ставка за добу", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.number_field :daily_rate, step: "0.01", min: 0, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+        </div>
+        <%= f.submit t("actions.save"), class: "w-full rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%= filter_frame "rentals_content" do %>
+  <div class="bg-white border border-gray-200 rounded-xl p-4 mb-4">
+    <%= render "shared/period_filter", path: rentals_path, period: @period.period,
+          from: @period.from.to_date, to: @period.to.to_date, frame: "rentals_content" %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Дохід з прокату</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@total) %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Видач за період</p>
+      <p class="text-xl font-bold text-gray-900"><%= @rentals.size %></p>
+    </div>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left text-gray-500">
+        <tr>
+          <th class="px-4 py-3 font-medium">Велосипед</th>
+          <th class="px-4 py-3 font-medium">Хто взяв</th>
+          <th class="px-4 py-3 font-medium">Період</th>
+          <th class="px-4 py-3 font-medium text-right">Доби</th>
+          <th class="px-4 py-3 font-medium text-right">Сума</th>
+          <th class="px-4 py-3 font-medium">Стан</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @rentals.each do |rental| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-900"><%= rental.rental_bike.display_name %></td>
+            <td class="px-4 py-3 text-gray-600"><%= rental.renter %></td>
+            <td class="px-4 py-3 text-gray-600"><%= l rental.rented_from %> — <%= l rental.rented_to %></td>
+            <td class="px-4 py-3 text-right text-gray-600"><%= rental.days %></td>
+            <td class="px-4 py-3 text-right font-medium text-gray-900"><%= money(rental.amount) %></td>
+            <td class="px-4 py-3">
+              <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= rental.out? ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600" %>">
+                <%= rental.out? ? "У прокаті" : "Повернено" %>
+              </span>
+            </td>
+          </tr>
+        <% end %>
+
+        <% if @rentals.none? %>
+          <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">Видач за цей період немає</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

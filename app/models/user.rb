@@ -12,6 +12,7 @@ class User < ApplicationRecord
   validates :name, presence: true
   validates :email_address, presence: true, uniqueness: true
   validates :payroll_percent, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
+  validates :sales_percent, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
 
   scope :active, -> { where(active: true) }
 

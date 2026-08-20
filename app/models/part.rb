@@ -28,8 +28,8 @@ class Part < ApplicationRecord
     def backfill_missed_expenses
       return if purchase_price.blank?
 
-      stock_movements.consumption.where.missing(:expense).find_each do |movement|
-        Finances::LogExpenseFromConsumption.call(movement)
+      stock_movements.where(kind: Finances::LogGoodsCost::CATEGORIES.keys).where.missing(:expense).find_each do |movement|
+        Finances::LogGoodsCost.call(movement)
       end
     end
 end

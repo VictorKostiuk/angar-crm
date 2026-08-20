@@ -9,6 +9,13 @@ uk:
     many: "замовлень"
     other: "замовлень"
 
+  stock_kinds:
+    receipt: "Прихід"
+    write_off: "Списання"
+    consumption: "Витрачено на замовлення"
+    adjustment: "Коригування"
+    sale: "Продаж"
+
   nav:
     workshop: "Майстерня"
     orders: "Замовлення"
@@ -21,6 +28,8 @@ uk:
     reports: "Звіти"
     settings: "Налаштування"
     stock: "Склад"
+    sales: "Продажі"
+    rentals: "Прокат"
     suppliers: "Постачальники"
     finances: "Фінанси"
 

@@ -54,6 +54,13 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
+group :test do
+  # Browser tests. Cuprite drives the Chrome already installed on the machine
+  # over CDP — no chromedriver binary and no browser download.
+  gem "capybara"
+  gem "cuprite"
+end
+
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"

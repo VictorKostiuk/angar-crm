@@ -1,0 +1,12 @@
+<%# locals: (part:) %>
+<%= form_with url: stock_movements_path, method: :post, data: { turbo_frame: "_top" }, class: "flex items-center gap-1" do |f| %>
+  <%= hidden_field_tag "stock_movement[part_id]", part.id %>
+  <%= hidden_field_tag :category_id, params[:category_id] %>
+  <%= hidden_field_tag :q, params[:q] %>
+  <%= select_tag "stock_movement[kind]",
+        options_for_select(StockMovement.kinds.keys.excluding("consumption", "sale").map { |k| [ t("stock_kinds.#{k}"), k ] }),
+        class: "rounded-md border border-gray-300 px-2 py-1 text-xs" %>
+  <%= number_field_tag "stock_movement[quantity]", 1, step: 1,
+        class: "w-16 rounded-md border border-gray-300 px-2 py-1 text-xs" %>
+  <%= submit_tag "OK", class: "rounded-md border border-gray-300 px-2 py-1 text-xs font-medium hover:bg-gray-50 cursor-pointer" %>
+<% end %>

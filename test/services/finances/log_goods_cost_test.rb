@@ -1,6 +1,6 @@
 require "test_helper"
 
-class Finances::LogExpenseFromConsumptionTest < ActiveSupport::TestCase
+class Finances::LogGoodsCostTest < ActiveSupport::TestCase
   setup do
     @part = parts(:kmc_chain) # purchase_price: 500.0
   end

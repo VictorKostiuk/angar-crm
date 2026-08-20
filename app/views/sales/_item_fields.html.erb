@@ -1,0 +1,10 @@
+<%# locals: (item:, parts:) %>
+<div class="grid grid-cols-[1fr_4.5rem_6rem] gap-2">
+  <%= item.collection_select :part_id, parts, :id, ->(p) { "#{p.name} — #{number_to_currency(p.base_price, unit: 'грн', format: '%n %u', precision: 0)} (#{p.stock_quantity} шт)" },
+        { include_blank: "Оберіть позицію" },
+        class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+  <%= item.number_field :quantity, value: item.object&.quantity || 1, step: 1, min: 1,
+        class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+  <%= item.number_field :price, value: item.object&.price, step: "0.01", min: 0, placeholder: "Ціна",
+        class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+</div>

@@ -586,6 +586,153 @@ ALTER SEQUENCE public.payroll_payouts_id_seq OWNED BY public.payroll_payouts.id;
 
 
 --
+-- Name: rental_bikes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.rental_bikes (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    size character varying,
+    note character varying,
+    daily_rate numeric(12,2) DEFAULT 0.0 NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: rental_bikes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.rental_bikes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: rental_bikes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.rental_bikes_id_seq OWNED BY public.rental_bikes.id;
+
+
+--
+-- Name: rentals; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.rentals (
+    id bigint NOT NULL,
+    rental_bike_id bigint NOT NULL,
+    client_id bigint,
+    issued_by_id bigint NOT NULL,
+    renter_name character varying,
+    renter_phone character varying,
+    rented_from date NOT NULL,
+    rented_to date NOT NULL,
+    daily_rate numeric(12,2) DEFAULT 0.0 NOT NULL,
+    amount numeric(12,2) DEFAULT 0.0 NOT NULL,
+    returned_at timestamp(6) without time zone,
+    note character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: rentals_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.rentals_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: rentals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.rentals_id_seq OWNED BY public.rentals.id;
+
+
+--
+-- Name: sale_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sale_items (
+    id bigint NOT NULL,
+    sale_id bigint NOT NULL,
+    part_id bigint NOT NULL,
+    name character varying NOT NULL,
+    quantity integer DEFAULT 1 NOT NULL,
+    price numeric(12,2) DEFAULT 0.0 NOT NULL,
+    total numeric(12,2) DEFAULT 0.0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: sale_items_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.sale_items_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: sale_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.sale_items_id_seq OWNED BY public.sale_items.id;
+
+
+--
+-- Name: sales; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sales (
+    id bigint NOT NULL,
+    sold_by_id bigint NOT NULL,
+    client_id bigint,
+    sold_at timestamp(6) without time zone NOT NULL,
+    total numeric(12,2) DEFAULT 0.0 NOT NULL,
+    note character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: sales_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.sales_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: sales_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.sales_id_seq OWNED BY public.sales.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -675,7 +822,8 @@ CREATE TABLE public.stock_movements (
     quantity integer NOT NULL,
     note character varying,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    sale_item_id bigint
 );
 
 
@@ -748,7 +896,8 @@ CREATE TABLE public.users (
     phone character varying,
     role integer DEFAULT 0 NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    works_as_mechanic boolean DEFAULT false NOT NULL
+    works_as_mechanic boolean DEFAULT false NOT NULL,
+    sales_percent numeric(5,2) DEFAULT 0.0 NOT NULL
 );
 
 
@@ -874,6 +1023,34 @@ ALTER TABLE ONLY public.parts ALTER COLUMN id SET DEFAULT nextval('public.parts_
 --
 
 ALTER TABLE ONLY public.payroll_payouts ALTER COLUMN id SET DEFAULT nextval('public.payroll_payouts_id_seq'::regclass);
+
+
+--
+-- Name: rental_bikes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rental_bikes ALTER COLUMN id SET DEFAULT nextval('public.rental_bikes_id_seq'::regclass);
+
+
+--
+-- Name: rentals id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rentals ALTER COLUMN id SET DEFAULT nextval('public.rentals_id_seq'::regclass);
+
+
+--
+-- Name: sale_items id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sale_items ALTER COLUMN id SET DEFAULT nextval('public.sale_items_id_seq'::regclass);
+
+
+--
+-- Name: sales id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sales ALTER COLUMN id SET DEFAULT nextval('public.sales_id_seq'::regclass);
 
 
 --
@@ -1037,6 +1214,38 @@ ALTER TABLE ONLY public.parts
 
 ALTER TABLE ONLY public.payroll_payouts
     ADD CONSTRAINT payroll_payouts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rental_bikes rental_bikes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rental_bikes
+    ADD CONSTRAINT rental_bikes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rentals rentals_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rentals
+    ADD CONSTRAINT rentals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sale_items sale_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sale_items
+    ADD CONSTRAINT sale_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sales sales_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sales
+    ADD CONSTRAINT sales_pkey PRIMARY KEY (id);
 
 
 --
@@ -1340,6 +1549,76 @@ CREATE INDEX index_payroll_payouts_on_user_id ON public.payroll_payouts USING bt
 
 
 --
+-- Name: index_rentals_on_client_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_rentals_on_client_id ON public.rentals USING btree (client_id);
+
+
+--
+-- Name: index_rentals_on_issued_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_rentals_on_issued_by_id ON public.rentals USING btree (issued_by_id);
+
+
+--
+-- Name: index_rentals_on_rental_bike_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_rentals_on_rental_bike_id ON public.rentals USING btree (rental_bike_id);
+
+
+--
+-- Name: index_rentals_on_rented_from; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_rentals_on_rented_from ON public.rentals USING btree (rented_from);
+
+
+--
+-- Name: index_rentals_on_returned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_rentals_on_returned_at ON public.rentals USING btree (returned_at);
+
+
+--
+-- Name: index_sale_items_on_part_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sale_items_on_part_id ON public.sale_items USING btree (part_id);
+
+
+--
+-- Name: index_sale_items_on_sale_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sale_items_on_sale_id ON public.sale_items USING btree (sale_id);
+
+
+--
+-- Name: index_sales_on_client_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sales_on_client_id ON public.sales USING btree (client_id);
+
+
+--
+-- Name: index_sales_on_sold_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sales_on_sold_at ON public.sales USING btree (sold_at);
+
+
+--
+-- Name: index_sales_on_sold_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sales_on_sold_by_id ON public.sales USING btree (sold_by_id);
+
+
+--
 -- Name: index_services_on_active; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1379,6 +1658,13 @@ CREATE INDEX index_stock_movements_on_order_id ON public.stock_movements USING b
 --
 
 CREATE INDEX index_stock_movements_on_part_id ON public.stock_movements USING btree (part_id);
+
+
+--
+-- Name: index_stock_movements_on_sale_item_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_stock_movements_on_sale_item_id ON public.stock_movements USING btree (sale_item_id);
 
 
 --
@@ -1459,6 +1745,14 @@ ALTER TABLE ONLY public.expenses
 
 
 --
+-- Name: sales fk_rails_3fb137af04; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sales
+    ADD CONSTRAINT fk_rails_3fb137af04 FOREIGN KEY (client_id) REFERENCES public.clients(id);
+
+
+--
 -- Name: payroll_payouts fk_rails_597acc77d9; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1491,6 +1785,14 @@ ALTER TABLE ONLY public.order_works
 
 
 --
+-- Name: stock_movements fk_rails_7215c5b199; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stock_movements
+    ADD CONSTRAINT fk_rails_7215c5b199 FOREIGN KEY (sale_item_id) REFERENCES public.sale_items(id);
+
+
+--
 -- Name: sessions fk_rails_758836b4f0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1499,11 +1801,27 @@ ALTER TABLE ONLY public.sessions
 
 
 --
+-- Name: rentals fk_rails_7c9440a4cf; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rentals
+    ADD CONSTRAINT fk_rails_7c9440a4cf FOREIGN KEY (rental_bike_id) REFERENCES public.rental_bikes(id);
+
+
+--
 -- Name: payroll_payouts fk_rails_826a8f4298; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.payroll_payouts
     ADD CONSTRAINT fk_rails_826a8f4298 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: sales fk_rails_97ed91a355; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sales
+    ADD CONSTRAINT fk_rails_97ed91a355 FOREIGN KEY (sold_by_id) REFERENCES public.users(id);
 
 
 --
@@ -1520,6 +1838,22 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 ALTER TABLE ONLY public.stock_movements
     ADD CONSTRAINT fk_rails_99bcc2c44a FOREIGN KEY (part_id) REFERENCES public.parts(id);
+
+
+--
+-- Name: sale_items fk_rails_a2563c1567; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sale_items
+    ADD CONSTRAINT fk_rails_a2563c1567 FOREIGN KEY (sale_id) REFERENCES public.sales(id);
+
+
+--
+-- Name: rentals fk_rails_a4c43835f4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rentals
+    ADD CONSTRAINT fk_rails_a4c43835f4 FOREIGN KEY (issued_by_id) REFERENCES public.users(id);
 
 
 --
@@ -1587,11 +1921,27 @@ ALTER TABLE ONLY public.order_works
 
 
 --
+-- Name: sale_items fk_rails_e394eec5b2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sale_items
+    ADD CONSTRAINT fk_rails_e394eec5b2 FOREIGN KEY (part_id) REFERENCES public.parts(id);
+
+
+--
 -- Name: orders fk_rails_e95da7de5e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.orders
     ADD CONSTRAINT fk_rails_e95da7de5e FOREIGN KEY (discount_record_id) REFERENCES public.discounts(id);
+
+
+--
+-- Name: rentals fk_rails_ede3db960f; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rentals
+    ADD CONSTRAINT fk_rails_ede3db960f FOREIGN KEY (client_id) REFERENCES public.clients(id);
 
 
 --
@@ -1617,6 +1967,9 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260820104548'),
+('20260820104325'),
+('20260820104247'),
 ('20260820084506'),
 ('20260820083725'),
 ('20260819095631'),

@@ -52,8 +52,14 @@ class FinancesController < ApplicationController
       @works_by_order = OrderWork.where(order_id: order_ids).group(:order_id).sum(:total)
       @parts_by_order = OrderPart.where(order_id: order_ids).group(:order_id).sum(:total)
 
+      # Sales and rentals are their own revenue lines, deliberately NOT folded
+      # into @revenue: Дохід must stay exactly Reports::ClosedRevenue so the
+      # order breakdown below it can never disagree with it (D30).
+      @sales_total = Sale.in_range(@period.range).sum(:total)
+      @rentals_total = Rental.in_range(@period.range).sum(:amount)
+      @sales_commission = Sale.in_range(@period.range).includes(:sold_by).sum(&:commission)
       @expenses_total = Expense.in_range(@period.range).sum(:amount)
-      @profit_before_payouts = @revenue - @expenses_total
+      @profit_before_payouts = @revenue + @sales_total + @rentals_total - @expenses_total - @sales_commission
     end
 
     def load_breakdown

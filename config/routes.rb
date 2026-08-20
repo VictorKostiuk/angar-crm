@@ -24,6 +24,11 @@ Rails.application.routes.draw do
     get :search, on: :collection
   end
   resources :suppliers, only: %i[ index create update destroy ]
+  get "stock", to: "stock#index"
+  resources :sales, only: %i[ index new create ]
+  resources :rentals, only: %i[ index new create update ]
+  resources :rental_bikes, only: %i[ create update ]
+  resources :stock_movements, only: :create
   resources :expenses, only: %i[ index create update destroy ]
   resources :categories, only: %i[ new create ]
 

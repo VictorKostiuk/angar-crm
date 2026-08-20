@@ -40,7 +40,7 @@ class UsersController < ApplicationController
 
   private
     def user_params
-      params.expect(user: %i[ name email_address phone role payroll_percent works_as_mechanic active password ])
+      params.expect(user: %i[ name email_address phone role payroll_percent sales_percent works_as_mechanic active password ])
     end
 
     def load_index_data

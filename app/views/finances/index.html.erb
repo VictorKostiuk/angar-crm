@@ -13,9 +13,18 @@
 
   <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
     <div class="bg-white border border-gray-200 rounded-xl p-4">
-      <p class="text-sm text-gray-500">Дохід</p>
+      <p class="text-sm text-gray-500">Дохід із замовлень</p>
       <p class="text-xl font-bold text-gray-900"><%= money(@revenue) %></p>
     </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <p class="text-sm text-gray-500">Продажі</p>
+        <p class="text-xl font-bold text-gray-900"><%= money(@sales_total) %></p>
+        <p class="mt-1 text-xs text-gray-400">мінус комісія <%= money(@sales_commission) %></p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <p class="text-sm text-gray-500">Прокат</p>
+        <p class="text-xl font-bold text-gray-900"><%= money(@rentals_total) %></p>
+      </div>
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <p class="text-sm text-gray-500">Витрати</p>
       <p class="text-xl font-bold text-gray-900"><%= money(@expenses_total) %></p>

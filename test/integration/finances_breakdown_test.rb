@@ -70,7 +70,35 @@ class FinancesBreakdownTest < ActionDispatch::IntegrationTest
 
     assert_select "p", text: money(2150), minimum: 2 # Дохід and Загальний чек
     assert_select "p", text: "Загальний чек"
-    assert_select "p", text: "Дохід"
+    assert_select "p", text: "Дохід із замовлень"
+  end
+
+  # Sales and rentals are separate revenue lines on purpose. If they were folded
+  # into Дохід, it would stop equalling ClosedRevenue and the zone agreement
+  # above would break silently (D30).
+  test "sales and rental money never leak into the orders revenue figure" do
+    close_order!(works: 500, parts: 250)
+
+    part = Part.create!(name: "Камера", category: Category.part.active.first, base_price: 180)
+    StockMovement.create!(part: part, kind: :receipt, quantity: 5, user: @owner)
+    sale = Sale.create!(sold_by: @owner, sold_at: Time.current,
+                        sale_items_attributes: [ { part_id: part.id, quantity: 1, price: 180 } ])
+    Sales::RecalculateTotal.call(sale)
+
+    bike = RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+    Rental.create!(rental_bike: bike, issued_by: @owner, renter_name: "Гість",
+                   rented_from: Date.current, rented_to: Date.current + 2)
+
+    get finances_path(period: "month")
+
+    # Read each tile by its own label — asserting the number appears *somewhere*
+    # on the page passes even when sales are folded into Дохід, because the
+    # breakdown below still shows the orders-only figure.
+    assert_equal money(750), tile_value("Дохід із замовлень")
+    assert_equal money(180), tile_value("Продажі")
+    assert_equal money(600), tile_value("Прокат")
+    assert_equal money(750), tile_value("Загальний чек")
+    assert_equal 750, Reports::ClosedRevenue.call(range: Date.current.all_month).values_at(:works_total, :parts_total).sum
   end
 
   # The P&L is period-only on purpose: expenses can't be attributed to a
@@ -126,4 +154,14 @@ class FinancesBreakdownTest < ActionDispatch::IntegrationTest
 
   private
     def money(amount) = ApplicationController.helpers.money(amount)
+
+    # The value <p> sitting next to the label <p> inside the same tile.
+    def tile_value(label)
+      tile = Nokogiri::HTML5(response.body).css("div").find do |div|
+        div.css("> p").any? { |p| p.text.strip == label }
+      end
+      raise Minitest::Assertion, "no tile labelled #{label.inspect}" unless tile
+
+      tile.css("> p")[1]&.text&.strip
+    end
 end
