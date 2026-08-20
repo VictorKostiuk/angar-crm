@@ -1,16 +1,16 @@
 <%# locals: (users:) %>
 <% users.each do |user| %>
   <tr class="hover:bg-gray-50" id="user_row_<%= user.id %>">
-    <td class="px-4 py-3 text-gray-900"><%= user.name %></td>
-    <td class="px-4 py-3 text-gray-600"><%= user.email_address %></td>
-    <td class="px-4 py-3 text-gray-600"><%= t("roles.#{user.role}") %></td>
-    <td class="px-4 py-3 text-gray-600"><%= user.assignable_as_mechanic? ? "#{user.payroll_percent.to_i}%" : "—" %></td>
-    <td class="px-4 py-3">
+    <td data-label="Ім'я" class="px-4 py-3 text-gray-900"><%= user.name %></td>
+    <td data-label="Email" class="px-4 py-3 text-gray-600"><%= user.email_address %></td>
+    <td data-label="Роль" class="px-4 py-3 text-gray-600"><%= t("roles.#{user.role}") %></td>
+    <td data-label="% заробітку" class="px-4 py-3 text-gray-600"><%= user.assignable_as_mechanic? ? "#{user.payroll_percent.to_i}%" : "—" %></td>
+    <td data-label="Статус" class="px-4 py-3">
       <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= user.active? ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500" %>">
         <%= user.active? ? "Активний" : "Деактивований" %>
       </span>
     </td>
-    <td class="px-4 py-3 text-right">
+    <td data-label="" class="px-4 py-3 text-right">
       <%= link_to users_path(edit: user.id),
             title: t("actions.edit"), "aria-label": t("actions.edit"),
             class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100" do %>

@@ -6,7 +6,7 @@
   [ "Оголошення", :announcement, edit_announcement_path ]
 ] %>
 <div class="border-b border-gray-200 mb-6">
-  <nav class="-mb-px flex gap-6">
+  <nav class="-mb-px flex gap-6 overflow-x-auto whitespace-nowrap">
     <% tabs.each do |label, key, path| %>
       <%= link_to label, path,
             class: class_names("px-1 py-3 text-sm font-medium border-b-2",

@@ -11,14 +11,14 @@
     <% end %>
   </div>
 
-  <%= form_with url: path, method: :get, data: { turbo_frame: frame }, class: "flex items-center gap-2" do %>
+  <%= form_with url: path, method: :get, data: { turbo_frame: frame }, class: "flex flex-wrap items-center gap-2" do %>
     <% request.query_parameters.except("period", "from", "to").each do |key, value| %>
       <%= hidden_field_tag key, value %>
     <% end %>
     <%= hidden_field_tag :period, "range" %>
-    <%= date_field_tag :from, from, class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <%= date_field_tag :from, from, class: "min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
     <span class="text-sm text-gray-400">—</span>
-    <%= date_field_tag :to, to, class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <%= date_field_tag :to, to, class: "min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
     <%= submit_tag "Застосувати", class: "rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium hover:bg-gray-50 cursor-pointer" %>
   <% end %>
 </div>

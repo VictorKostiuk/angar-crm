@@ -17,7 +17,8 @@
     </div>
 
     <div data-controller="sale-items">
-      <p class="block text-sm font-medium text-gray-700 mb-1">Позиції зі складу</p>
+      <p class="block text-sm font-medium text-gray-700">Позиції</p>
+      <p class="text-xs text-gray-500 mb-2">Зі складу або своя позиція — тоді вкажіть назву й ціну.</p>
       <div data-sale-items-target="rows" class="space-y-2">
         <%= f.fields_for :sale_items do |item| %>
           <%= render "sales/item_fields", item: item, parts: @parts %>

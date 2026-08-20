@@ -104,11 +104,11 @@
   </div>
 
   <div class="lg:col-span-2 space-y-6">
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
       <div id="order_works_header" class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <%= render "orders/works_header", order: @order %>
       </div>
-      <table class="w-full text-sm">
+      <table class="data-table w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-500">
           <tr>
             <th class="px-4 py-2 font-medium">Послуга</th>
@@ -124,11 +124,11 @@
       </table>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
       <div id="order_parts_header" class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <%= render "orders/parts_header", order: @order %>
       </div>
-      <table class="w-full text-sm">
+      <table class="data-table w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-500">
           <tr>
             <th class="px-4 py-2 font-medium">Запчастина</th>

@@ -1,15 +1,15 @@
 <% content_for :title, t("nav.rentals") %>
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
   <h1 class="text-2xl font-bold text-gray-900"><%= t("nav.rentals") %></h1>
   <%= link_to "+ Видати в прокат", new_rental_path, data: { turbo_frame: "modal" },
         class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2" %>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mb-6">
-  <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
     <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Парк прокату</h2>
-    <table class="w-full text-sm">
+    <table class="data-table w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-500">
         <tr>
           <th class="px-4 py-3 font-medium">Велосипед</th>
@@ -24,20 +24,20 @@
           <% out = @out_ids.include?(bike.id) %>
           <% rental = @current_by_bike[bike.id] %>
           <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-900"><%= bike.display_name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(bike.daily_rate) %></td>
-            <td class="px-4 py-3">
+            <td data-label="Велосипед" class="px-4 py-3 text-gray-900"><%= bike.display_name %></td>
+            <td data-label="Ставка / доба" class="px-4 py-3 text-gray-600"><%= money(bike.daily_rate) %></td>
+            <td data-label="Стан" class="px-4 py-3">
               <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= out ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700" %>">
                 <%= out ? "У прокаті" : "Доступний" %>
               </span>
             </td>
-            <td class="px-4 py-3 text-gray-600">
+            <td data-label="У кого" class="px-4 py-3 text-gray-600">
               <% if rental %>
                 <%= rental.renter %>
                 <span class="block text-xs text-gray-400">до <%= l rental.rented_to %></span>
               <% else %>—<% end %>
             </td>
-            <td class="px-4 py-3 text-right">
+            <td data-label="" class="px-4 py-3 text-right">
               <% if rental %>
                 <%= button_to "Повернути", rental_path(rental), method: :patch,
                       class: "rounded-md border border-gray-300 text-xs font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
@@ -92,8 +92,8 @@
     </div>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
-    <table class="w-full text-sm">
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
+    <table class="data-table w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-500">
         <tr>
           <th class="px-4 py-3 font-medium">Велосипед</th>
@@ -107,12 +107,12 @@
       <tbody class="divide-y divide-gray-100">
         <% @rentals.each do |rental| %>
           <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-900"><%= rental.rental_bike.display_name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= rental.renter %></td>
-            <td class="px-4 py-3 text-gray-600"><%= l rental.rented_from %> — <%= l rental.rented_to %></td>
-            <td class="px-4 py-3 text-right text-gray-600"><%= rental.days %></td>
-            <td class="px-4 py-3 text-right font-medium text-gray-900"><%= money(rental.amount) %></td>
-            <td class="px-4 py-3">
+            <td data-label="Велосипед" class="px-4 py-3 text-gray-900"><%= rental.rental_bike.display_name %></td>
+            <td data-label="Хто взяв" class="px-4 py-3 text-gray-600"><%= rental.renter %></td>
+            <td data-label="Період" class="px-4 py-3 text-gray-600"><%= l rental.rented_from %> — <%= l rental.rented_to %></td>
+            <td data-label="Доби" class="px-4 py-3 text-right text-gray-600"><%= rental.days %></td>
+            <td data-label="Сума" class="px-4 py-3 text-right font-medium text-gray-900"><%= money(rental.amount) %></td>
+            <td data-label="Стан" class="px-4 py-3">
               <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= rental.out? ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600" %>">
                 <%= rental.out? ? "У прокаті" : "Повернено" %>
               </span>

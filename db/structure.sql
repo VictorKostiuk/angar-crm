@@ -668,7 +668,7 @@ ALTER SEQUENCE public.rentals_id_seq OWNED BY public.rentals.id;
 CREATE TABLE public.sale_items (
     id bigint NOT NULL,
     sale_id bigint NOT NULL,
-    part_id bigint NOT NULL,
+    part_id bigint,
     name character varying NOT NULL,
     quantity integer DEFAULT 1 NOT NULL,
     price numeric(12,2) NOT NULL,
@@ -1967,6 +1967,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260820160655'),
 ('20260820140038'),
 ('20260820104548'),
 ('20260820104325'),

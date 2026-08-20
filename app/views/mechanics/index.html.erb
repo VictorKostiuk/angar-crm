@@ -1,9 +1,9 @@
 <% content_for :title, t("nav.mechanics") %>
 
 <%= filter_frame "mechanics_content" do %>
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <h1 class="text-2xl font-bold text-gray-900"><%= t("nav.mechanics") %></h1>
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <% if Current.user.owner? %>
         <%= link_to "+ Додати користувача", users_path,
               class: "shrink-0 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2" %>
@@ -16,13 +16,13 @@
   <div class="space-y-4">
     <% @rows.each do |row| %>
       <div class="bg-white border border-gray-200 rounded-xl p-5">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 class="text-lg font-bold text-gray-900"><%= row.mechanic.name %></h2>
           <%= link_to "Відкрити механіка →", mechanic_path(row.mechanic, period: @period.period, from: params[:from], to: params[:to]),
                 class: "rounded-md border border-brand-600 text-brand-700 text-sm font-medium px-3 py-1.5 hover:bg-brand-50" %>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mb-4 text-sm">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4 text-sm">
           <div>
             <p class="text-gray-500">Прийняв замовлень</p>
             <p class="text-lg font-bold text-gray-900"><%= row.accepted_count %></p>
@@ -40,7 +40,7 @@
         <%# Послуги × % заробітку = Заробіток, all on screen, so the payout can
             be checked rather than taken on faith. Загальна сума is shown for
             context only — it is deliberately NOT the earning base (D33). %>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-gray-100 text-sm">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-100 text-sm">
           <div>
             <p class="text-gray-500">Послуги</p>
             <p class="text-lg font-bold text-gray-900"><%= money(row.works_total) %></p>

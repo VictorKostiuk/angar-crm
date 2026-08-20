@@ -28,7 +28,7 @@
       <p class="mt-1 text-right text-xs text-gray-400" data-char-counter-target="count">0/<%= Announcement::MAX_LENGTH %></p>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <%= f.check_box :active, class: "rounded border-gray-300" %>
       <%= f.label :active, "Показувати", class: "text-sm text-gray-700" %>
     </div>

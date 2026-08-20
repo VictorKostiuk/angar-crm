@@ -75,9 +75,9 @@
     </div>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-6">
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto mb-6">
     <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Доходи по механіках</h2>
-    <table class="w-full text-sm">
+    <table class="data-table w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-500">
         <tr>
           <th class="px-4 py-3 font-medium">Механік</th>
@@ -90,20 +90,20 @@
       <tbody class="divide-y divide-gray-100">
         <% @income_by_mechanic.each do |row| %>
           <tr>
-            <td class="px-4 py-3 text-gray-900"><%= row[:mechanic].name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= row[:order_count] %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(row[:works_total]) %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(row[:parts_total]) %></td>
-            <td class="px-4 py-3 font-medium text-gray-900"><%= money(row[:works_total] + row[:parts_total]) %></td>
+            <td data-label="Механік" class="px-4 py-3 text-gray-900"><%= row[:mechanic].name %></td>
+            <td data-label="Замовлень" class="px-4 py-3 text-gray-600"><%= row[:order_count] %></td>
+            <td data-label="Послуги" class="px-4 py-3 text-gray-600"><%= money(row[:works_total]) %></td>
+            <td data-label="Запчастини" class="px-4 py-3 text-gray-600"><%= money(row[:parts_total]) %></td>
+            <td data-label="Разом чеків" class="px-4 py-3 font-medium text-gray-900"><%= money(row[:works_total] + row[:parts_total]) %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
     <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Розрахунок виробітки механіків</h2>
-    <table class="w-full text-sm">
+    <table class="data-table w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-500">
         <tr>
           <th class="px-4 py-3 font-medium">Механік</th>
@@ -115,10 +115,10 @@
       <tbody class="divide-y divide-gray-100">
         <% @payroll_rows.each do |row| %>
           <tr>
-            <td class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
-            <td class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
-            <td class="px-4 py-3 font-medium text-green-700"><%= money(row.payout) %></td>
+            <td data-label="Механік" class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
+            <td data-label="Послуги" class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
+            <td data-label="% заробітку" class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
+            <td data-label="Заробіток" class="px-4 py-3 font-medium text-green-700"><%= money(row.payout) %></td>
           </tr>
         <% end %>
 

@@ -1,10 +1,10 @@
 <%# locals: (suppliers:) %>
 <% suppliers.each do |supplier| %>
   <tr class="hover:bg-gray-50" id="supplier_row_<%= supplier.id %>">
-    <td class="px-4 py-3 text-gray-900"><%= supplier.name %></td>
-    <td class="px-4 py-3 text-gray-600"><%= supplier.phone.presence || "—" %></td>
-    <td class="px-4 py-3 text-gray-600"><%= supplier.email.presence || "—" %></td>
-    <td class="px-4 py-3 text-right whitespace-nowrap">
+    <td data-label="Назва" class="px-4 py-3 text-gray-900"><%= supplier.name %></td>
+    <td data-label="Телефон" class="px-4 py-3 text-gray-600"><%= supplier.phone.presence || "—" %></td>
+    <td data-label="Email" class="px-4 py-3 text-gray-600"><%= supplier.email.presence || "—" %></td>
+    <td data-label="" class="px-4 py-3 text-right whitespace-nowrap">
       <%= link_to suppliers_path(edit: supplier.id),
             title: t("actions.edit"), "aria-label": t("actions.edit"),
             class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>

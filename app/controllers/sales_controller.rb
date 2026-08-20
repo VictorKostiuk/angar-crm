@@ -41,6 +41,6 @@ class SalesController < ApplicationController
     end
 
     def sale_params
-      params.expect(sale: [ :client_id, :note, { sale_items_attributes: [ [ :part_id, :quantity, :price ] ] } ])
+      params.expect(sale: [ :client_id, :note, { sale_items_attributes: [ [ :part_id, :name, :quantity, :price ] ] } ])
     end
 end

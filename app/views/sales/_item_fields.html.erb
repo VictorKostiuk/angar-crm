@@ -1,10 +1,18 @@
 <%# locals: (item:, parts:) %>
-<div class="grid grid-cols-[1fr_4.5rem_6rem] gap-2">
-  <%= item.collection_select :part_id, parts, :id, ->(p) { "#{p.name} — #{number_to_currency(p.base_price, unit: 'грн', format: '%n %u', precision: 0)} (#{p.stock_quantity} шт)" },
-        { include_blank: "Оберіть позицію" },
-        class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-  <%= item.number_field :quantity, value: item.object&.quantity || 1, step: 1, min: 1,
-        class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-  <%= item.number_field :price, value: item.object&.price, step: "0.01", min: 0, placeholder: "Ціна",
-        class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+<%# Either pick a catalogue item, or leave it blank and type your own name and
+    price — the same choice the order screen offers. %>
+<div class="rounded-md border border-gray-200 p-2 space-y-2">
+  <%= item.collection_select :part_id, parts, :id,
+        ->(p) { "#{p.name} — #{number_to_currency(p.base_price, unit: 'грн', format: '%n %u', precision: 0)} (#{p.stock_quantity} шт)" },
+        { include_blank: "Своя позиція (не зі складу)" },
+        class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+
+  <div class="grid grid-cols-2 sm:grid-cols-[1fr_4.5rem_6rem] gap-2">
+    <%= item.text_field :name, value: item.object&.name, placeholder: "Назва (для своєї позиції)",
+          class: "col-span-2 sm:col-span-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <%= item.number_field :quantity, value: item.object&.quantity || 1, step: 1, min: 1,
+          class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <%= item.number_field :price, value: item.object&.price, step: "0.01", min: 0, placeholder: "Ціна",
+          class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+  </div>
 </div>

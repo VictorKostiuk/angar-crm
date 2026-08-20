@@ -9,9 +9,9 @@
       </div>
     <% end %>
 
-    <div class="grid grid-cols-[1fr_5rem_6rem] gap-2">
+    <div class="grid grid-cols-2 sm:grid-cols-[1fr_5rem_6rem] gap-2">
       <%= f.text_field :name, placeholder: "Назва послуги", value: order_work.name,
-            class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+            class: "col-span-2 sm:col-span-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       <%= f.number_field :quantity, value: (order_work.quantity || 1), step: "any", min: "0.01",
             class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       <%= f.number_field :price, value: order_work.price, step: "any", min: 0, placeholder: "Ціна",

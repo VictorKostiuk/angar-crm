@@ -1,6 +1,6 @@
 <% content_for :title, t("nav.sales") %>
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
   <h1 class="text-2xl font-bold text-gray-900"><%= t("nav.sales") %></h1>
   <%= link_to "+ Новий продаж", new_sale_path, data: { turbo_frame: "modal" },
         class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2" %>
@@ -27,8 +27,8 @@
     </div>
   </div>
 
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
-    <table class="w-full text-sm">
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
+    <table class="data-table w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-500">
         <tr>
           <th class="px-4 py-3 font-medium">Дата</th>
@@ -42,17 +42,17 @@
       <tbody class="divide-y divide-gray-100">
         <% @sales.each do |sale| %>
           <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 text-gray-500"><%= l sale.sold_at.to_date %></td>
-            <td class="px-4 py-3 text-gray-900">
+            <td data-label="Дата" class="px-4 py-3 text-gray-500"><%= l sale.sold_at.to_date %></td>
+            <td data-label="Позиції" class="px-4 py-3 text-gray-900">
               <%= sale.sale_items.map { |i| "#{i.name} × #{i.quantity}" }.join(", ") %>
               <% if sale.note.present? %>
                 <span class="block text-xs text-gray-400"><%= sale.note %></span>
               <% end %>
             </td>
-            <td class="px-4 py-3 text-gray-600"><%= sale.client&.name || "—" %></td>
-            <td class="px-4 py-3 text-gray-600"><%= sale.sold_by.name %></td>
-            <td class="px-4 py-3 text-right font-medium text-gray-900"><%= money(sale.total) %></td>
-            <td class="px-4 py-3 text-right text-gray-600"><%= money(sale.commission) %></td>
+            <td data-label="Клієнт" class="px-4 py-3 text-gray-600"><%= sale.client&.name || "—" %></td>
+            <td data-label="Продав" class="px-4 py-3 text-gray-600"><%= sale.sold_by.name %></td>
+            <td data-label="Сума" class="px-4 py-3 text-right font-medium text-gray-900"><%= money(sale.total) %></td>
+            <td data-label="Комісія" class="px-4 py-3 text-right text-gray-600"><%= money(sale.commission) %></td>
           </tr>
         <% end %>
 

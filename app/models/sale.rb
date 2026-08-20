@@ -3,8 +3,12 @@ class Sale < ApplicationRecord
   belongs_to :client, optional: true
   has_many :sale_items, dependent: :destroy, inverse_of: :sale
 
+  # A line needs either a catalogue item or a typed name — an empty row is just
+  # an unused row on the form, not an error.
   accepts_nested_attributes_for :sale_items, allow_destroy: true,
-                                reject_if: ->(attrs) { attrs[:part_id].blank? || attrs[:quantity].to_i <= 0 }
+                                reject_if: ->(attrs) {
+                                  (attrs[:part_id].blank? && attrs[:name].blank?) || attrs[:quantity].to_i <= 0
+                                }
 
   validates :sold_at, presence: true
   validate :must_have_at_least_one_item

@@ -102,6 +102,77 @@ class SalesFlowTest < ActionDispatch::IntegrationTest
     assert_equal 0, Sale.order(:id).last.total
   end
 
+  # Not everything sold over the counter is in the catalogue — the order screen
+  # already allows a one-off line, and the sale screen now matches.
+  test "a one-off line sells without touching stock or booking a cost" do
+    sign_in(@seller)
+
+    assert_no_difference [ -> { StockMovement.count }, -> { Expense.count } ] do
+      assert_difference -> { Sale.count }, 1 do
+        post sales_path, params: { sale: { sale_items_attributes: {
+          "0" => { part_id: "", name: "Ремонт камери на місці", quantity: "1", price: "150" }
+        } } }
+      end
+    end
+
+    item = Sale.order(:id).last.sale_items.first
+    assert item.custom?
+    assert_equal "Ремонт камери на місці", item.name
+    assert_equal 150, Sale.order(:id).last.total
+  end
+
+  test "a one-off line and a catalogue line on the same sale" do
+    sign_in(@seller)
+
+    post sales_path, params: { sale: { sale_items_attributes: {
+      "0" => { part_id: @part.id, quantity: "1", price: "" },
+      "1" => { part_id: "", name: "Робота на місці", quantity: "1", price: "150" }
+    } } }
+
+    sale = Sale.order(:id).last
+    assert_equal 330, sale.total, "180 зі складу + 150 своя позиція"
+    assert_equal 1, sale.sale_items.reject(&:custom?).size
+    assert_equal(-1, StockMovement.order(:id).last.quantity, "only the catalogue line moves stock")
+    assert_equal 9, @part.reload.stock_quantity
+  end
+
+  # The add-a-row button generates the child index client-side. params.expect's
+  # array form only accepts index-like keys, so a non-numeric one is dropped
+  # whole — silently, because the rest of the sale still saves.
+  test "rows keyed the way the add button keys them all arrive" do
+    sign_in(@seller)
+
+    post sales_path, params: { sale: { sale_items_attributes: {
+      "0" => { part_id: @part.id, quantity: "1", price: "180" },
+      Time.current.to_i.to_s => { part_id: "", name: "Своя позиція", quantity: "1", price: "150" }
+    } } }
+
+    assert_equal 2, Sale.order(:id).last.sale_items.count, "an added row must not be dropped"
+    assert_equal 330, Sale.order(:id).last.total
+  end
+
+  test "a line with neither a part nor a name is ignored, not an error" do
+    sign_in(@seller)
+
+    post sales_path, params: { sale: { sale_items_attributes: {
+      "0" => { part_id: @part.id, quantity: "1", price: "180" },
+      "1" => { part_id: "", name: "", quantity: "1", price: "" }
+    } } }
+
+    assert_equal 1, Sale.order(:id).last.sale_items.count
+  end
+
+  test "a one-off line without a name is rejected" do
+    sign_in(@seller)
+
+    assert_no_difference -> { Sale.count } do
+      post sales_path, params: { sale: { sale_items_attributes: {
+        "0" => { part_id: "", name: "", quantity: "1", price: "150" }
+      } } }, headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+    end
+    assert_response :unprocessable_entity
+  end
+
   test "a sale needs at least one line" do
     sign_in(@seller)
 

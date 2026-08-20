@@ -108,3 +108,74 @@
     border-radius: 9999px;
   }
 }
+
+/*
+ * Tables that become stacked cards on a phone.
+ *
+ * A 9-column orders table is ~770px wide inside a 340px column — horizontal
+ * scrolling "works" but is miserable to read one hand on a bike. Below the sm
+ * breakpoint each row becomes a card and each cell carries its column name from
+ * data-label, so nothing is cut off and every value keeps its heading. From sm
+ * up it is an ordinary table again.
+ *
+ * A cell with no data-label (the actions column) still shows, just without a
+ * heading; add data-label="" deliberately to keep it label-less.
+ */
+@layer components {
+  @media (width < 40rem) {
+    .data-table,
+    .data-table tbody,
+    .data-table tfoot,
+    .data-table tr,
+    .data-table td {
+      display: block;
+      width: auto;
+    }
+
+    .data-table thead {
+      display: none;
+    }
+
+    .data-table tr {
+      padding: 0.875rem 1rem;
+    }
+
+    .data-table tbody tr + tr,
+    .data-table tfoot tr {
+      border-top: 1px solid var(--color-gray-100);
+    }
+
+    .data-table td {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.1875rem 0;
+      text-align: left;
+    }
+
+    .data-table td::before {
+      content: attr(data-label);
+      flex: none;
+      color: var(--color-gray-500);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    /* The value side wins the space; the label stays put. */
+    .data-table td > * {
+      text-align: right;
+    }
+
+    /* An empty cell in a card layout is just a blank line. */
+    .data-table td:empty {
+      display: none;
+    }
+
+    /* Row actions sit on their own line, aligned with the values. */
+    .data-table td[data-label=""] {
+      justify-content: flex-end;
+      padding-top: 0.5rem;
+    }
+  }
+}

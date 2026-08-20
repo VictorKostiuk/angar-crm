@@ -89,6 +89,34 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_equal 3, part.reload.stock_quantity
   end
 
+  # Not everything at the counter is in the catalogue.
+  test "selling a one-off position that is not in stock" do
+    part = Part.create!(name: "Камера 700", category: Category.part.active.first, base_price: 180)
+    StockMovement.create!(part: part, kind: :receipt, quantity: 5, user: @owner)
+    sign_in @owner
+
+    visit root_path
+    click_on "+ Новий продаж"
+
+    # First line: a one-off, leaving the catalogue select blank.
+    within all("[data-sale-items-target='rows'] > div").first do
+      fill_in find("input[name*='[name]']")[:name], with: "Підкачати колесо"
+      fill_in find("input[name*='price']")[:name], with: "150"
+    end
+
+    # Second line: straight from the shelf.
+    click_on "+ Ще позиція"
+    within all("[data-sale-items-target='rows'] > div").last do
+      select "Камера 700 — 180 грн (5 шт)", from: find("select[name*='part_id']")[:name]
+    end
+
+    find("input[type=submit][value='Записати продаж']").trigger("click")
+    assert_text "Продаж записано."
+    assert_text "330 грн"                    # 150 one-off + 180 from stock
+    assert_text "Підкачати колесо"
+    assert_equal 4, part.reload.stock_quantity, "only the catalogue line moves stock"
+  end
+
   test "issuing a rental marks the bike as out and bills the nights" do
     RentalBike.create!(name: "Trek прокат", daily_rate: 300)
     sign_in @owner

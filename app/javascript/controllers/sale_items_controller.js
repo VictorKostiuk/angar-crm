@@ -7,7 +7,11 @@ export default class extends Controller {
   static targets = ["rows", "template"]
 
   add() {
-    const markup = this.templateTarget.innerHTML.replace(/NEW_RECORD/g, crypto.randomUUID())
-    this.rowsTarget.insertAdjacentHTML("beforeend", markup)
+    // A NUMERIC index, not a UUID: params.expect's array form only accepts
+    // hash keys that look like indices, so a UUID-keyed row is dropped whole —
+    // silently, since the rest of the sale saves fine.
+    const index = Date.now()
+    this.rowsTarget.insertAdjacentHTML("beforeend",
+      this.templateTarget.innerHTML.replace(/NEW_RECORD/g, index))
   }
 }
