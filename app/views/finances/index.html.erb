@@ -31,7 +31,7 @@
       <div class="bg-white border border-gray-200 rounded-xl p-4">
         <p class="text-sm text-gray-500">Виплати механікам</p>
         <p class="text-xl font-bold text-gray-900"><%= money(@payouts_total) %></p>
-        <p class="mt-1 text-xs text-gray-400">Враховано виплати за місяці, що повністю потрапляють в обраний період.</p>
+        <p class="mt-1 text-xs text-gray-400">Виплати, здійснені в обраний період.</p>
       </div>
       <div class="bg-white border border-gray-200 rounded-xl p-4">
         <p class="text-sm text-gray-500">Чистий прибуток</p>
@@ -88,4 +88,119 @@
       <% end %>
     </table>
   </div>
+
+  <%# ── Zone 2: breakdown, absorbed from the former Звіти page ───────────────
+      Its filters live in the card directly above it and scope THIS section
+      only. The P&L above stays period-only: expenses can't be attributed to a
+      mechanic, so filtering those tiles would make the arithmetic stop adding
+      up. %>
+  <div class="bg-white border border-gray-200 rounded-xl p-4 mt-8 mb-4">
+    <h2 class="font-bold text-gray-900 mb-1">Деталізація по механіках</h2>
+    <p class="text-sm text-gray-500 mb-3">Фільтри нижче стосуються лише цього розділу.</p>
+
+    <%= form_with url: finances_path, method: :get, data: { turbo_frame: "finances_content" },
+          class: "flex flex-wrap items-end gap-3" do %>
+      <%= hidden_field_tag :period, @period.period %>
+      <% if @period.period == "range" %>
+        <%= hidden_field_tag :from, @period.from.to_date %>
+        <%= hidden_field_tag :to, @period.to.to_date %>
+      <% end %>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Механік</label>
+        <%= select_tag :mechanic_id, options_for_select([ [ "Усі", "" ] ] + @mechanics.map { |m| [ m.name, m.id ] }, @mechanic&.id),
+              class: "block rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Статус замовлення</label>
+        <%= select_tag :status, options_for_select(Order.statuses.keys.map { |s| [ t("statuses.order.#{s}"), s ] }, @status),
+              class: "block rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+      </div>
+      <%= submit_tag "Застосувати", class: "rounded-md bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Послуги</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@breakdown_works) %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Запчастини</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@breakdown_parts) %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Загальний чек</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@breakdown_works + @breakdown_parts) %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Кількість замовлень</p>
+      <p class="text-xl font-bold text-gray-900"><%= @breakdown_count %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Середній чек</p>
+      <p class="text-xl font-bold text-gray-900">
+        <%= @breakdown_count.positive? ? money((@breakdown_works + @breakdown_parts) / @breakdown_count) : "—" %>
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-4">
+    <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Доходи по механіках</h2>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-left text-gray-500">
+        <tr>
+          <th class="px-4 py-3 font-medium">Механік</th>
+          <th class="px-4 py-3 font-medium">Замовлень</th>
+          <th class="px-4 py-3 font-medium">Послуги</th>
+          <th class="px-4 py-3 font-medium">Запчастини</th>
+          <th class="px-4 py-3 font-medium">Разом чеків</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @income_by_mechanic.each do |row| %>
+          <tr>
+            <td class="px-4 py-3 text-gray-900"><%= row[:mechanic].name %></td>
+            <td class="px-4 py-3 text-gray-600"><%= row[:order_count] %></td>
+            <td class="px-4 py-3 text-gray-600"><%= money(row[:works_total]) %></td>
+            <td class="px-4 py-3 text-gray-600"><%= money(row[:parts_total]) %></td>
+            <td class="px-4 py-3 font-medium text-gray-900"><%= money(row[:works_total] + row[:parts_total]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%# §7: payroll is owner-only — an admin sees the revenue breakdown above but
+      never individual payouts. %>
+  <% if Current.user.owner? %>
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Розрахунок виробітки механіків</h2>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left text-gray-500">
+          <tr>
+            <th class="px-4 py-3 font-medium">Механік</th>
+            <th class="px-4 py-3 font-medium">Послуги</th>
+            <th class="px-4 py-3 font-medium">% заробітку</th>
+            <th class="px-4 py-3 font-medium">Заробіток</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @payroll_rows.each do |row| %>
+            <tr>
+              <td class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
+              <td class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
+              <td class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
+              <td class="px-4 py-3 font-medium text-green-700"><%= money(row.payout) %></td>
+            </tr>
+          <% end %>
+
+          <% if @payroll_rows.empty? %>
+            <tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Немає механіків із ненульовим % заробітку</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
 <% end %>

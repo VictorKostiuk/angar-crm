@@ -1,7 +1,7 @@
 <% content_for :title, order_number(@order) %>
 
 <div class="mb-4">
-  <%= link_to "← Назад", :back, class: "text-sm text-gray-500 hover:text-gray-700" %>
+  <%= link_to "← До замовлень", orders_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
 </div>
 
 <div id="order_header" class="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -20,26 +20,36 @@
     </div>
     <div>
       <p class="text-xs text-gray-500 mb-1">Механік</p>
-      <%= form_with model: @order, class: "contents", data: { controller: "autosubmit" } do |f| %>
-        <%= f.collection_select :mechanic_id, @mechanics, :id, :name, { include_blank: "Не призначено" },
-              data: { action: "change->autosubmit#submit" },
-              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+      <% if @order.editable? %>
+        <%= form_with model: @order, class: "contents", data: { controller: "autosubmit" } do |f| %>
+          <%= f.collection_select :mechanic_id, @mechanics, :id, :name, { include_blank: "Не призначено" },
+                data: { action: "change->autosubmit#submit" },
+                class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        <% end %>
+      <% else %>
+        <p class="text-sm text-gray-900"><%= @order.mechanic&.name || "Не призначено" %></p>
       <% end %>
     </div>
     <div>
       <p class="text-xs text-gray-500 mb-1">Знижка</p>
+      <% if @order.editable? %>
       <%= form_with model: @order, class: "contents",
             data: { controller: "discount-picker", discount_picker_subtotal_value: (@order.works_total + @order.parts_total) } do |f| %>
-        <select data-discount-picker-target="select" data-action="change->discount-picker#apply"
+        <select name="order[discount_record_id]" id="order_discount_record_id"
+                data-discount-picker-target="select" data-action="change->discount-picker#apply"
                 class="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm">
           <option value="">Без знижки</option>
           <% @discounts.each do |discount| %>
-            <option value="<%= discount.id %>" data-kind="<%= discount.kind %>" data-value="<%= discount.value %>">
+            <option value="<%= discount.id %>" data-kind="<%= discount.kind %>" data-value="<%= discount.value %>"
+                    <%= "selected" if @order.discount_record_id == discount.id %>>
               <%= discount.name %> (<%= discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %>)
             </option>
           <% end %>
         </select>
         <%= f.hidden_field :discount, data: { discount_picker_target: "amount" } %>
+      <% end %>
+      <% else %>
+        <p class="text-sm text-gray-900"><%= @order.discount.positive? ? money(@order.discount) : "—" %></p>
       <% end %>
     </div>
     <% if @order.problem.present? %>
@@ -58,21 +68,37 @@
     <div>
       <p class="text-xs text-gray-500 mb-1">Фото</p>
       <% if @order.photos.attached? %>
-        <div class="grid grid-cols-3 gap-2 mb-2">
+        <div class="grid grid-cols-3 gap-2 mb-2" data-controller="lightbox">
           <% @order.photos.each do |photo| %>
             <div class="relative group">
-              <%= image_tag photo.variant(resize_to_limit: [ 150, 150 ]), class: "rounded-md border border-gray-200 aspect-square object-cover w-full" %>
+              <%= image_tag photo.variant(resize_to_limit: [ 150, 150 ]),
+                    data: { action: "click->lightbox#open",
+                            full_src: url_for(photo.variant(resize_to_limit: [ 1600, 1600 ])),
+                            full_alt: "Фото замовлення #{order_number(@order)}" },
+                    class: "rounded-md border border-gray-200 aspect-square object-cover w-full cursor-zoom-in" %>
+              <% if @order.editable? %>
               <%= button_to "×", order_photo_path(@order, photo), method: :delete,
                     data: { turbo_confirm: "Видалити фото?" },
                     class: "absolute top-1 right-1 w-5 h-5 rounded-full bg-gray-900/70 text-white text-xs leading-none cursor-pointer" %>
+              <% end %>
             </div>
           <% end %>
+
+          <dialog data-lightbox-target="dialog"
+                  data-action="click->lightbox#closeOnBackdrop"
+                  class="max-w-[90vw] max-h-[90vh] rounded-xl p-0 m-auto bg-transparent backdrop:bg-gray-900/80">
+            <img data-lightbox-target="image" class="max-w-[90vw] max-h-[90vh] rounded-xl object-contain" alt="">
+            <button type="button" data-action="lightbox#close" aria-label="Закрити"
+                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-gray-900/70 text-white text-lg leading-none cursor-pointer">&times;</button>
+          </dialog>
         </div>
       <% end %>
+      <% if @order.editable? %>
       <%= form_with url: order_photos_path(@order), multipart: true, class: "flex items-center gap-2" do %>
         <%= file_field_tag "photos[]", multiple: true, accept: "image/*",
               class: "block w-full text-xs text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-gray-200" %>
         <%= submit_tag "Додати", class: "shrink-0 rounded-md border border-gray-300 text-xs font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+      <% end %>
       <% end %>
     </div>
   </div>
@@ -81,8 +107,10 @@
     <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <h2 class="font-bold text-gray-900">Послуги</h2>
-        <%= link_to "+ Додати послугу", new_order_order_work_path(@order), data: { turbo_frame: "modal" },
-              class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+        <% if @order.editable? %>
+          <%= link_to "+ Додати послугу", new_order_order_work_path(@order), data: { turbo_frame: "modal" },
+                class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+        <% end %>
       </div>
       <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-500">
@@ -103,8 +131,10 @@
     <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <h2 class="font-bold text-gray-900">Запчастини</h2>
-        <%= link_to "+ Додати запчастину", new_order_order_part_path(@order), data: { turbo_frame: "modal" },
-              class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+        <% if @order.editable? %>
+          <%= link_to "+ Додати запчастину", new_order_order_part_path(@order), data: { turbo_frame: "modal" },
+                class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+        <% end %>
       </div>
       <table class="w-full text-sm">
         <thead class="bg-gray-50 text-left text-gray-500">

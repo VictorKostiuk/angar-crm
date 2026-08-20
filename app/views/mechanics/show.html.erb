@@ -14,10 +14,16 @@
   </div>
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
   <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">Сума послуг</p>
+    <p class="text-sm text-gray-500">Послуги</p>
     <p class="text-xl font-bold text-gray-900"><%= money(@row.works_total) %></p>
+    <p class="mt-1 text-xs text-gray-400">база для заробітку</p>
+  </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Загальна сума</p>
+    <p class="text-xl font-bold text-gray-900"><%= money(@row.total) %></p>
+    <p class="mt-1 text-xs text-gray-400">із запчастинами <%= money(@row.parts_total) %></p>
   </div>
   <div class="bg-white border border-gray-200 rounded-xl p-4">
     <p class="text-sm text-gray-500">Завершено замовлень</p>
@@ -28,8 +34,9 @@
     <p class="text-xl font-bold text-gray-900"><%= @row.in_progress_count %></p>
   </div>
   <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">До виплати</p>
+    <p class="text-sm text-gray-500">Заробіток</p>
     <p class="text-xl font-bold text-green-700"><%= @row.payout.positive? ? money(@row.payout) : "—" %></p>
+    <p class="mt-1 text-xs text-gray-400"><%= @mechanic.payroll_percent.to_i %>% від послуг</p>
   </div>
 </div>
 
@@ -37,7 +44,7 @@
   <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6">
     <div class="flex items-center justify-between mb-3">
       <h2 class="font-bold text-gray-900">Виплати</h2>
-      <%= link_to "Записати виплату", new_mechanic_payroll_payout_path(@mechanic), data: { turbo_frame: "modal" },
+      <%= link_to "Записати виплату", new_mechanic_payroll_payout_path(@mechanic, month: @period.from.to_date), data: { turbo_frame: "modal" },
             class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-1.5" %>
     </div>
 
@@ -51,9 +58,10 @@
     <% if @payouts.any? %>
       <div class="divide-y divide-gray-100 text-sm">
         <% @payouts.each do |payout| %>
-          <div class="flex items-center justify-between py-2">
-            <span class="text-gray-500"><%= payout.period_month.strftime("%m.%Y") %></span>
+          <div class="flex items-center justify-between gap-3 py-2">
+            <span class="text-gray-900"><%= l payout.paid_on %></span>
             <span class="font-medium text-gray-900"><%= money(payout.amount) %></span>
+            <span class="text-gray-500">за <%= payout.period_month.strftime("%m.%Y") %></span>
             <span class="text-gray-500"><%= payout.recorded_by.name %></span>
             <span class="text-gray-400"><%= payout.note %></span>
           </div>

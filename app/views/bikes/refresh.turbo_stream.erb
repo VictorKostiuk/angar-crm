@@ -1,5 +1,5 @@
 <%= turbo_stream.update "bikes_rows" do %>
-  <%= render "rows", bikes: @bikes %>
+  <%= render "rows", bikes: @bikes, in_shop_ids: @in_shop_ids %>
 <% end %>
 
 <%= turbo_stream.replace "bike_form" do %>

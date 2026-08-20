@@ -4,17 +4,25 @@
 
 <%= filter_frame "services_list" do %>
   <div class="flex flex-wrap gap-2 mb-6">
-    <%= link_to "Усі", services_path, data: { turbo_frame: "services_list" },
+    <%= link_to "Усі", services_path(q: params[:q]), data: { turbo_frame: "services_list" },
           class: class_names("rounded-full px-4 py-1.5 text-sm font-medium",
                               @selected_category.nil? ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50") %>
     <% @categories.each do |category| %>
-      <%= link_to category.name, services_path(category_id: category.id), data: { turbo_frame: "services_list" },
+      <%= link_to category.name, services_path(category_id: category.id, q: params[:q]), data: { turbo_frame: "services_list" },
             class: class_names("rounded-full px-4 py-1.5 text-sm font-medium",
                                 @selected_category == category ? "bg-brand-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50") %>
     <% end %>
     <%= link_to "+ категорія", new_category_path(kind: :service), data: { turbo_frame: "modal" },
           class: "rounded-full px-4 py-1.5 text-sm font-medium border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50" %>
   </div>
+
+  <%= form_with url: services_path, method: :get,
+        data: { controller: "debounce", turbo_frame: "services_list" }, class: "mb-6 max-w-md" do %>
+    <%= hidden_field_tag :category_id, params[:category_id] %>
+    <%= search_field_tag :q, params[:q], placeholder: "Пошук за назвою послуги…",
+          data: { action: "input->debounce#submit" },
+          class: "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-brand-600" %>
+  <% end %>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
     <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">

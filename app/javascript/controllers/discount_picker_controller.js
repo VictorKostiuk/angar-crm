@@ -12,9 +12,10 @@ export default class extends Controller {
   apply() {
     const option = this.selectTarget.selectedOptions[0]
 
-    this.amountTarget.value = option?.value
-      ? this.#amountFor(option)
-      : 0
+    // The <select> carries name="order[discount_record_id]" and submits itself,
+    // so JS only has to work out the amount. Keeping the association in the
+    // markup means a stale or broken controller can't silently drop it.
+    this.amountTarget.value = option?.value ? this.#amountFor(option) : 0
 
     this.element.requestSubmit()
   }

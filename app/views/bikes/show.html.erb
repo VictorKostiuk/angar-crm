@@ -1,0 +1,73 @@
+<% content_for :title, @bike.display_name %>
+
+<div class="mb-4">
+  <%= link_to "← До велосипедів", bikes_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+</div>
+
+<div class="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900"><%= @bike.name %></h1>
+    <p class="text-gray-500 text-sm mt-1">
+      <%= link_to @bike.client.name, @bike.client, class: "hover:underline" %> · <%= @bike.client.formatted_phone %>
+    </p>
+  </div>
+  <% if @bike.active? %>
+    <span class="shrink-0 self-start inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= @bike.in_shop? ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600" %>">
+      <%= @bike.in_shop? ? "У майстерні" : "Видано" %>
+    </span>
+  <% else %>
+    <span class="shrink-0 self-start inline-block rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700">Архівовано</span>
+  <% end %>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+  <div class="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+    <% [ [ "Бренд", @bike.brand ], [ "Модель", @bike.model ],
+         [ "Колір", @bike.color ], [ "Розмір", @bike.size ] ].each do |label, value| %>
+      <div>
+        <p class="text-xs text-gray-500"><%= label %></p>
+        <p class="text-sm text-gray-900"><%= value.presence || "—" %></p>
+      </div>
+    <% end %>
+    <div>
+      <p class="text-xs text-gray-500">Примітки</p>
+      <p class="text-sm text-gray-900 whitespace-pre-line"><%= @bike.notes.presence || "—" %></p>
+    </div>
+  </div>
+
+  <div class="lg:col-span-2">
+    <h2 class="font-bold text-gray-900 mb-3">Історія замовлень</h2>
+    <% if @orders.any? %>
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-500">
+            <tr>
+              <th class="px-4 py-3 font-medium">№</th>
+              <th class="px-4 py-3 font-medium">Дата</th>
+              <th class="px-4 py-3 font-medium">Механік</th>
+              <th class="px-4 py-3 font-medium">Статус</th>
+              <th class="px-4 py-3 font-medium">Сума</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @orders.each do |order| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3">
+                  <%= link_to order_number(order), order, class: "font-medium text-brand-600 hover:underline" %>
+                </td>
+                <td class="px-4 py-3 text-gray-600"><%= l order.accepted_at.to_date %></td>
+                <td class="px-4 py-3 text-gray-600"><%= order.mechanic&.name || "—" %></td>
+                <td class="px-4 py-3"><%= render "shared/status_badge", order: order %></td>
+                <td class="px-4 py-3 text-gray-600"><%= money(order.total) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-gray-400">
+        Цей велосипед ще не був у роботі.
+      </div>
+    <% end %>
+  </div>
+</div>

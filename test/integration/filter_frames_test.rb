@@ -13,7 +13,6 @@ class FilterFramesTest < ActionDispatch::IntegrationTest
     "services_list"      => :services_path,
     "finances_content"   => :finances_path,
     "statistics_content" => :statistics_path,
-    "reports_content"    => :reports_path,
     "mechanics_content"  => :mechanics_path
   }.freeze
 
@@ -72,16 +71,17 @@ class FilterFramesTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # Reports is the one page where two filters share a frame and could drop each
-  # other's params.
-  test "reports keeps both of its filters through a frame request" do
+  # Фінанси carries three filters in one frame — period (zone 1 + 2), mechanic
+  # and status (zone 2 only) — and they must not drop each other.
+  test "finances keeps all of its filters through a frame request" do
     mechanic = users(:andrii)
 
-    get reports_path(period: "month", mechanic_id: mechanic.id),
-        headers: { "Turbo-Frame" => "reports_content" }
+    get finances_path(period: "month", mechanic_id: mechanic.id, status: "closed"),
+        headers: { "Turbo-Frame" => "finances_content" }
 
-    assert_select "turbo-frame#reports_content"
+    assert_select "turbo-frame#finances_content"
     assert_select "select[name=mechanic_id] option[selected][value=?]", mechanic.id.to_s
+    assert_select "select[name=status] option[selected][value=closed]"
     assert_select "a.bg-gray-900", text: "Місяць"
   end
 

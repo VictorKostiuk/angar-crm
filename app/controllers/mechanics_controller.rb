@@ -5,7 +5,7 @@ class MechanicsController < ApplicationController
   before_action :require_own_card_or_owner, only: :show
 
   # §7: only the owner sees the roster ("all mechanics' payroll" is
-  # owner-only — admin is denied here, unlike Reports where admin gets
+  # owner-only — admin is denied here, unlike Фінанси where admin gets
   # revenue but not payroll). A mechanic sees only their own card — index
   # just redirects them there; show (below) is the actual access-control
   # boundary, since a redirect alone doesn't stop a direct URL.

@@ -2,6 +2,9 @@ class Order < ApplicationRecord
   belongs_to :client, counter_cache: true
   belongs_to :bike
   belongs_to :mechanic, class_name: "User", optional: true
+  # `discount` holds the computed amount; `discount_record` remembers which
+  # catalog entry produced it, so the picker can show what was chosen.
+  belongs_to :discount_record, class_name: "Discount", optional: true
   belongs_to :accepted_by, class_name: "User"
 
   has_many :order_works, -> { order(:position) }, dependent: :destroy, inverse_of: :order
@@ -23,6 +26,13 @@ class Order < ApplicationRecord
 
   scope :open_orders, -> { where(status: OPEN_STATUSES) }
 
+  # Closed and cancelled orders are settled records — their lines, money,
+  # mechanic and photos are frozen. Enforced in the controllers, not just by
+  # hiding buttons: a hidden button is not a guard.
+  def editable?
+    open_status?
+  end
+
   # A purely-numeric query (optionally "#123") matches the order number
   # exactly, or a client phone substring; anything else matches the client
   # name — same digits-vs-text branch as Client.search, mirrored for
@@ -36,7 +46,7 @@ class Order < ApplicationRecord
     return all if query.blank?
 
     digits = query.gsub(/\D/, "")
-    relation = left_joins(:client)
+    relation = left_joins(:client, :bike)
 
     if digits.present? && digits == query.delete("#").gsub(/\s/, "")
       if digits.length >= 4
@@ -45,7 +55,7 @@ class Order < ApplicationRecord
         relation.where("orders.number::text = ?", digits)
       end
     else
-      relation.where("clients.name ILIKE ?", "%#{query}%")
+      relation.where("clients.name ILIKE :q OR bikes.name ILIKE :q", q: "%#{query}%")
     end
   }
 

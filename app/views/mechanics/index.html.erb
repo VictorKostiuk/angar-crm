@@ -37,18 +37,30 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 text-sm">
+        <%# Послуги × % заробітку = Заробіток, all on screen, so the payout can
+            be checked rather than taken on faith. Загальна сума is shown for
+            context only — it is deliberately NOT the earning base (D33). %>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-gray-100 text-sm">
           <div>
-            <p class="text-gray-500">Сума послуг</p>
+            <p class="text-gray-500">Послуги</p>
             <p class="text-lg font-bold text-gray-900"><%= money(row.works_total) %></p>
           </div>
           <div>
-            <p class="text-gray-500">% від робіт</p>
+            <p class="text-gray-500">Запчастини</p>
+            <p class="text-lg font-bold text-gray-900"><%= money(row.parts_total) %></p>
+          </div>
+          <div>
+            <p class="text-gray-500">Загальна сума</p>
+            <p class="text-lg font-bold text-gray-900"><%= money(row.total) %></p>
+          </div>
+          <div>
+            <p class="text-gray-500">% заробітку</p>
             <p class="text-lg font-bold text-gray-900"><%= row.mechanic.payroll_percent.to_i %>%</p>
           </div>
           <div>
-            <p class="text-gray-500">До виплати</p>
+            <p class="text-gray-500">Заробіток</p>
             <p class="text-lg font-bold text-green-700"><%= row.payout.positive? ? money(row.payout) : "—" %></p>
+            <p class="text-xs text-gray-400"><%= row.mechanic.payroll_percent.to_i %>% від послуг</p>
           </div>
         </div>
       </div>

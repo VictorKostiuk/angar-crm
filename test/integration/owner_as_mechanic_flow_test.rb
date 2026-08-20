@@ -54,7 +54,7 @@ class OwnerAsMechanicFlowTest < ActionDispatch::IntegrationTest
     get mechanic_path(@owner)
     assert_response :success
 
-    get reports_path
+    get finances_path
     assert_select "select[name=mechanic_id] option", text: @owner.name
 
     # The roster is where the owner manages people, so adding one starts here.

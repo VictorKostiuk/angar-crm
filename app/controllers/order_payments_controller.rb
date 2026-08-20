@@ -7,8 +7,8 @@ class OrderPaymentsController < ApplicationController
   end
 
   def update
-    if @order.cancelled?
-      @order.errors.add(:base, "Скасоване замовлення не можна оплатити")
+    unless @order.editable?
+      @order.errors.add(:base, "Замовлення закрито або скасовано — оплату змінити не можна")
       render :edit, status: :unprocessable_entity
       return
     end

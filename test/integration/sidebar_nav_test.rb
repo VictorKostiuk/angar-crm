@@ -31,7 +31,7 @@ class SidebarNavTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_every_nav_entry_has_an_icon 12
+    assert_every_nav_entry_has_an_icon 11
     assert_select "nav > span", 0, "the owner has no disabled entries"
   end
 
@@ -40,7 +40,7 @@ class SidebarNavTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_every_nav_entry_has_an_icon 12
-    assert_select "nav > span", 6, "services, parts, suppliers, finances, reports and settings are gated"
+    assert_every_nav_entry_has_an_icon 11
+    assert_select "nav > span", 5, "services, parts, suppliers, finances and settings are gated"
   end
 end

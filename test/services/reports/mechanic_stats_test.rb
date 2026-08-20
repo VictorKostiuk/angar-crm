@@ -84,7 +84,9 @@ class Reports::MechanicStatsTest < ActiveSupport::TestCase
     assert_equal 0, stats.row_for(zero_pct).payout
   end
 
-  test "payout includes parts_total, not just works_total (D32)" do
+  # D33 (2026-08-20, reverses D32): parts are goods the shop resells, not
+  # labour the mechanic performed, so the earning base is послуги alone.
+  test "payout is taken from works_total alone, parts excluded (D33)" do
     order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
                            status: :in_progress, mechanic: @mechanic_a)
     order.order_works.create!(name: "Робота", quantity: 1, price: 1000)
@@ -98,7 +100,8 @@ class Reports::MechanicStatsTest < ActiveSupport::TestCase
 
     assert_equal 1000, row.works_total
     assert_equal 1000, row.parts_total
-    assert_equal 700, row.payout # (1000 + 1000) * 35%
+    assert_equal 2000, row.total, "total still reports both, it is just not the earning base"
+    assert_equal 350, row.payout # 1000 послуги * 35%, parts excluded
   end
 
   test "in_progress_count is live, not period-scoped" do

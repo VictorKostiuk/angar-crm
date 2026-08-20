@@ -1,16 +1,22 @@
 class OrdersController < ApplicationController
   before_action :set_order, only: %i[ show update ]
+  before_action :require_editable_order, only: :update
 
-  # Default view excludes closed orders — they live in Архів
-  # (orders_path(status: "closed")) since that's already a one-click nav
-  # shortcut to them. Explicitly filtering by any status, including
-  # "Закрито" via the dropdown or the Архів link, still works.
+  # Замовлення lists live orders only; everything settled — closed *and*
+  # cancelled — lives in Архів. `status=archive` is a pseudo-status for that
+  # pair, deliberately one param rather than a second one bolted alongside, so
+  # the nav link, the active check and the dropdown all read the same value.
+  # Explicitly filtering by a real status still works and overrides both.
+  ARCHIVE_STATUSES = %w[ closed cancelled ].freeze
+
   def index
     scope = Order.search(params[:q]).includes(:client, :bike, :mechanic)
     if Order.statuses.key?(params[:status])
       scope = scope.where(status: params[:status])
+    elsif params[:status] == "archive"
+      scope = scope.where(status: ARCHIVE_STATUSES)
     else
-      scope = scope.where.not(status: :closed)
+      scope = scope.where.not(status: ARCHIVE_STATUSES)
     end
     scope = scope.where(payment_status: params[:payment_status]) if Order.payment_statuses.key?(params[:payment_status])
     scope = scope.where(mechanic_id: params[:mechanic_id]) if params[:mechanic_id].present?
@@ -60,7 +66,7 @@ class OrdersController < ApplicationController
     @order_parts = @order.order_parts.order(:position)
     @order_status_changes = @order.order_status_changes.includes(:user)
     @mechanics = User.assignable_as_mechanic.active.order(:name)
-    @discounts = Discount.active.ordered
+    @discounts = discounts_for(@order)
   end
 
   def update
@@ -71,12 +77,27 @@ class OrdersController < ApplicationController
       @order_parts = @order.order_parts.order(:position)
       @order_status_changes = @order.order_status_changes.includes(:user)
       @mechanics = User.assignable_as_mechanic.active.order(:name)
-      @discounts = Discount.active.ordered
+      @discounts = discounts_for(@order)
       render :show, status: :unprocessable_entity
     end
   end
 
   private
+    # Archiving a discount must not make the orders that used it read as
+    # "Без знижки" — keep the order's own entry in the list even when it is no
+    # longer offered for new orders.
+    def discounts_for(order)
+      discounts = Discount.active.ordered.to_a
+      discounts << order.discount_record if order.discount_record && discounts.exclude?(order.discount_record)
+      discounts
+    end
+
+    def require_editable_order
+      return if @order.editable?
+
+      redirect_to @order, alert: "Замовлення закрито або скасовано — редагування недоступне."
+    end
+
     def set_order
       @order = Order.find(params[:id])
     end
@@ -88,6 +109,6 @@ class OrdersController < ApplicationController
     end
 
     def order_params
-      params.expect(order: %i[ mechanic_id expected_ready_on discount ])
+      params.expect(order: %i[ mechanic_id expected_ready_on discount discount_record_id ])
     end
 end

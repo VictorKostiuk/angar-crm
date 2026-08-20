@@ -1,7 +1,15 @@
-<%# locals: (bikes:) %>
+<%# locals: (bikes:, in_shop_ids: nil) %>
 <% bikes.each do |bike| %>
   <tr class="hover:bg-gray-50" id="bike_row_<%= bike.id %>">
-    <td class="px-4 py-3 text-gray-900"><%= bike.name %></td>
+    <td class="px-4 py-3">
+      <%= link_to bike.name, bike, class: "font-medium text-gray-900 hover:text-brand-600" %>
+    </td>
+    <td class="px-4 py-3">
+      <% in_shop = in_shop_ids ? in_shop_ids.include?(bike.id) : bike.in_shop? %>
+      <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= in_shop ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600" %>">
+        <%= in_shop ? "У майстерні" : "Видано" %>
+      </span>
+    </td>
     <td class="px-4 py-3 text-gray-600"><%= link_to bike.client.name, bike.client, class: "hover:underline" %></td>
     <td class="px-4 py-3 text-gray-600"><%= [ bike.brand, bike.model ].compact_blank.join(" ").presence || "—" %></td>
     <td class="px-4 py-3 text-right whitespace-nowrap">
@@ -21,5 +29,5 @@
 <% end %>
 
 <% if bikes.none? %>
-  <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Велосипедів не знайдено</td></tr>
+  <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Велосипедів не знайдено</td></tr>
 <% end %>

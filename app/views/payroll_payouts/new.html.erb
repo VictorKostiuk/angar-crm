@@ -10,10 +10,34 @@
       </div>
     <% end %>
 
-    <div>
-      <%= f.label :period_month, "За який місяць", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.date_field :period_month, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+    <%# Two different dates: which month's earnings this settles (month picker —
+        only the month is stored) and when the money actually left. %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <%= f.label :period_month, "За який місяць", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.month_field :period_month, value: @payout.period_month&.strftime("%Y-%m"),
+              class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+      </div>
+      <div>
+        <%= f.label :paid_on, "Коли виплачено", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.date_field :paid_on, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+      </div>
     </div>
+
+    <dl class="rounded-lg bg-gray-50 p-3 space-y-1 text-sm">
+      <div class="flex justify-between">
+        <dt class="text-gray-500">Нараховано за <%= @month.strftime("%m.%Y") %></dt>
+        <dd class="text-gray-900"><%= money(@earned) %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-gray-500">Уже виплачено</dt>
+        <dd class="text-gray-900"><%= money(@already_paid) %></dd>
+      </div>
+      <div class="flex justify-between pt-1 border-t border-gray-200 font-bold">
+        <dt class="text-gray-900">Залишок</dt>
+        <dd class="<%= @outstanding.positive? ? "text-green-700" : "text-gray-900" %>"><%= money(@outstanding) %></dd>
+      </div>
+    </dl>
 
     <div>
       <%= f.label :amount, "Сума", class: "block text-sm font-medium text-gray-700 mb-1" %>

@@ -16,13 +16,14 @@
         <thead class="bg-gray-50 text-left text-gray-500">
           <tr>
             <th class="px-4 py-3 font-medium">Велосипед</th>
+          <th class="px-4 py-3 font-medium">Стан</th>
             <th class="px-4 py-3 font-medium">Клієнт</th>
             <th class="px-4 py-3 font-medium">Бренд / модель</th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody id="bikes_rows" class="divide-y divide-gray-100">
-          <%= render "rows", bikes: @bikes %>
+          <%= render "rows", bikes: @bikes, in_shop_ids: @in_shop_ids %>
         </tbody>
       </table>
     </div>

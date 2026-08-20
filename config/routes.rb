@@ -15,7 +15,7 @@ Rails.application.routes.draw do
     resources :bikes, only: %i[ new create ]
     get :search, on: :collection
   end
-  resources :bikes, only: %i[ index update destroy ]
+  resources :bikes, only: %i[ index show update destroy ]
 
   resources :services, only: %i[ index create update destroy ] do
     get :search, on: :collection
@@ -47,7 +47,6 @@ Rails.application.routes.draw do
   resources :mechanics, only: %i[ index show ] do
     resources :payroll_payouts, only: %i[ new create ]
   end
-  get "reports", to: "reports#index"
   get "finances", to: "finances#index"
   get "statistics", to: "statistics#index"
 

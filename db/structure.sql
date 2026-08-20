@@ -486,7 +486,8 @@ CREATE TABLE public.orders (
     discount numeric(12,2) DEFAULT 0.0 NOT NULL,
     total numeric(12,2) DEFAULT 0.0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    discount_record_id bigint
 );
 
 
@@ -560,7 +561,8 @@ CREATE TABLE public.payroll_payouts (
     period_month date NOT NULL,
     note character varying,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    paid_on date NOT NULL
 );
 
 
@@ -1247,6 +1249,13 @@ CREATE INDEX index_orders_on_closed_at ON public.orders USING btree (closed_at);
 
 
 --
+-- Name: index_orders_on_discount_record_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_orders_on_discount_record_id ON public.orders USING btree (discount_record_id);
+
+
+--
 -- Name: index_orders_on_mechanic_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1307,6 +1316,13 @@ CREATE INDEX index_parts_on_name ON public.parts USING btree (name);
 --
 
 CREATE INDEX index_parts_on_supplier_id ON public.parts USING btree (supplier_id);
+
+
+--
+-- Name: index_payroll_payouts_on_paid_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_payroll_payouts_on_paid_on ON public.payroll_payouts USING btree (paid_on);
 
 
 --
@@ -1571,6 +1587,14 @@ ALTER TABLE ONLY public.order_works
 
 
 --
+-- Name: orders fk_rails_e95da7de5e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT fk_rails_e95da7de5e FOREIGN KEY (discount_record_id) REFERENCES public.discounts(id);
+
+
+--
 -- Name: orders fk_rails_f4680e5de4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1593,6 +1617,8 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260820084506'),
+('20260820083725'),
 ('20260819095631'),
 ('20260819092009'),
 ('20260818190722'),

@@ -10,8 +10,11 @@ module Reports
   # works-only), so parts_total is attributed by order ownership
   # (order.mechanic_id) instead.
   #
-  # D32 (supersedes D12/§6 rule 7): payout is the full order total — works
-  # and parts — times the mechanic's payroll %, not works alone.
+  # D33 (2026-08-20, reverses D32 and restores D12/§6 rule 7): payout is
+  # works_total — the mechanic's services — times their payroll %. Parts are
+  # goods the shop resells, not labour the mechanic performed, so they no
+  # longer count toward the earning base. `total` is still computed and shown,
+  # but purely as information; it is not what payout multiplies against.
   class MechanicStats
     Row = Struct.new(:mechanic, :accepted_count, :in_progress_count, :completed_count, :works_total, :parts_total, keyword_init: true) do
       def total
@@ -23,7 +26,7 @@ module Reports
       # as the 1978 the owner sees, and leaves a −0.50 residual that shows up
       # on the mechanic's card as an unpayable "-1 грн".
       def payout
-        (total * mechanic.payroll_percent / 100).round
+        (works_total * mechanic.payroll_percent / 100).round
       end
     end
 

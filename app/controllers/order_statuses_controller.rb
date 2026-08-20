@@ -4,10 +4,12 @@ class OrderStatusesController < ApplicationController
   before_action :set_order
 
   def edit
+    @mechanics = User.assignable_as_mechanic.active.order(:name)
   end
 
   def update
-    @order = Orders::ChangeStatus.call(order: @order, status: params[:status], user: Current.user, comment: params[:comment])
+    @order = Orders::ChangeStatus.call(order: @order, status: params[:status], user: Current.user,
+                                      comment: params[:comment], mechanic_id: params[:mechanic_id])
 
     if @order.errors.empty?
       respond_to do |format|
@@ -15,6 +17,7 @@ class OrderStatusesController < ApplicationController
         format.html { redirect_to @order, notice: "Статус оновлено." }
       end
     else
+      @mechanics = User.assignable_as_mechanic.active.order(:name)
       render :edit, status: :unprocessable_entity
     end
   end

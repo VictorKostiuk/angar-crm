@@ -70,7 +70,7 @@ class ServicesController < ApplicationController
     def load_index_data
       @categories = Category.service.active.ordered
       @selected_category = @categories.find_by(id: params[:category_id])
-      @services = Service.active.ordered
+      @services = Service.active.search(params[:q]).ordered
       @services = @services.where(category: @selected_category) if @selected_category
     end
 

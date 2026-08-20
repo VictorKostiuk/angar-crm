@@ -11,7 +11,10 @@ class ClientsController < ApplicationController
 
   def show
     @bikes = @client.bikes.active.order(:name)
+    # Clicking a bike chip narrows the history below it.
+    @selected_bike = @bikes.find { |bike| bike.id.to_s == params[:bike_id] } if params[:bike_id].present?
     @orders = @client.orders.order(accepted_at: :desc)
+    @orders = @orders.where(bike_id: @selected_bike.id) if @selected_bike
     # Cancelled orders were never billed, so counting them would overstate what
     # the client has actually spent.
     @billed_orders = @orders.reject(&:cancelled?)

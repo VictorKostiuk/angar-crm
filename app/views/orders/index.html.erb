@@ -11,11 +11,12 @@
     <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
       <div>
         <label class="block text-xs font-medium text-gray-500 mb-1">Пошук</label>
-        <%= text_field_tag :q, params[:q], placeholder: "№, клієнт, телефон", class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        <%= text_field_tag :q, params[:q], placeholder: "№, клієнт, телефон, велосипед", class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
-        <%= select_tag :status, options_for_select([ [ "Усі статуси", "" ] ] + Order.statuses.keys.map { |s| [ t("statuses.order.#{s}"), s ] }, params[:status]),
+        <%= select_tag :status, options_for_select([ [ "Усі статуси", "" ], [ "Архів (закриті + скасовані)", "archive" ] ] +
+                               Order.statuses.keys.map { |s| [ t("statuses.order.#{s}"), s ] }, params[:status]),
               class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       </div>
       <div>
@@ -67,11 +68,19 @@
             </td>
             <td class="px-4 py-3 text-gray-600"><%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></td>
             <td class="px-4 py-3">
-              <p class="text-gray-900"><%= order.client.name %></p>
-              <p class="text-gray-500 text-xs"><%= order.client.formatted_phone %></p>
+              <%= link_to order.client, class: "block hover:text-brand-600" do %>
+                <span class="block text-gray-900"><%= order.client.name %></span>
+                <span class="block text-gray-500 text-xs"><%= order.client.formatted_phone %></span>
+              <% end %>
             </td>
-            <td class="px-4 py-3 text-gray-600"><%= order.bike.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= order.mechanic&.name || "—" %></td>
+            <td class="px-4 py-3">
+              <%= link_to order.bike.name, order.bike, class: "text-gray-600 hover:text-brand-600 hover:underline" %>
+            </td>
+            <td class="px-4 py-3 text-gray-600">
+              <% if order.mechanic %>
+                <%= link_to order.mechanic.name, mechanic_path(order.mechanic), class: "hover:text-brand-600 hover:underline" %>
+              <% else %>—<% end %>
+            </td>
             <td class="px-4 py-3"><%= render "shared/status_badge", order: order %></td>
             <td class="px-4 py-3"><%= render "shared/payment_badge", order: order %></td>
             <td class="px-4 py-3 text-gray-900 font-medium"><%= order.total.positive? ? money(order.total) : "—" %></td>

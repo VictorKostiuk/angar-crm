@@ -6,11 +6,12 @@ module Orders
   class ChangeStatus
     def self.call(...) = new(...).call
 
-    def initialize(order:, status:, user:, comment: nil)
+    def initialize(order:, status:, user:, comment: nil, mechanic_id: :unchanged)
       @order = order
       @status = status.to_s
       @user = user
       @comment = comment
+      @mechanic_id = mechanic_id
     end
 
     def call
@@ -19,7 +20,14 @@ module Orders
         return @order
       end
 
-      return @order if @order.status == @status # no-op: nothing changed, nothing to log
+      # Picking who does the job is part of moving it into work, so it rides the
+      # same transaction rather than a second, separately-failing update.
+      @order.mechanic_id = @mechanic_id.presence unless @mechanic_id == :unchanged
+
+      if @order.status == @status # no-op on status; a mechanic pick still saves
+        @order.save if @order.changed?
+        return @order
+      end
 
       # Built via OrderStatusChange.new (not @order.order_status_changes.new)
       # so it isn't added to @order's association target — otherwise saving
@@ -28,7 +36,8 @@ module Orders
       change = OrderStatusChange.new(order: @order, user: @user, from_status: @order.status, to_status: @status, comment: @comment)
 
       ActiveRecord::Base.transaction do
-        raise ActiveRecord::Rollback unless change.save && @order.update(status: @status)
+        @order.status = @status
+        raise ActiveRecord::Rollback unless change.save && @order.save
       end
 
       @order.errors.add(:base, change.errors.full_messages.to_sentence) if change.errors.any?

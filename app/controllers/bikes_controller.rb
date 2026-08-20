@@ -7,6 +7,14 @@ class BikesController < ApplicationController
     load_index_data
   end
 
+  # Deliberately not scoped to Bike.active: an archived bike is still linked
+  # from the order history of every order it appears on, and a 404 there would
+  # be a dead end. The view labels it as archived instead.
+  def show
+    @bike = Bike.find(params[:id])
+    @orders = @bike.orders.includes(:mechanic).order(accepted_at: :desc)
+  end
+
   def new
     @bike = @client.bikes.new
   end
@@ -60,6 +68,7 @@ class BikesController < ApplicationController
 
     def load_index_data
       @bikes = Bike.active.search(params[:q]).ordered.includes(:client)
+      @in_shop_ids = Bike.in_shop_ids(@bikes)
       @bike = params[:edit].present? ? Bike.find(params[:edit]) : nil
     end
 end

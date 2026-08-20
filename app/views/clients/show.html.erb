@@ -39,8 +39,13 @@
   <h2 class="font-bold text-gray-900 mb-3">Велосипеди клієнта</h2>
   <div class="flex flex-wrap gap-2">
     <% if @bikes.any? %>
+      <%= link_to "Усі", client_path(@client),
+            class: class_names("rounded-full border px-3 py-1.5 text-sm",
+                                @selected_bike ? "border-gray-200 bg-white text-gray-700 hover:bg-gray-50" : "border-brand-600 bg-brand-600 text-white") %>
       <% @bikes.each do |bike| %>
-        <span class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"><%= bike.display_name %></span>
+        <%= link_to bike.display_name, client_path(@client, bike_id: bike.id),
+              class: class_names("rounded-full border px-3 py-1.5 text-sm",
+                                  @selected_bike == bike ? "border-brand-600 bg-brand-600 text-white" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50") %>
       <% end %>
     <% else %>
       <p class="text-sm text-gray-400">Велосипедів ще немає.</p>

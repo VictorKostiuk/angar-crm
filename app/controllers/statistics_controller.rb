@@ -15,7 +15,7 @@ class StatisticsController < ApplicationController
 
     @expenses_total = Expense.in_range(@period.range).sum(:amount)
     @profit_before_payouts = @revenue - @expenses_total
-    @payouts_total = PayrollPayout.where(period_month: @period.range).sum(:amount)
+    @payouts_total = PayrollPayout.paid_in(@period.range).sum(:amount)
     @net_profit = @profit_before_payouts - @payouts_total
 
     @mechanics = User.assignable_as_mechanic.order(:name)

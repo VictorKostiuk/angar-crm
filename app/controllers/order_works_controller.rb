@@ -2,6 +2,7 @@ class OrderWorksController < ApplicationController
   layout "modal", only: %i[ new ]
 
   before_action :set_order
+  before_action :require_editable_order, only: %i[ new create update destroy ]
 
   def new
     @categories = Category.service.active.ordered
@@ -44,6 +45,11 @@ class OrderWorksController < ApplicationController
   end
 
   private
+    def require_editable_order
+      return if @order.editable?
+
+      redirect_to @order, alert: "Замовлення закрито або скасовано — редагування недоступне."
+    end
     def set_order
       @order = Order.find(params[:order_id])
     end

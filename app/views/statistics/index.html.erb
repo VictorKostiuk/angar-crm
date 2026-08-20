@@ -84,16 +84,16 @@
       <thead class="bg-gray-50 text-left text-gray-500">
         <tr>
           <th class="px-4 py-3 font-medium">Механік</th>
-          <th class="px-4 py-3 font-medium">Сума замовлень</th>
-          <th class="px-4 py-3 font-medium">% ЗП</th>
-          <th class="px-4 py-3 font-medium">До виплати</th>
+          <th class="px-4 py-3 font-medium">Послуги</th>
+          <th class="px-4 py-3 font-medium">% заробітку</th>
+          <th class="px-4 py-3 font-medium">Заробіток</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
         <% @payroll_rows.each do |row| %>
           <tr>
             <td class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
-            <td class="px-4 py-3 text-gray-600"><%= money(row.total) %></td>
+            <td class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
             <td class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
             <td class="px-4 py-3 font-medium text-green-700"><%= money(row.payout) %></td>
           </tr>

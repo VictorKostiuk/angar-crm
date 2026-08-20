@@ -59,6 +59,71 @@ class FinancesBreakdownTest < ActionDispatch::IntegrationTest
     assert_select "tfoot td", text: money(100)
   end
 
+  # Звіти used to compute revenue the same way Фінанси does precisely so the two
+  # screens could never disagree (D30). Merged onto one page, that becomes:
+  # with default filters, zone 2's Загальний чек must equal zone 1's Дохід.
+  test "with default filters the breakdown agrees with the P&L above it" do
+    close_order!(works: 500, parts: 250)
+    close_order!(works: 1000, parts: 400)
+
+    get finances_path(period: "month")
+
+    assert_select "p", text: money(2150), minimum: 2 # Дохід and Загальний чек
+    assert_select "p", text: "Загальний чек"
+    assert_select "p", text: "Дохід"
+  end
+
+  # The P&L is period-only on purpose: expenses can't be attributed to a
+  # mechanic, so scoping those tiles would break Дохід − Витрати = Прибуток.
+  test "a mechanic filter narrows the breakdown but never the P&L" do
+    close_order!(works: 500, parts: 250)                          # @mechanic
+    other = users(:owner).tap { |u| u.update!(works_as_mechanic: true, payroll_percent: 10) }
+    order = close_order!(works: 1000, parts: 0)
+    order.update!(mechanic: other)
+
+    get finances_path(period: "month", mechanic_id: @mechanic.id)
+
+    assert_select "p", text: money(1750)  # Дохід — still shop-wide
+    assert_select "p", text: money(750)   # Загальний чек — just this mechanic
+    assert_select "tfoot td", text: money(1750), minimum: 1
+  end
+
+  test "the status filter reaches the breakdown only" do
+    close_order!(works: 500, parts: 250)
+    Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
+                  accepted_at: Time.current, status: :in_progress, mechanic: @mechanic)
+      .order_works.create!(name: "Послуга", quantity: 1, price: 999)
+
+    get finances_path(period: "month", status: "in_progress")
+
+    assert_select "p", text: money(750)  # Дохід — closed orders only, unchanged
+    assert_select "p", text: money(999)  # Загальний чек — the in-progress order
+  end
+
+  # §7: an admin gets revenue but never individual payouts.
+  test "an admin sees the breakdown but not the payroll table" do
+    admin = User.create!(name: "Адмін", email_address: "admin@fixtures.test",
+                         password: "password123", role: :admin)
+    close_order!(works: 500, parts: 250)
+
+    post session_path, params: { email_address: admin.email_address, password: "password123" }
+    get finances_path(period: "month")
+
+    assert_response :success
+    assert_select "h2", text: "Доходи по механіках"
+    assert_select "h2", text: "Розрахунок виробітки механіків", count: 0
+    assert_select "p", text: "Виплати механікам", count: 0
+    assert_select "p", text: "Чистий прибуток", count: 0
+  end
+
+  test "the retired Звіти page is gone from the routes and the sidebar" do
+    get finances_path
+    assert_select "nav a", text: "Звіти", count: 0
+
+    get "/reports"
+    assert_response :not_found
+  end
+
   private
     def money(amount) = ApplicationController.helpers.money(amount)
 end
