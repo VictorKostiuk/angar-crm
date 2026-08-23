@@ -54,6 +54,15 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
     end
   end
 
+  # Three action buttons now share the board header.
+  test "the board header wraps its buttons instead of overflowing" do
+    sign_in @owner
+    visit root_path
+
+    [ "+ Новий прокат", "+ Новий продаж", "+ Нове замовлення" ].each { |b| assert_link b }
+    assert_fits "Майстерня"
+  end
+
   test "no modal overflows at phone width" do
     sign_in @owner
 

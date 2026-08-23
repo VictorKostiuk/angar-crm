@@ -140,6 +140,34 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_text "Доступний"
   end
 
+  test "a rental can be issued straight from the board" do
+    RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+    sign_in @owner
+
+    visit root_path
+    click_on "+ Новий прокат"
+
+    select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
+    fill_in "rental[renter_name]", with: "Гість"
+    fill_in "rental[rented_from]", with: "2026-08-20"
+    fill_in "rental[rented_to]", with: "2026-08-22"
+    find("input[type=submit][value='Видати']").trigger("click")
+
+    assert_text "Велосипед видано в прокат."
+    assert_text "600 грн"
+    assert_equal 1, Rental.count
+  end
+
+  # Opening this from the board makes an empty fleet a likely first encounter.
+  test "an empty fleet says so instead of claiming everything is out" do
+    sign_in @owner
+    visit root_path
+    click_on "+ Новий прокат"
+
+    assert_text "Парк прокату порожній"
+    assert_no_text "Усі велосипеди зараз у прокаті"
+  end
+
   test "the announcement ticker appears once the owner writes one" do
     sign_in @owner
 

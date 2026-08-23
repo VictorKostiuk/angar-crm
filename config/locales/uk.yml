@@ -121,6 +121,10 @@ uk:
       expense: "Витрата"
       payroll_payout: "Виплата"
       discount: "Знижка"
+      sale: "Продаж"
+      sale_item: "Позиція продажу"
+      rental: "Прокат"
+      rental_bike: "Велосипед прокату"
     attributes:
       client:
         name: "Ім'я"
@@ -142,6 +146,26 @@ uk:
       category:
         name: "Назва"
         kind: "Тип"
+      rental:
+        rental_bike: "Велосипед"
+        issued_by: "Хто видав"
+        client: "Клієнт"
+        rented_from: "Дата видачі"
+        rented_to: "Дата повернення"
+        daily_rate: "Ставка за добу"
+        renter_name: "Ім'я"
+        renter_phone: "Телефон"
+      rental_bike:
+        name: "Назва"
+        daily_rate: "Ставка за добу"
+      sale:
+        sold_by: "Хто продав"
+        sold_at: "Дата продажу"
+      sale_item:
+        name: "Назва"
+        part: "Позиція"
+        quantity: "Кількість"
+        price: "Ціна"
       service:
         name: "Назва послуги"
         base_price: "Базова ціна"
