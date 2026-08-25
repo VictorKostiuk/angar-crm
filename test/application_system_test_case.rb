@@ -16,6 +16,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     fill_in "email_address", with: user.email_address
     fill_in "password", with: password
     click_on I18n.t("actions.sign_in")
-    assert_text I18n.t("nav.workshop")
+    # Wait on the signed-in shell itself, not on a word that also exists on the
+    # sign-in page's chrome — the assertion has to prove the session took.
+    assert_selector "aside", text: user.name, wait: 10
   end
 end

@@ -52,7 +52,7 @@ class DiscountsController < ApplicationController
 
   private
     def discount_params
-      params.expect(discount: %i[ name kind value ])
+      params.expect(discount: %i[ name kind value applies_to ])
     end
 
     def load_index_data

@@ -1,6 +1,8 @@
 class Client < ApplicationRecord
   has_many :bikes, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
+  # A discount pinned to this client, applied to their orders automatically.
+  belongs_to :discount, optional: true
 
   normalizes :name, with: ->(name) { name.strip.squeeze(" ") }
   normalizes :phone, with: ->(phone) { Client.normalize_phone(phone) }
@@ -24,6 +26,17 @@ class Client < ApplicationRecord
       where("name ILIKE ?", "%#{query}%")
     end
   }
+
+  # Lifetime spend on services across closed orders. Summed from the work lines
+  # rather than orders.works_total: a discount depends on this number now, and a
+  # cached column that drifted would quietly change what a client pays (D30).
+  def services_spent
+    OrderWork.joins(:order).merge(Order.closed.where(client_id: id)).sum(:total)
+  end
+
+  def loyalty_percent
+    Clients::LoyaltyTier.percent_for(services_spent)
+  end
 
   def self.normalize_phone(phone)
     digits = phone.to_s.gsub(/\D/, "")

@@ -243,7 +243,8 @@ CREATE TABLE public.clients (
     notes text,
     orders_count integer DEFAULT 0 NOT NULL,
     phone character varying NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    discount_id bigint
 );
 
 
@@ -277,7 +278,8 @@ CREATE TABLE public.discounts (
     value numeric(8,2) NOT NULL,
     active boolean DEFAULT true NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    applies_to integer DEFAULT 0 NOT NULL
 );
 
 
@@ -487,7 +489,8 @@ CREATE TABLE public.orders (
     total numeric(12,2) DEFAULT 0.0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    discount_record_id bigint
+    discount_record_id bigint,
+    discount_source character varying
 );
 
 
@@ -1346,6 +1349,13 @@ CREATE UNIQUE INDEX index_categories_on_kind_and_name ON public.categories USING
 
 
 --
+-- Name: index_clients_on_discount_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_clients_on_discount_id ON public.clients USING btree (discount_id);
+
+
+--
 -- Name: index_clients_on_name; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1881,6 +1891,14 @@ ALTER TABLE ONLY public.stock_movements
 
 
 --
+-- Name: clients fk_rails_aa2a6a9812; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.clients
+    ADD CONSTRAINT fk_rails_aa2a6a9812 FOREIGN KEY (discount_id) REFERENCES public.discounts(id);
+
+
+--
 -- Name: stock_movements fk_rails_c399f74509; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1967,6 +1985,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260823004032'),
 ('20260820160655'),
 ('20260820140038'),
 ('20260820104548'),

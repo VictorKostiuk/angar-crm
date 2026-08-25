@@ -10,7 +10,12 @@
   </div>
   <% if order.discount.positive? %>
     <div class="flex justify-between">
-      <dt class="text-gray-500">Знижка</dt>
+      <dt class="text-gray-500">
+        Знижка
+        <% if order.discount_source.present? %>
+          <span class="block text-xs text-gray-400"><%= t("discount_sources.#{order.discount_source}") %></span>
+        <% end %>
+      </dt>
       <dd class="text-red-600">−<%= money(order.discount) %></dd>
     </div>
   <% end %>

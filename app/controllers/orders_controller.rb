@@ -109,6 +109,6 @@ class OrdersController < ApplicationController
     end
 
     def order_params
-      params.expect(order: %i[ mechanic_id expected_ready_on discount discount_record_id ])
+      params.expect(order: %i[ mechanic_id expected_ready_on discount_record_id ])
     end
 end

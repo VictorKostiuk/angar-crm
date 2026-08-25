@@ -9,6 +9,16 @@ uk:
     many: "замовлень"
     other: "замовлень"
 
+  discount_sources:
+    manual: "обрано вручну"
+    client: "постійна знижка клієнта"
+    loyalty: "за обігом клієнта"
+
+  discount_scopes:
+    all: "Усе замовлення"
+    services: "Тільки послуги"
+    parts: "Тільки запчастини"
+
   stock_kinds:
     receipt: "Прихід"
     write_off: "Списання"

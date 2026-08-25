@@ -11,36 +11,61 @@ class OrderEditingSystemTest < ApplicationSystemTestCase
 
   # This one broke twice: the amount applied but the picker reset to «Без знижки».
   test "picking a discount applies it and the select still shows it afterwards" do
-    Discount.create!(name: "Постійний клієнт", kind: :percentage, value: 10)
+    Discount.create!(name: "Постійний клієнт", kind: :percentage, value: 10, applies_to: :all)
     sign_in @owner
     visit order_path(@order)
 
     assert_text "1 200 грн"
-    select "Постійний клієнт (10%)", from: "order[discount_record_id]"
+    select_discount "Постійний клієнт"
 
     assert_text "−120 грн"                                   # Turbo re-rendered
     assert_text "1 080 грн"
-    assert_select_value "order[discount_record_id]", "Постійний клієнт (10%)"
+    assert_discount_selected "Постійний клієнт"
 
     visit order_path(@order)                                 # and after a reload
-    assert_select_value "order[discount_record_id]", "Постійний клієнт (10%)"
+    assert_discount_selected "Постійний клієнт"
   end
 
   test "clearing the discount puts the select back to Без знижки" do
-    Discount.create!(name: "Постійний клієнт", kind: :percentage, value: 10)
+    Discount.create!(name: "Постійний клієнт", kind: :percentage, value: 10, applies_to: :all)
     sign_in @owner
     visit order_path(@order)
 
-    select "Постійний клієнт (10%)", from: "order[discount_record_id]"
+    select_discount "Постійний клієнт"
     assert_text "−120 грн"
 
-    select "Без знижки", from: "order[discount_record_id]"
+    select_discount "Без знижки"
     assert_no_text "−120 грн"
     assert_text "1 200 грн"
   end
 
   # The <form> used to sit directly inside <tr>; the parser emptied it, so
   # editing a price posted nothing at all.
+  # The discount is derived server-side now, so a percentage must follow the
+  # order as it grows instead of freezing at what it was when picked.
+  test "a percentage discount follows the order when a line is added" do
+    Discount.create!(name: "Десятка", kind: :percentage, value: 10, applies_to: :all)
+    sign_in @owner
+    visit order_path(@order)
+
+    select_discount "Десятка"
+    assert_text "−120 грн"          # 10% of 1 200
+
+    within("#order_parts_rows") { fill_in "order_part[price]", with: "1950" }
+    find("body").click
+    assert_text "−220 грн"          # 10% of 2 200, not the old 120
+  end
+
+  test "a services-only discount ignores the parts on the order" do
+    Discount.create!(name: "Лише послуги", kind: :percentage, value: 10, applies_to: :services)
+    sign_in @owner
+    visit order_path(@order)
+
+    select_discount "Лише послуги"
+    assert_text "−25 грн"           # 10% of 250 послуги, not of 1 200
+    assert_text "1 175 грн"
+  end
+
   test "editing a price recalculates the order total" do
     sign_in @owner
     visit order_path(@order)
@@ -62,7 +87,14 @@ class OrderEditingSystemTest < ApplicationSystemTestCase
   end
 
   private
-    def assert_select_value(name, expected)
-      assert_equal expected, find("select[name='#{name}'] option[selected]", visible: :all).text.strip
+    # The option text carries the value and scope, so match on the name only.
+    def select_discount(name)
+      option = find("select[name='order[discount_record_id]'] option", text: /\A#{Regexp.escape(name)}/, match: :first)
+      select option.text, from: "order[discount_record_id]"
+    end
+
+    def assert_discount_selected(name)
+      assert_match(/\A#{Regexp.escape(name)}/,
+                   find("select[name='order[discount_record_id]'] option[selected]", visible: :all).text.strip)
     end
 end

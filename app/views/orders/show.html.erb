@@ -33,23 +33,22 @@
     <div>
       <p class="text-xs text-gray-500 mb-1">Знижка</p>
       <% if @order.editable? %>
-      <%= form_with model: @order, class: "contents",
-            data: { controller: "discount-picker", discount_picker_subtotal_value: (@order.works_total + @order.parts_total) } do |f| %>
-        <select name="order[discount_record_id]" id="order_discount_record_id"
-                data-discount-picker-target="select" data-action="change->discount-picker#apply"
-                class="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm">
-          <option value="">Без знижки</option>
-          <% @discounts.each do |discount| %>
-            <option value="<%= discount.id %>" data-kind="<%= discount.kind %>" data-value="<%= discount.value %>"
-                    <%= "selected" if @order.discount_record_id == discount.id %>>
-              <%= discount.name %> (<%= discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %>)
-            </option>
-          <% end %>
-        </select>
-        <%= f.hidden_field :discount, data: { discount_picker_target: "amount" } %>
-      <% end %>
+        <%= form_with model: @order, class: "contents", data: { controller: "autosubmit" } do %>
+          <select name="order[discount_record_id]" id="order_discount_record_id"
+                  data-action="change->autosubmit#submit"
+                  class="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm">
+            <option value="">Без знижки</option>
+            <% @discounts.each do |discount| %>
+              <% size = discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %>
+              <option value="<%= discount.id %>" <%= "selected" if @order.discount_record_id == discount.id %>><%= "#{discount.name} (#{size}, #{t("discount_scopes.#{discount.applies_to}").downcase})" %></option>
+            <% end %>
+          </select>
+        <% end %>
       <% else %>
         <p class="text-sm text-gray-900"><%= @order.discount.positive? ? money(@order.discount) : "—" %></p>
+      <% end %>
+      <% if @order.discount.positive? && @order.discount_source != "manual" %>
+        <p class="mt-1 text-xs text-brand-700"><%= t("discount_sources.#{@order.discount_source}") %></p>
       <% end %>
     </div>
     <% if @order.problem.present? %>

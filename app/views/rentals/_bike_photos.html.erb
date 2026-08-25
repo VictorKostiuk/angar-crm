@@ -1,0 +1,40 @@
+<%# locals: (bike:) %>
+<%# Passport pages, damage before handover — several per bike, click to enlarge. %>
+<div class="flex flex-wrap items-center gap-1" data-controller="lightbox">
+  <% bike.photos.each do |photo| %>
+    <span class="relative group">
+      <%= image_tag photo.variant(resize_to_limit: [ 80, 80 ]),
+            data: { action: "click->lightbox#open",
+                    full_src: url_for(photo.variant(resize_to_limit: [ 1600, 1600 ])),
+                    full_alt: "Документ — #{bike.display_name}" },
+            class: "w-10 h-10 rounded border border-gray-200 object-cover cursor-zoom-in" %>
+      <% if Current.user.admin? || Current.user.owner? %>
+        <%= button_to "×", photo_rental_bike_path(bike, photo_id: photo.id), method: :delete,
+              form_class: "absolute -top-1 -right-1", data: { turbo_confirm: "Видалити фото?" },
+              class: "w-4 h-4 rounded-full bg-gray-900/70 text-white text-[10px] leading-none cursor-pointer" %>
+      <% end %>
+    </span>
+  <% end %>
+
+  <% if Current.user.admin? || Current.user.owner? %>
+    <%= form_with model: bike, url: rental_bike_path(bike), method: :patch, multipart: true, class: "contents", data: { controller: "autosubmit" } do |f| %>
+      <label class="w-10 h-10 flex items-center justify-center rounded border border-dashed border-gray-300 text-gray-400 text-lg cursor-pointer hover:bg-gray-50"
+             title="Додати фото">
+        +
+        <%= f.file_field :photos, multiple: true, accept: "image/*", class: "hidden",
+              data: { action: "change->autosubmit#submit" } %>
+      </label>
+    <% end %>
+  <% end %>
+
+  <% if bike.photos.none? && !(Current.user.admin? || Current.user.owner?) %>
+    <span class="text-xs text-gray-400">—</span>
+  <% end %>
+
+  <dialog data-lightbox-target="dialog" data-action="click->lightbox#closeOnBackdrop"
+          class="max-w-[90vw] max-h-[90vh] rounded-xl p-0 m-auto bg-transparent backdrop:bg-gray-900/80">
+    <img data-lightbox-target="image" class="max-w-[90vw] max-h-[90vh] rounded-xl object-contain" alt="">
+    <button type="button" data-action="lightbox#close" aria-label="Закрити"
+            class="absolute top-2 right-2 w-8 h-8 rounded-full bg-gray-900/70 text-white text-lg leading-none cursor-pointer">&times;</button>
+  </dialog>
+</div>

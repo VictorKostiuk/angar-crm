@@ -3,6 +3,7 @@
   <tr class="hover:bg-gray-50" id="discount_row_<%= discount.id %>">
     <td data-label="Назва" class="px-4 py-3 text-gray-900"><%= discount.name %></td>
     <td data-label="Тип" class="px-4 py-3 text-gray-600"><%= t("statuses.discount.#{discount.kind}") %></td>
+    <td data-label="Діє на" class="px-4 py-3 text-gray-600"><%= t("discount_scopes.#{discount.applies_to}") %></td>
     <td data-label="Розмір" class="px-4 py-3 text-gray-600"><%= discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %></td>
     <td data-label="" class="px-4 py-3 text-right whitespace-nowrap">
       <%= link_to discounts_path(edit: discount.id),

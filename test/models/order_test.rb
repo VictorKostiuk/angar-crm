@@ -31,11 +31,16 @@ class OrderTest < ActiveSupport::TestCase
     assert_equal 950, order.total
   end
 
+  # The discount is capped at the base it comes off (D47), so it can take the
+  # order to zero but never past it.
   test "discount is subtracted from the total but never pushes it negative" do
-    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current, status: :intake, discount: 10_000)
+    voucher = Discount.create!(name: "Ваучер", kind: :fixed_amount, value: 10_000, applies_to: :all)
+    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
+                          status: :intake, discount_record: voucher)
     order.order_works.create!(name: "Робота", quantity: 1, price: 250)
 
     order.reload
+    assert_equal 250, order.discount, "capped at the order subtotal"
     assert_equal 0, order.total
   end
 
@@ -45,8 +50,9 @@ class OrderTest < ActiveSupport::TestCase
     order.reload
     assert_equal 1000, order.total
 
-    order.update!(discount: 200)
+    order.update!(discount_record: Discount.create!(name: "20%", kind: :percentage, value: 20, applies_to: :all))
     order.reload
+    assert_equal 200, order.discount
     assert_equal 800, order.total
   end
 

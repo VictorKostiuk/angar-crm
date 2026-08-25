@@ -30,6 +30,14 @@
     </div>
 
     <div>
+      <%= f.label :discount_id, "Постійна знижка", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.collection_select :discount_id, Discount.active.ordered, :id,
+            ->(d) { "#{d.name} — #{t("discount_scopes.#{d.applies_to}")}" }, { include_blank: "Без постійної знижки" },
+            class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+      <p class="mt-1 text-xs text-gray-500">Застосовується автоматично. Якщо клієнт заробив більшу знижку за обігом — діє більша.</p>
+    </div>
+
+    <div>
       <%= f.label :notes, class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.text_area :notes, rows: 3, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
     </div>

@@ -58,6 +58,6 @@ class ClientsController < ApplicationController
     end
 
     def client_params
-      params.expect(client: %i[ name phone email city notes ])
+      params.expect(client: %i[ name phone email city notes discount_id ])
     end
 end

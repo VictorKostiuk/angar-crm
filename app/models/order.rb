@@ -67,9 +67,10 @@ class Order < ApplicationRecord
   validate :mechanic_must_be_a_mechanic
 
   # order_works/order_parts trigger Orders::RecalculateTotals on their own
-  # save/destroy (§6) — discount lives on the order itself, so it needs its
-  # own trigger, or editing it silently no-ops on the stored total.
-  after_save :recalculate_totals, if: :saved_change_to_discount?
+  # save/destroy (§6). Picking a different discount needs its own trigger, or
+  # the change silently no-ops on the stored total. Keyed on the *record*, not
+  # on `discount` — that column is this callback's own output now (D47).
+  after_save :recalculate_totals, if: :saved_change_to_discount_record_id?
 
   def open_status?
     OPEN_STATUSES.include?(status)

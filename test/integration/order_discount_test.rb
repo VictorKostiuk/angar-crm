@@ -91,13 +91,16 @@ class OrderDiscountTest < ActionDispatch::IntegrationTest
     get order_path(@order)
 
     assert_select "select[name=?]", "order[discount_record_id]"
-    assert_select "input[data-discount-picker-target=amount][name=?]", "order[discount]"
     assert_select "input[name=?]", "order[discount_record_id]", 0, "the association must not depend on a JS-written field"
+    # The amount is derived server-side now (D47) — the form must not post one,
+    # or a stale figure would race the derivation.
+    assert_select "[name=?]", "order[discount]", 0
   end
 
   # Submit exactly what the browser serializes from the rendered form — every
   # named control in it — rather than hand-built params.
   test "the rendered form round-trips the discount as the browser would submit it" do
+    @percent.update!(applies_to: :all)
     get order_path(@order)
 
     form = Nokogiri::HTML5(response.body).css("form").find { |f| f.css("select[name='order[discount_record_id]']").any? }

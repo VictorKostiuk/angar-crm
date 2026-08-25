@@ -13,13 +13,25 @@ class RentalBikesController < ApplicationController
 
   def update
     @rental_bike = RentalBike.find(params[:id])
-    @rental_bike.update(rental_bike_params)
 
-    redirect_to rentals_path, notice: "Велосипед оновлено."
+    if @rental_bike.update(rental_bike_params)
+      redirect_to rentals_path, notice: "Велосипед оновлено."
+    else
+      redirect_to rentals_path, alert: @rental_bike.errors.full_messages.to_sentence
+    end
+  end
+
+  # Photos are added one batch at a time from the fleet list, and removed one
+  # at a time — neither needs the whole record's form.
+  def destroy_photo
+    bike = RentalBike.find(params[:id])
+    bike.photos.find(params[:photo_id]).purge
+
+    redirect_to rentals_path, notice: "Фото видалено."
   end
 
   private
     def rental_bike_params
-      params.expect(rental_bike: %i[ name size daily_rate note active ])
+      params.expect(rental_bike: [ :name, :size, :daily_rate, :note, :active, { photos: [] } ])
     end
 end

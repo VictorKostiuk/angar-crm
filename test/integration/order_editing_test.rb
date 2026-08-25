@@ -119,7 +119,8 @@ class OrderEditingTest < ActionDispatch::IntegrationTest
       post order_order_parts_path(@order), params: { order_part: { name: "Нова", quantity: 1, price: 10 } }
     end
 
-    patch order_path(@order), params: { order: { discount: 50 } }
+    voucher = Discount.create!(name: "50 грн", kind: :fixed_amount, value: 50, applies_to: :all)
+    patch order_path(@order), params: { order: { discount_record_id: voucher.id } }
     assert_equal 50, @order.reload.discount
   end
 end
