@@ -107,6 +107,7 @@
         <tr>
           <th class="px-4 py-3 font-medium">Велосипед</th>
           <th class="px-4 py-3 font-medium">Хто взяв</th>
+          <th class="px-4 py-3 font-medium">Документи</th>
           <th class="px-4 py-3 font-medium">Період</th>
           <th class="px-4 py-3 font-medium text-right">Доби</th>
           <th class="px-4 py-3 font-medium text-right">Сума</th>
@@ -118,6 +119,7 @@
           <tr class="hover:bg-gray-50">
             <td data-label="Велосипед" class="px-4 py-3 text-gray-900"><%= rental.rental_bike.display_name %></td>
             <td data-label="Хто взяв" class="px-4 py-3 text-gray-600"><%= rental.renter %></td>
+            <td data-label="Документи" class="px-4 py-3"><%= render "rentals/documents", rental: rental %></td>
             <td data-label="Період" class="px-4 py-3 text-gray-600"><%= l rental.rented_from %> — <%= l rental.rented_to %></td>
             <td data-label="Доби" class="px-4 py-3 text-right text-gray-600"><%= rental.days %></td>
             <td data-label="Сума" class="px-4 py-3 text-right font-medium text-gray-900"><%= money(rental.amount) %></td>
@@ -130,7 +132,7 @@
         <% end %>
 
         <% if @rentals.none? %>
-          <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">Видач за цей період немає</td></tr>
+          <tr><td colspan="7" class="px-4 py-10 text-center text-gray-400">Видач за цей період немає</td></tr>
         <% end %>
       </tbody>
     </table>

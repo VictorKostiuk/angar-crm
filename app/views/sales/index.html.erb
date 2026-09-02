@@ -43,8 +43,28 @@
         <% @sales.each do |sale| %>
           <tr class="hover:bg-gray-50">
             <td data-label="Дата" class="px-4 py-3 text-gray-500"><%= l sale.sold_at.to_date %></td>
+            <%# A ten-line sale used to print as one wrapping paragraph that swallowed
+                the row. Collapsed to the first position plus a count, expandable in
+                place — <details> does it natively, no controller and no state to keep. %>
             <td data-label="Позиції" class="px-4 py-3 text-gray-900">
-              <%= sale.sale_items.map { |i| "#{i.name} × #{i.quantity}" }.join(", ") %>
+              <% items = sale.sale_items %>
+              <% if items.size > 1 %>
+                <details class="group">
+                  <summary class="flex items-center gap-1.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-gray-700 hover:text-brand-600">
+                    <svg class="w-3.5 h-3.5 shrink-0 transition-transform group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                    <span><%= items.first.name %> <span class="text-gray-400">+ ще <%= items.size - 1 %></span></span>
+                  </summary>
+                  <ul class="mt-1.5 ml-5 list-disc space-y-0.5 text-xs text-gray-600">
+                    <% items.each do |item| %>
+                      <li><%= item.name %> × <%= item.quantity %></li>
+                    <% end %>
+                  </ul>
+                </details>
+              <% else %>
+                <%= items.map { |i| "#{i.name} × #{i.quantity}" }.join(", ") %>
+              <% end %>
               <% if sale.note.present? %>
                 <span class="block text-xs text-gray-400"><%= sale.note %></span>
               <% end %>

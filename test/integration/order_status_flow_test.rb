@@ -5,7 +5,7 @@ class OrderStatusFlowTest < ActionDispatch::IntegrationTest
     @owner = users(:owner)
     @mechanic = users(:andrii)
     @order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
-                           accepted_at: Time.current, status: :intake)
+                           mechanic: @mechanic, accepted_at: Time.current, status: :intake)
     @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
 
     post session_path, params: { email_address: @owner.email_address, password: "password123" }

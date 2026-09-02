@@ -18,6 +18,13 @@ class EndToEndSystemTest < ApplicationSystemTestCase
 
     assert_text "Скрипить ланцюг"
 
+    # Services cannot be added to an order with nobody assigned — the line would
+    # belong to no mechanic and count toward no payroll. Pick one first, through
+    # the sidebar select, which auto-submits.
+    assert_selector "button[disabled]", text: "+ Додати послугу"
+    select users(:andrii).name, from: "order[mechanic_id]"
+    assert_text "Замовлення оновлено."
+
     click_on "+ Додати послугу"
     within("turbo-frame#order_work_search_results") { first("button").click }
     assert_text "250 грн"
@@ -33,11 +40,6 @@ class EndToEndSystemTest < ApplicationSystemTestCase
 
     # Editing is still open while the order is open.
     assert_selector "a", text: "+ Додати послугу"
-
-    # Closing needs a mechanic assigned — do it through the sidebar select,
-    # which auto-submits.
-    select users(:andrii).name, from: "order[mechanic_id]"
-    assert_text "Замовлення оновлено."
 
     order = Order.order(:id).last
     assert_equal users(:andrii), order.reload.mechanic

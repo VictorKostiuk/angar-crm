@@ -8,7 +8,8 @@ class OrderTest < ActiveSupport::TestCase
   end
 
   test "totals recalculate through the full add/edit/delete line lifecycle" do
-    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current, status: :intake)
+    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
+                          status: :intake, mechanic: users(:andrii))
 
     work1 = order.order_works.create!(name: "Робота 1", quantity: 1, price: 250)
     order.order_works.create!(name: "Робота 2", quantity: 2, price: 100)
@@ -36,7 +37,7 @@ class OrderTest < ActiveSupport::TestCase
   test "discount is subtracted from the total but never pushes it negative" do
     voucher = Discount.create!(name: "Ваучер", kind: :fixed_amount, value: 10_000, applies_to: :all)
     order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
-                          status: :intake, discount_record: voucher)
+                          status: :intake, discount_record: voucher, mechanic: users(:andrii))
     order.order_works.create!(name: "Робота", quantity: 1, price: 250)
 
     order.reload
@@ -45,7 +46,8 @@ class OrderTest < ActiveSupport::TestCase
   end
 
   test "changing discount on an order that already has lines recalculates the total" do
-    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current, status: :intake)
+    order = Order.create!(client: @client, bike: @bike, accepted_by: @owner, accepted_at: Time.current,
+                          status: :intake, mechanic: users(:andrii))
     order.order_works.create!(name: "Робота", quantity: 1, price: 1000)
     order.reload
     assert_equal 1000, order.total

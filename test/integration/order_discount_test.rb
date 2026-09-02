@@ -4,7 +4,7 @@ class OrderDiscountTest < ActionDispatch::IntegrationTest
   setup do
     @owner = users(:owner)
     @order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
-                           accepted_at: Time.current, status: :in_progress)
+                           mechanic: users(:andrii), accepted_at: Time.current, status: :in_progress)
     @order.order_works.create!(name: "Заміна ланцюга", quantity: 1, price: 250)
     @order.order_parts.create!(name: "Ланцюг", quantity: 1, price: 950)
 
@@ -80,7 +80,7 @@ class OrderDiscountTest < ActionDispatch::IntegrationTest
     assert_nil @order.discount_record_id
 
     get order_path(@order)
-    assert_select "select option[selected]", 0, "nothing selected means «Без знижки», the first option"
+    assert_select "#order_discount_record_id option[selected]", 0, "nothing selected means «Без знижки», the first option"
   end
 
   # The association must live in the markup, not in a line of JS that copies the

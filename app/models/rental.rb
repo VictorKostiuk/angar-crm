@@ -2,10 +2,14 @@ class Rental < ApplicationRecord
   belongs_to :rental_bike
   belongs_to :client, optional: true
   belongs_to :issued_by, class_name: "User"
+  # Photos of the renter's ID, taken at handover — the shop's only hold on a
+  # bike going out to someone who is not in the client base.
+  has_many_attached :documents
 
   validates :rented_from, :rented_to, presence: true
   validate :dates_in_order
   validate :bike_must_be_free, on: :create
+  validate :documents_must_be_images
 
   before_validation :snapshot_rate
   before_validation :calculate_amount
@@ -48,6 +52,12 @@ class Rental < ApplicationRecord
       return if rented_from.blank? || rented_to.blank?
 
       errors.add(:rented_to, "не може бути раніше за дату видачі") if rented_to < rented_from
+    end
+
+    def documents_must_be_images
+      return unless documents.attached?
+
+      errors.add(:documents, "має бути зображенням") unless documents.all? { |d| d.content_type.to_s.start_with?("image/") }
     end
 
     def bike_must_be_free

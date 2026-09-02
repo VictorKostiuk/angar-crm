@@ -17,32 +17,40 @@
   </div>
 
   <%= form_with url: parts_path, method: :get,
-        data: { controller: "debounce", turbo_frame: "parts_list" }, class: "mb-6 max-w-md" do %>
+        data: { controller: "debounce", turbo_frame: "parts_results" }, class: "mb-6 max-w-md" do %>
     <%= hidden_field_tag :category_id, params[:category_id] %>
     <%= search_field_tag :q, params[:q], placeholder: "Пошук за назвою запчастини…",
           data: { action: "input->debounce#submit" },
           class: "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-brand-600" %>
   <% end %>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-    <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
-      <table class="data-table w-full text-sm">
-        <thead class="bg-gray-50 text-left text-gray-500">
-          <tr>
-            <th class="px-4 py-3 font-medium">Назва позиції</th>
-            <th class="px-4 py-3 font-medium">Категорія</th>
-            <th class="px-4 py-3 font-medium">Ціна</th>
-            <th class="px-4 py-3"></th>
-          </tr>
-        </thead>
-        <tbody id="parts_rows" class="divide-y divide-gray-100">
-          <%= render "rows", parts: @parts, category_id: params[:category_id] %>
-        </tbody>
-      </table>
-    </div>
+  <%# The search box must not live inside the frame it replaces: every debounced
+      keystroke swapped this whole region, so the input was destroyed and rebuilt
+      mid-typing — focus gone, caret gone, and anything typed during the request
+      reverted to the server's older value. The results get their own frame; the
+      box and the pills stay put. %>
+  <%= filter_frame "parts_results" do %>
 
-    <div id="part_form" class="bg-white border border-gray-200 rounded-xl p-5">
-      <%= render "form" %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
+        <table class="data-table w-full text-sm">
+          <thead class="bg-gray-50 text-left text-gray-500">
+            <tr>
+              <th class="px-4 py-3 font-medium">Назва позиції</th>
+              <th class="px-4 py-3 font-medium">Категорія</th>
+              <th class="px-4 py-3 font-medium">Ціна</th>
+              <th class="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="parts_rows" class="divide-y divide-gray-100">
+            <%= render "rows", parts: @parts, category_id: params[:category_id] %>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="part_form" class="bg-white border border-gray-200 rounded-xl p-5">
+        <%= render "form" %>
+      </div>
     </div>
-  </div>
+  <% end %>
 <% end %>

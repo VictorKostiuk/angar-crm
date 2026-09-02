@@ -1,6 +1,18 @@
 <%# locals: (order:) %>
 <h2 class="font-bold text-gray-900">Послуги</h2>
 <% if order.editable? %>
-  <%= link_to "+ Додати послугу", new_order_order_work_path(order), data: { turbo_frame: "modal" },
-        class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+  <%# The model refuses the line either way — a disabled button is not a guard —
+      but saying why here beats letting the modal reject the form. %>
+  <% if order.mechanic_id.present? %>
+    <%= link_to "+ Додати послугу", new_order_order_work_path(order), data: { turbo_frame: "modal" },
+          class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
+  <% else %>
+    <div class="text-right">
+      <button type="button" disabled
+              class="rounded-md border border-gray-200 text-sm font-medium px-3 py-1.5 text-gray-400 cursor-not-allowed">
+        + Додати послугу
+      </button>
+      <p class="mt-1 text-xs text-amber-700">Спочатку призначте механіка</p>
+    </div>
+  <% end %>
 <% end %>

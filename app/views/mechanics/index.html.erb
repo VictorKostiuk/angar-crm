@@ -58,11 +58,37 @@
             <p class="text-lg font-bold text-gray-900"><%= row.mechanic.payroll_percent.to_i %>%</p>
           </div>
           <div>
-            <p class="text-gray-500">Заробіток</p>
+            <p class="text-gray-500">Заробіток з послуг</p>
             <p class="text-lg font-bold text-green-700"><%= row.payout.positive? ? money(row.payout) : "—" %></p>
             <p class="text-xs text-gray-400"><%= row.mechanic.payroll_percent.to_i %>% від послуг</p>
           </div>
         </div>
+
+        <%# Counter sales are a second earning line with its own rate (D40), so
+            they get their own row rather than being mixed into the послуги
+            chain above — and the row stays hidden until the shop actually
+            pays commission. %>
+        <% if row.sells? %>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-gray-100 text-sm">
+            <div>
+              <p class="text-gray-500">Продажі</p>
+              <p class="text-lg font-bold text-gray-900"><%= money(row.sales_total) %></p>
+            </div>
+            <div>
+              <p class="text-gray-500">% з продажу</p>
+              <p class="text-lg font-bold text-gray-900"><%= row.mechanic.sales_percent.to_i %>%</p>
+            </div>
+            <div>
+              <p class="text-gray-500">Комісія з продажів</p>
+              <p class="text-lg font-bold text-green-700"><%= row.sales_commission.positive? ? money(row.sales_commission) : "—" %></p>
+            </div>
+            <div>
+              <p class="text-gray-500">Всього зароблено</p>
+              <p class="text-lg font-bold text-green-700"><%= row.earnings.positive? ? money(row.earnings) : "—" %></p>
+              <p class="text-xs text-gray-400">послуги + комісія</p>
+            </div>
+          </div>
+        <% end %>
       </div>
     <% end %>
 

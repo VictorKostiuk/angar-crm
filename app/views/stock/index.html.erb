@@ -15,85 +15,93 @@
   </div>
 
   <%= form_with url: stock_path, method: :get,
-        data: { controller: "debounce", turbo_frame: "stock_list" }, class: "mb-6 max-w-md" do %>
+        data: { controller: "debounce", turbo_frame: "stock_results" }, class: "mb-6 max-w-md" do %>
     <%= hidden_field_tag :category_id, params[:category_id] %>
     <%= search_field_tag :q, params[:q], placeholder: "Пошук за назвою…",
           data: { action: "input->debounce#submit" },
           class: "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-brand-600" %>
   <% end %>
 
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto mb-6">
-    <table class="data-table w-full text-sm">
-      <thead class="bg-gray-50 text-left text-gray-500">
-        <tr>
-          <th class="px-4 py-3 font-medium">Позиція</th>
-          <th class="px-4 py-3 font-medium">Категорія</th>
-          <th class="px-4 py-3 font-medium">Постачальник</th>
-          <th class="px-4 py-3 font-medium text-right">Закупівля</th>
-          <th class="px-4 py-3 font-medium text-right">Продаж</th>
-          <th class="px-4 py-3 font-medium text-right">Залишок</th>
-          <th class="px-4 py-3 font-medium">Рух</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <% @parts.each do |part| %>
-          <tr class="hover:bg-gray-50">
-            <td data-label="Позиція" class="px-4 py-3 text-gray-900"><%= part.name %></td>
-            <td data-label="Категорія" class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
-            <td data-label="Постачальник" class="px-4 py-3 text-gray-600"><%= part.supplier&.name || "—" %></td>
-            <td data-label="Закупівля" class="px-4 py-3 text-right text-gray-600"><%= part.purchase_price ? money(part.purchase_price) : "—" %></td>
-            <td data-label="Продаж" class="px-4 py-3 text-right text-gray-600"><%= money(part.base_price) %></td>
-            <td data-label="Залишок" class="px-4 py-3 text-right">
-              <span class="font-medium <%= part.stock_quantity.positive? ? "text-gray-900" : "text-red-600" %>"><%= part.stock_quantity %></span>
-            </td>
-            <td data-label="Рух" class="px-4 py-3">
-              <%= render "stock/movement_form", part: part %>
-            </td>
-          </tr>
-        <% end %>
+  <%# The search box must not live inside the frame it replaces: every debounced
+      keystroke swapped this whole region, so the input was destroyed and rebuilt
+      mid-typing — focus gone, caret gone, and anything typed during the request
+      reverted to the server's older value. The results get their own frame; the
+      box and the pills stay put. %>
+  <%= filter_frame "stock_results" do %>
 
-        <% if @parts.none? %>
-          <tr><td colspan="7" class="px-4 py-10 text-center text-gray-400">Позицій не знайдено</td></tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
-    <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Останні рухи</h2>
-    <table class="data-table w-full text-sm">
-      <thead class="bg-gray-50 text-left text-gray-500">
-        <tr>
-          <th class="px-4 py-3 font-medium">Дата</th>
-          <th class="px-4 py-3 font-medium">Позиція</th>
-          <th class="px-4 py-3 font-medium">Тип</th>
-          <th class="px-4 py-3 font-medium text-right">К-сть</th>
-          <th class="px-4 py-3 font-medium">Хто / замовлення</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <% @movements.each do |movement| %>
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto mb-6">
+      <table class="data-table w-full text-sm">
+        <thead class="bg-gray-50 text-left text-gray-500">
           <tr>
-            <td data-label="Дата" class="px-4 py-3 text-gray-500"><%= l movement.created_at.to_date %></td>
-            <td data-label="Позиція" class="px-4 py-3 text-gray-900"><%= movement.part.name %></td>
-            <td data-label="Тип" class="px-4 py-3 text-gray-600"><%= t("stock_kinds.#{movement.kind}") %></td>
-            <td data-label="К-сть" class="px-4 py-3 text-right font-medium <%= movement.quantity.negative? ? "text-red-600" : "text-green-700" %>">
-              <%= movement.quantity.positive? ? "+#{movement.quantity}" : movement.quantity %>
-            </td>
-            <td data-label="Хто / замовлення" class="px-4 py-3 text-gray-500">
-              <% if movement.order %>
-                <%= link_to order_number(movement.order), movement.order, class: "text-brand-600 hover:underline" %>
-              <% else %>
-                <%= movement.user&.name || "—" %>
-              <% end %>
-            </td>
+            <th class="px-4 py-3 font-medium">Позиція</th>
+            <th class="px-4 py-3 font-medium">Категорія</th>
+            <th class="px-4 py-3 font-medium">Постачальник</th>
+            <th class="px-4 py-3 font-medium text-right">Закупівля</th>
+            <th class="px-4 py-3 font-medium text-right">Продаж</th>
+            <th class="px-4 py-3 font-medium text-right">Залишок</th>
+            <th class="px-4 py-3 font-medium">Рух</th>
           </tr>
-        <% end %>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @parts.each do |part| %>
+            <tr class="hover:bg-gray-50">
+              <td data-label="Позиція" class="px-4 py-3 text-gray-900"><%= part.name %></td>
+              <td data-label="Категорія" class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
+              <td data-label="Постачальник" class="px-4 py-3 text-gray-600"><%= part.supplier&.name || "—" %></td>
+              <td data-label="Закупівля" class="px-4 py-3 text-right text-gray-600"><%= part.purchase_price ? money(part.purchase_price) : "—" %></td>
+              <td data-label="Продаж" class="px-4 py-3 text-right text-gray-600"><%= money(part.base_price) %></td>
+              <td data-label="Залишок" class="px-4 py-3 text-right">
+                <span class="font-medium <%= part.stock_quantity.positive? ? "text-gray-900" : "text-red-600" %>"><%= part.stock_quantity %></span>
+              </td>
+              <td data-label="Рух" class="px-4 py-3">
+                <%= render "stock/movement_form", part: part %>
+              </td>
+            </tr>
+          <% end %>
 
-        <% if @movements.none? %>
-          <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Рухів ще не було</td></tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
+          <% if @parts.none? %>
+            <tr><td colspan="7" class="px-4 py-10 text-center text-gray-400">Позицій не знайдено</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
+      <h2 class="font-bold text-gray-900 px-5 py-4 border-b border-gray-100">Останні рухи</h2>
+      <table class="data-table w-full text-sm">
+        <thead class="bg-gray-50 text-left text-gray-500">
+          <tr>
+            <th class="px-4 py-3 font-medium">Дата</th>
+            <th class="px-4 py-3 font-medium">Позиція</th>
+            <th class="px-4 py-3 font-medium">Тип</th>
+            <th class="px-4 py-3 font-medium text-right">К-сть</th>
+            <th class="px-4 py-3 font-medium">Хто / замовлення</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @movements.each do |movement| %>
+            <tr>
+              <td data-label="Дата" class="px-4 py-3 text-gray-500"><%= l movement.created_at.to_date %></td>
+              <td data-label="Позиція" class="px-4 py-3 text-gray-900"><%= movement.part.name %></td>
+              <td data-label="Тип" class="px-4 py-3 text-gray-600"><%= t("stock_kinds.#{movement.kind}") %></td>
+              <td data-label="К-сть" class="px-4 py-3 text-right font-medium <%= movement.quantity.negative? ? "text-red-600" : "text-green-700" %>">
+                <%= movement.quantity.positive? ? "+#{movement.quantity}" : movement.quantity %>
+              </td>
+              <td data-label="Хто / замовлення" class="px-4 py-3 text-gray-500">
+                <% if movement.order %>
+                  <%= link_to order_number(movement.order), movement.order, class: "text-brand-600 hover:underline" %>
+                <% else %>
+                  <%= movement.user&.name || "—" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+
+          <% if @movements.none? %>
+            <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">Рухів ще не було</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
 <% end %>

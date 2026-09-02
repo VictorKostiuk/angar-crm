@@ -44,7 +44,7 @@ class PayrollClarityTest < ActionDispatch::IntegrationTest
 
     assert_select "p", text: "Послуги"
     assert_select "p", text: "% заробітку"
-    assert_select "p", text: "Заробіток"
+    assert_select "p", text: "Заробіток з послуг"
     assert_select "p", text: "35% від послуг"
 
     row = Reports::MechanicStats.call(range: Date.current.all_month).find { |r| r.mechanic == @mechanic }

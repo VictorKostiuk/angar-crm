@@ -26,7 +26,11 @@ Rails.application.routes.draw do
   resources :suppliers, only: %i[ index create update destroy ]
   get "stock", to: "stock#index"
   resources :sales, only: %i[ index new create ]
-  resources :rentals, only: %i[ index new create update ]
+  # A rental's own PATCH already means "bike returned", so the renter's ID
+  # photos get their own nested resource rather than a branch inside it.
+  resources :rentals, only: %i[ index new create update ] do
+    resources :documents, only: %i[ create destroy ], controller: "rental_documents"
+  end
   resources :rental_bikes, only: %i[ create update ] do
     delete "photos/:photo_id", to: "rental_bikes#destroy_photo", as: :photo, on: :member
   end
@@ -39,6 +43,7 @@ Rails.application.routes.draw do
     resource :payment, only: %i[ edit update ], controller: "order_payments"
     resource :closure, only: %i[ edit update ], controller: "order_closures"
     resource :cancellation, only: %i[ edit update ], controller: "order_cancellations"
+    resource :ready_message, only: :show, controller: "order_ready_messages"
 
     resources :order_works, only: %i[ new create update destroy ]
     resources :order_parts, only: %i[ new create update destroy ]

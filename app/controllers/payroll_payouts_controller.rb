@@ -27,7 +27,7 @@ class PayrollPayoutsController < ApplicationController
     # can never disagree with the "Залишок до виплати" shown behind it.
     def load_month_summary
       @month = parse_month(params[:month]).beginning_of_month
-      @earned = Reports::MechanicStats.new(range: @month.all_month).row_for(@mechanic).payout
+      @earned = Reports::MechanicStats.new(range: @month.all_month).row_for(@mechanic).earnings
       @already_paid = PayrollPayout.where(user: @mechanic).for_month(@month).sum(:amount)
       @outstanding = @earned - @already_paid
     end

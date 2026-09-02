@@ -8,7 +8,7 @@ class ClientsNavigationTest < ActionDispatch::IntegrationTest
   end
 
   def order_for(status:, works:)
-    order = Order.create!(client: @client, bike: bikes(:trek), accepted_by: @owner,
+    order = Order.create!(client: @client, bike: bikes(:trek), accepted_by: @owner, mechanic: users(:andrii),
                           accepted_at: Time.current, status: status,
                           cancel_reason: (status == :cancelled ? "передумав" : nil))
     order.order_works.create!(name: "Послуга", quantity: 1, price: works)

@@ -34,11 +34,34 @@
     <p class="text-xl font-bold text-gray-900"><%= @row.in_progress_count %></p>
   </div>
   <div class="bg-white border border-gray-200 rounded-xl p-4">
-    <p class="text-sm text-gray-500">Заробіток</p>
+    <p class="text-sm text-gray-500">Заробіток з послуг</p>
     <p class="text-xl font-bold text-green-700"><%= @row.payout.positive? ? money(@row.payout) : "—" %></p>
     <p class="mt-1 text-xs text-gray-400"><%= @mechanic.payroll_percent.to_i %>% від послуг</p>
   </div>
 </div>
+
+<%# Counter sales earn their own rate (D40) and are settled by the same
+    «Виплата» as labour, so «Всього зароблено» is what the Борг below reconciles
+    against. Hidden entirely until this person has a rate or a sale — three
+    empty tiles on every card would be worse than none. %>
+<% if @row.sells? %>
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Продажі за період</p>
+      <p class="text-xl font-bold text-gray-900"><%= money(@row.sales_total) %></p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Комісія з продажів</p>
+      <p class="text-xl font-bold text-green-700"><%= @row.sales_commission.positive? ? money(@row.sales_commission) : "—" %></p>
+      <p class="mt-1 text-xs text-gray-400"><%= @mechanic.sales_percent.to_i %>% від суми продажу</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <p class="text-sm text-gray-500">Всього зароблено</p>
+      <p class="text-xl font-bold text-green-700"><%= @row.earnings.positive? ? money(@row.earnings) : "—" %></p>
+      <p class="mt-1 text-xs text-gray-400">послуги + комісія</p>
+    </div>
+  </div>
+<% end %>
 
 <% if Current.user.owner? %>
   <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6">
@@ -109,7 +132,18 @@
           <span class="font-medium text-brand-600"><%= link_to order_number(order), order %></span>
           <span class="text-gray-900"><%= order.bike.name %></span>
           <span class="text-gray-500"><%= order.closed_at.strftime("%d.%m") %></span>
-          <span class="text-gray-600">Послуги: <%= money(@works_by_order[order.id] || 0) %></span>
+          <%# This mechanic's own work lines, not the order's — the list is keyed on
+              who owns the order, the money on who each line is attributed to, and
+              those two diverge when an order is reassigned after its lines were
+              added. Saying so beats printing a bare «Послуги: 0 грн» next to a
+              «Разом» that plainly contains services. %>
+          <% own_works = @works_by_order[order.id] || 0 %>
+          <span class="text-gray-600">
+            Послуги: <%= money(own_works) %>
+            <% if own_works < order.works_total %>
+              <span class="text-xs text-amber-700">(<%= money(order.works_total - own_works) %> — інший механік)</span>
+            <% end %>
+          </span>
           <span class="font-medium text-gray-900">Разом: <%= money(order.total) %></span>
           <%= link_to "Відкрити замовлення →", order, class: "text-gray-400 hover:text-brand-600" %>
         </div>

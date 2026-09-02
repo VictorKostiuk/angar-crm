@@ -1,0 +1,106 @@
+require "test_helper"
+
+# A bike goes out to someone who may not be in the client base at all, so the
+# renter's ID photo is the shop's only hold on it. These cover attaching it at
+# handover, adding it late, and who may purge it afterwards.
+class RentalDocumentsTest < ActionDispatch::IntegrationTest
+  setup do
+    @owner = users(:owner)
+    @mechanic = users(:andrii)
+    @bike = RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+  end
+
+  def sign_in_as(user)
+    post session_path, params: { email_address: user.email_address, password: "password123" }
+  end
+
+  def document(name = "test_photo.png", type = "image/png")
+    fixture_file_upload(name, type)
+  end
+
+  # shared/modal_form_error is a turbo_stream template — the browser always asks
+  # for one, so a test that omits the header hits a MissingTemplate instead of
+  # the rejection path it means to exercise.
+  def issue!(**extra)
+    post rentals_path, params: { rental: { rental_bike_id: @bike.id, renter_name: "Гість",
+                                           rented_from: Date.current, rented_to: Date.current + 1 }.merge(extra) },
+         headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+    Rental.order(:id).last
+  end
+
+  test "documents attach while the bike is being issued" do
+    sign_in_as @owner
+
+    assert_difference -> { Rental.count }, 1 do
+      issue!(documents: [ document, document ])
+    end
+
+    assert_equal 2, Rental.order(:id).last.documents.count
+    assert_redirected_to rentals_path
+  end
+
+  test "a non-image is refused and the hire is not created" do
+    sign_in_as @owner
+
+    assert_no_difference -> { Rental.count } do
+      issue!(documents: [ document("not_an_image.txt", "text/plain") ])
+    end
+
+    assert_match "має бути зображенням", response.body
+  end
+
+  # The mechanic handing the bike over is the one holding the phone, so adding
+  # late must work for every role — a hire issued without documents has to be
+  # fixable from the floor.
+  test "a mechanic can add documents to an existing hire" do
+    sign_in_as @owner
+    rental = issue!
+    sign_in_as @mechanic
+
+    assert_difference -> { rental.reload.documents.count }, 1 do
+      post rental_documents_path(rental), params: { documents: [ document ] }
+    end
+    assert_redirected_to rentals_path
+  end
+
+  test "the rentals list shows a thumbnail per document" do
+    sign_in_as @owner
+    issue!(documents: [ document ])
+
+    get rentals_path
+    assert_select "td[data-label=Документи] img[data-action=?]", "click->lightbox#open", 1
+    assert_select "th", text: "Документи"
+  end
+
+  # Purging someone's ID is not a call a mechanic makes from the floor —
+  # matches how rental bike photos are already gated.
+  test "only an admin or owner may delete a document" do
+    sign_in_as @owner
+    rental = issue!(documents: [ document ])
+    target = rental.documents.first
+
+    sign_in_as @mechanic
+    assert_no_difference -> { rental.reload.documents.count } do
+      delete rental_document_path(rental, target.id)
+    end
+    assert_redirected_to root_path
+
+    sign_in_as @owner
+    assert_difference -> { rental.reload.documents.count }, -1 do
+      delete rental_document_path(rental, target.id)
+    end
+    assert_redirected_to rentals_path
+  end
+
+  # A browser cannot repopulate a file input, so a rejected form comes back with
+  # an empty picker. The form has to say so instead of losing the files quietly.
+  test "a rejected hire warns that the chosen files have to be picked again" do
+    sign_in_as @owner
+    issue!
+    issue!(renter_name: "Другий", documents: [ document ])
+
+    assert_response :unprocessable_entity
+    assert_match "вже у прокаті", response.body
+    assert_match "Файли не збереглися", response.body
+  end
+end

@@ -4,7 +4,7 @@ class OrderEditingSystemTest < ApplicationSystemTestCase
   setup do
     @owner = users(:owner)
     @order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
-                           accepted_at: Time.current, status: :in_progress)
+                           mechanic: users(:andrii), accepted_at: Time.current, status: :in_progress)
     @work = @order.order_works.create!(name: "Заміна ланцюга", quantity: 1, price: 250)
     @part = @order.order_parts.create!(name: "Ланцюг КМС", quantity: 1, price: 950)
   end

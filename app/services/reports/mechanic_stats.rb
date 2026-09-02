@@ -22,7 +22,8 @@ module Reports
     MIN_PAYOUT_PER_ORDER = 100
 
     Row = Struct.new(:mechanic, :accepted_count, :in_progress_count, :completed_count,
-                     :works_total, :parts_total, :works_by_order, keyword_init: true) do
+                     :works_total, :parts_total, :works_by_order, :sales_total, :sales_commission,
+                     keyword_init: true) do
       def total
         works_total + parts_total
       end
@@ -39,6 +40,26 @@ module Reports
         works_by_order.sum do |_order_id, works|
           [ (works * mechanic.payroll_percent / 100).round, MIN_PAYOUT_PER_ORDER ].max
         end
+      end
+
+      # Everything the shop owes this person for the period: labour plus their
+      # cut of the counter sales they rang up (D40). This — not #payout — is
+      # what MechanicDebt, OutstandingPayroll and the payout form settle
+      # against, so a commission that Фінанси already subtracts from profit
+      # lands in somebody's balance instead of going untracked.
+      #
+      # #payout stays works-only on purpose: D33 defines it as the labour base,
+      # and the roster prints the Послуги × % chain beside it so the figure can
+      # be checked on screen rather than taken on faith.
+      def earnings
+        payout + sales_commission
+      end
+
+      # Whether the sales figures are worth their screen space. A shop that
+      # pays no commission should not carry three empty tiles on every card,
+      # and the block reappears the moment a rate is set or a sale is rung up.
+      def sells?
+        sales_total.positive? || mechanic.sales_percent.positive?
       end
     end
 
@@ -57,6 +78,7 @@ module Reports
       # derived from the same hash so the two can never disagree.
       works_by_order = OrderWork.where(mechanic_id: mechanic.id).joins(:order)
                                 .merge(closed_orders_in_range).group(:order_id).sum(:total)
+      sales = sales_for(mechanic)
 
       Row.new(
         mechanic: mechanic,
@@ -65,11 +87,22 @@ module Reports
         completed_count: closed_orders_owned_by(mechanic).count,
         works_total: works_by_order.values.sum,
         parts_total: OrderPart.joins(:order).merge(closed_orders_owned_by(mechanic)).sum(:total),
-        works_by_order: works_by_order
+        works_by_order: works_by_order,
+        sales_total: sales.sum(&:total),
+        sales_commission: sales.sum(&:commission)
       )
     end
 
     private
+      # Summed from each sale's own rounded commission, never as
+      # (sales_total × sales_percent).round — SalesController#index sums the
+      # per-sale figures, and rounding the aggregate instead would put a
+      # different number on this card than on Продажі for the same period and
+      # seller. Same drift D30 exists to prevent.
+      def sales_for(mechanic)
+        Sale.in_range(@range).where(sold_by_id: mechanic.id).includes(:sold_by).to_a
+      end
+
       def closed_orders_in_range
         Order.closed.where(closed_at: @range)
       end

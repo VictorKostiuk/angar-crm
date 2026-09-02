@@ -29,7 +29,7 @@ module Finances
       paid_by_user = payouts_scope.group(:user_id).sum(:amount)
 
       stats.map do |row|
-        Row.new(mechanic: row.mechanic, earned: row.payout, paid: paid_by_user.fetch(row.mechanic.id, 0))
+        Row.new(mechanic: row.mechanic, earned: row.earnings, paid: paid_by_user.fetch(row.mechanic.id, 0))
       end
     end
 

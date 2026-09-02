@@ -30,11 +30,15 @@ class Orders::CloseTest < ActiveSupport::TestCase
     assert order.closed_at.present?
   end
 
-  test "backfills nil mechanic_id on work lines from the order's mechanic at close time" do
-    work = @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
-    assert_nil work.mechanic_id
-
+  # OrderWork now refuses a line while the order has no mechanic, so nil can no
+  # longer arise — but rows written before that guard existed still carry it,
+  # and the backfill is what keeps them out of nobody's payroll. Built with
+  # update_column because the model itself will not produce this state any more.
+  test "backfills a legacy nil mechanic_id on a work line at close time" do
     @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
+    work = @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
+    work.update_column(:mechanic_id, nil)
+
     Orders::Close.call(order: @order)
 
     assert_equal @mechanic.id, work.reload.mechanic_id
@@ -42,9 +46,9 @@ class Orders::CloseTest < ActiveSupport::TestCase
 
   test "does not overwrite an existing mechanic_id on a work line" do
     other_mechanic = User.create!(name: "Інший", email_address: "other@fixtures.test", password: "password123", role: :mechanic, payroll_percent: 20, active: true)
+    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
     work = @order.order_works.create!(name: "Робота", quantity: 1, price: 250, mechanic: other_mechanic)
 
-    @order.update!(mechanic: @mechanic, payment_status: :paid, payment_method: :cash)
     Orders::Close.call(order: @order)
 
     assert_equal other_mechanic.id, work.reload.mechanic_id

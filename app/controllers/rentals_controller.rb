@@ -6,7 +6,7 @@ class RentalsController < ApplicationController
     @bikes = RentalBike.active.ordered
     @out_ids = RentalBike.out_ids(@bikes)
     @current_by_bike = Rental.outstanding.includes(:client).index_by(&:rental_bike_id)
-    @rentals = Rental.in_range(@period.range).includes(:rental_bike, :client, :issued_by).ordered
+    @rentals = Rental.in_range(@period.range).includes(:rental_bike, :client, :issued_by).with_attached_documents.ordered
     @total = @rentals.sum(&:amount)
     @rental_bike = RentalBike.new
   end
@@ -48,6 +48,7 @@ class RentalsController < ApplicationController
     end
 
     def rental_params
-      params.expect(rental: %i[ rental_bike_id client_id renter_name renter_phone rented_from rented_to daily_rate note ])
+      params.expect(rental: [ :rental_bike_id, :client_id, :renter_name, :renter_phone,
+                              :rented_from, :rented_to, :daily_rate, :note, { documents: [] } ])
     end
 end

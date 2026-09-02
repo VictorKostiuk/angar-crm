@@ -18,7 +18,7 @@ class Clients::LoyaltyTierTest < ActiveSupport::TestCase
 
   def new_order_with(works:, parts: 0)
     order = Order.create!(client: @client, bike: bikes(:trek), accepted_by: @owner,
-                          accepted_at: Time.current, status: :in_progress)
+                          accepted_at: Time.current, status: :in_progress, mechanic: users(:andrii))
     order.order_works.create!(name: "Послуга", quantity: 1, price: works)
     order.order_parts.create!(name: "Запчастина", quantity: 1, price: parts) if parts.positive?
     order.reload

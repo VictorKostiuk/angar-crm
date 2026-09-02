@@ -14,6 +14,22 @@ uk:
     client: "постійна знижка клієнта"
     loyalty: "за обігом клієнта"
 
+  # Lines of the "your bike is ready" message a mechanic copies to the client.
+  # Kept as separate phrases, not one block scalar: the bike line, the works and
+  # materials sections and the discount line are each conditional or per-item
+  # (see OrdersHelper#order_ready_message). The minus is U+2212, matching the
+  # totals panel.
+  ready_message:
+    greeting: "Добрий день, %{name}!"
+    ready: "Ваш велосипед «%{bike}» готовий до видачі."
+    works_header: "Виконані роботи:"
+    parts_header: "Використані матеріали:"
+    line: "- %{name} — %{amount}"
+    line_with_quantity: "- %{name} × %{quantity} — %{amount}"
+    discount: "Знижка: −%{amount}"
+    total: "До сплати: %{amount}"
+    closing: "Чекаємо вас у майстерні!"
+
   discount_scopes:
     all: "Усе замовлення"
     services: "Тільки послуги"

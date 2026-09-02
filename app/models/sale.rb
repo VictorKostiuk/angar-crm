@@ -13,6 +13,8 @@ class Sale < ApplicationRecord
   validates :sold_at, presence: true
   validate :must_have_at_least_one_item
 
+  before_validation :merge_duplicate_items, on: :create
+
   scope :ordered, -> { order(sold_at: :desc, created_at: :desc) }
   scope :in_range, ->(range) { where(sold_at: range) }
 
@@ -24,6 +26,36 @@ class Sale < ApplicationRecord
   end
 
   private
+    # Picking the same catalogue item on two rows means "two of it", not two
+    # lines. It was never wrong money — two −1 movements net the same stock and
+    # book the same cost as one −2 — but the sale read «Каретка × 1, Каретка ×
+    # 1» and the movements ledger carried twice the rows for one position.
+    #
+    # Only lines agreeing on BOTH the part and the effective price merge: a
+    # deliberately different price on the second row is a different line, not a
+    # duplicate, and merging it would silently discard one of the two prices.
+    # The price is resolved the same way SaleItem#default_from_part resolves it,
+    # since that callback has not run yet when this one does.
+    #
+    # One-off lines never merge — they have no catalogue entry to match on, and
+    # two rows typed with the same name are not necessarily the same thing.
+    def merge_duplicate_items
+      first_of = {}
+
+      sale_items.each do |item|
+        next if item.part_id.blank? || item.marked_for_destruction?
+
+        key = [ item.part_id, item.price.presence || item.part&.base_price ]
+
+        if (original = first_of[key])
+          original.quantity = original.quantity.to_i + item.quantity.to_i
+          item.mark_for_destruction
+        else
+          first_of[key] = item
+        end
+      end
+    end
+
     def must_have_at_least_one_item
       errors.add(:base, "Додайте хоча б одну позицію") if sale_items.reject(&:marked_for_destruction?).empty?
     end

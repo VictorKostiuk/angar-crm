@@ -1,6 +1,6 @@
 <%= render "shared/modal_header", title: "Видати в прокат" %>
 
-<%= form_with model: @rental, url: rentals_path, class: "contents", data: { turbo_frame: "_top" } do |f| %>
+<%= form_with model: @rental, url: rentals_path, multipart: true, class: "contents", data: { turbo_frame: "_top" } do |f| %>
   <div class="p-6 space-y-4">
     <% if @rental.errors.any? %>
       <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -60,6 +60,20 @@
       </div>
     </div>
     <p class="text-xs text-gray-500">Сума = ставка × доби. Порожня ставка береться з картки велосипеда.</p>
+
+    <div>
+      <%= f.label :documents, "Документи клієнта", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.file_field :documents, multiple: true, accept: "image/*",
+            class: "block w-full text-xs text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-gray-200" %>
+      <%# A browser cannot repopulate a file input, so a rejected form comes
+          back with the picker empty even though files were chosen. Say so,
+          rather than letting the documents vanish without a word. %>
+      <% if @rental.documents.attached? %>
+        <p class="mt-1 text-xs text-amber-700">Файли не збереглися — оберіть їх ще раз.</p>
+      <% else %>
+        <p class="mt-1 text-xs text-gray-500">Фото паспорта чи іншого документа — можна додати й пізніше зі списку прокату.</p>
+      <% end %>
+    </div>
   </div>
 
   <div class="flex justify-end gap-2 px-6 py-4 border-t border-gray-200">

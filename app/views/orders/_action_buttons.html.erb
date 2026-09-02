@@ -1,5 +1,16 @@
 <%# locals: (order:) %>
 <div class="flex items-center gap-1">
+  <%# Only at «Очікує видачі»: the message says the bike is ready, so it has no
+      meaning before the mechanic has said so. Teal matches the status badge. %>
+  <% if order.waiting_pickup? %>
+    <%= link_to order_ready_message_path(order), data: { turbo_frame: "modal" }, title: "Повідомлення клієнту", "aria-label": "Повідомлення клієнту",
+          class: "p-2.5 rounded-md text-teal-600 hover:bg-teal-50" do %>
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 5H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4v4l5-4h7a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z" />
+      </svg>
+    <% end %>
+  <% end %>
+
   <% if order.open_status? %>
     <%= link_to edit_order_status_path(order), data: { turbo_frame: "modal" }, title: "Змінити статус", "aria-label": "Змінити статус",
           class: "p-2.5 rounded-md text-brand-600 hover:bg-brand-50" do %>

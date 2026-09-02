@@ -4,7 +4,7 @@ class OrderPaymentFlowTest < ActionDispatch::IntegrationTest
   setup do
     @owner = users(:owner)
     @order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
-                           accepted_at: Time.current, status: :waiting_pickup)
+                           mechanic: users(:andrii), accepted_at: Time.current, status: :waiting_pickup)
     @order.order_works.create!(name: "Робота", quantity: 1, price: 250)
 
     post session_path, params: { email_address: @owner.email_address, password: "password123" }

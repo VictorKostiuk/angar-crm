@@ -213,4 +213,52 @@ class SalesFlowTest < ActionDispatch::IntegrationTest
     assert_select "p", text: ApplicationController.helpers.money(360)
     assert_select "p", text: ApplicationController.helpers.money(36)
   end
+
+  # Reported: picking «Каретка» on two rows recorded it twice instead of adding
+  # up, so the list read «Каретка × 1, Каретка × 1» and the movements ledger
+  # carried two rows for one position.
+  test "the same catalogue item picked twice becomes one line of two" do
+    sign_in(@seller)
+
+    assert_difference -> { SaleItem.count }, 1, "the duplicate row must not be inserted at all" do
+      assert_difference -> { @part.reload.stock_quantity }, -3 do
+        post sales_path, params: { sale: { sale_items_attributes: {
+          "0" => { part_id: @part.id, quantity: 1, price: 180 },
+          "1" => { part_id: @part.id, quantity: 2, price: 180 } } } }
+      end
+    end
+
+    sale = Sale.order(:id).last
+    item = sale.sale_items.sole
+    assert_equal 3, item.quantity
+    assert_equal 540, item.total, "the merged quantity has to reprice the line"
+    assert_equal 540, sale.total
+    assert_equal 1, StockMovement.where(kind: :sale, part: @part).count
+  end
+
+  # A different price on the second row is a deliberate distinction, not a
+  # duplicate — merging it would silently throw one of the two prices away.
+  test "the same item at two different prices stays two lines" do
+    sign_in(@seller)
+
+    assert_difference -> { SaleItem.count }, 2 do
+      post sales_path, params: { sale: { sale_items_attributes: {
+        "0" => { part_id: @part.id, quantity: 1, price: 180 },
+        "1" => { part_id: @part.id, quantity: 1, price: 150 } } } }
+    end
+
+    assert_equal 330, Sale.order(:id).last.total
+  end
+
+  # One-off lines have no catalogue entry to match on, and two rows typed with
+  # the same name are not necessarily the same thing.
+  test "one-off lines are never merged" do
+    sign_in(@seller)
+
+    assert_difference -> { SaleItem.count }, 2 do
+      post sales_path, params: { sale: { sale_items_attributes: {
+        "0" => { name: "Ремонт на місці", quantity: 1, price: 100 },
+        "1" => { name: "Ремонт на місці", quantity: 1, price: 100 } } } }
+    end
+  end
 end

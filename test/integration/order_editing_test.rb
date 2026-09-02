@@ -123,4 +123,47 @@ class OrderEditingTest < ActionDispatch::IntegrationTest
     patch order_path(@order), params: { order: { discount_record_id: voucher.id } }
     assert_equal 50, @order.reload.discount
   end
+
+  # Reported: an order card showed 600 грн of services while the mechanic's own
+  # list showed «Послуги: 0 грн» for it. The lines had been added before a
+  # mechanic was assigned, so they belonged to nobody. Refuse them at the door.
+  test "services cannot be added until a mechanic is assigned" do
+    order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
+                          accepted_at: Time.current, status: :intake)
+
+    get order_path(order)
+    assert_select "#order_works_header button[disabled]", text: /Додати послугу/
+    assert_select "#order_works_header a[href=?]", new_order_order_work_path(order), 0,
+      "the add link must not be reachable without a mechanic"
+    assert_select "#order_works_header p", text: "Спочатку призначте механіка"
+
+    assert_no_difference -> { OrderWork.count } do
+      post order_order_works_path(order), params: { order_work: { name: "Робота", quantity: 1, price: 250 } },
+           headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+    end
+    assert_response :unprocessable_entity
+
+    # Assigning one opens it up, and the line lands on that mechanic.
+    order.update!(mechanic: users(:andrii))
+    get order_path(order)
+    assert_select "#order_works_header a[href=?]", new_order_order_work_path(order)
+
+    assert_difference -> { OrderWork.count }, 1 do
+      post order_order_works_path(order), params: { order_work: { name: "Робота", quantity: 1, price: 250 } },
+           headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+    end
+    assert_equal users(:andrii).id, OrderWork.order(:id).last.mechanic_id
+  end
+
+  # Parts carry no mechanic attribution (D11 is works-only), so they stay
+  # addable — the guard must not spread to them.
+  test "parts can still be added without a mechanic" do
+    order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
+                          accepted_at: Time.current, status: :intake)
+
+    assert_difference -> { OrderPart.count }, 1 do
+      post order_order_parts_path(order), params: { order_part: { name: "Деталь", quantity: 1, price: 100 } },
+           headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+    end
+  end
 end

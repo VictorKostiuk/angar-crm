@@ -6,14 +6,18 @@
         class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2" %>
 </div>
 
-<%= filter_frame "clients_list" do %>
-  <%= form_with url: clients_path, method: :get,
-        data: { controller: "debounce", turbo_frame: "clients_list" }, class: "mb-4" do |f| %>
-    <%= f.text_field :q, value: params[:q], placeholder: "Введіть ім'я або номер телефону",
-          data: { action: "input->debounce#submit" },
-          class: "w-full max-w-md rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-brand-600" %>
-  <% end %>
+<%# Outside the frame on purpose: every debounced keystroke replaces the frame,
+    and an input that lives inside it is destroyed and rebuilt mid-typing —
+    focus gone, caret gone, and anything typed during the request reverted to
+    the server's older value. %>
+<%= form_with url: clients_path, method: :get,
+      data: { controller: "debounce", turbo_frame: "clients_list" }, class: "mb-4" do |f| %>
+  <%= f.text_field :q, value: params[:q], placeholder: "Введіть ім'я або номер телефону",
+        data: { action: "input->debounce#submit" },
+        class: "w-full max-w-md rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-brand-600" %>
+<% end %>
 
+<%= filter_frame "clients_list" do %>
   <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
     <table class="data-table w-full text-sm">
       <thead class="bg-gray-50 text-left text-gray-500">

@@ -14,7 +14,7 @@ module Finances
     end
 
     def call
-      obligation = Reports::MechanicStats.new(range: @month.all_month).row_for(@mechanic).payout
+      obligation = Reports::MechanicStats.new(range: @month.all_month).row_for(@mechanic).earnings
       paid = PayrollPayout.where(user: @mechanic).for_month(@month).sum(:amount)
       obligation - paid
     end

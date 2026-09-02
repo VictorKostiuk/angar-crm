@@ -1,0 +1,38 @@
+<%# locals: (rental:) %>
+<%# The renter's ID, shot at handover — several per hire, click to enlarge.
+    Mirrors rentals/_bike_photos: same thumbnail size, same inline "+" batch
+    upload, same admin/owner-only delete. %>
+<div class="flex flex-wrap items-center gap-1" data-controller="lightbox">
+  <% rental.documents.each do |document| %>
+    <span class="relative group">
+      <%= image_tag document.variant(resize_to_limit: [ 80, 80 ]),
+            data: { action: "click->lightbox#open",
+                    full_src: url_for(document.variant(resize_to_limit: [ 1600, 1600 ])),
+                    full_alt: "Документ — #{rental.renter}" },
+            class: "w-10 h-10 rounded border border-gray-200 object-cover cursor-zoom-in" %>
+      <% if Current.user.admin? || Current.user.owner? %>
+        <%= button_to "×", rental_document_path(rental, document.id), method: :delete,
+              form_class: "absolute -top-1 -right-1", data: { turbo_confirm: "Видалити документ?" },
+              class: "w-4 h-4 rounded-full bg-gray-900/70 text-white text-[10px] leading-none cursor-pointer" %>
+      <% end %>
+    </span>
+  <% end %>
+
+  <%# Every role can add: the mechanic who hands the bike over is the one
+      holding the phone, and a hire issued without documents has to be fixable. %>
+  <%= form_with url: rental_documents_path(rental), multipart: true, class: "contents", data: { controller: "autosubmit" } do %>
+    <label class="w-10 h-10 flex items-center justify-center rounded border border-dashed border-gray-300 text-gray-400 text-lg cursor-pointer hover:bg-gray-50"
+           title="Додати документ">
+      +
+      <%= file_field_tag "documents[]", multiple: true, accept: "image/*", class: "hidden",
+            data: { action: "change->autosubmit#submit" } %>
+    </label>
+  <% end %>
+
+  <dialog data-lightbox-target="dialog" data-action="click->lightbox#closeOnBackdrop"
+          class="max-w-[90vw] max-h-[90vh] rounded-xl p-0 m-auto bg-transparent backdrop:bg-gray-900/80">
+    <img data-lightbox-target="image" class="max-w-[90vw] max-h-[90vh] rounded-xl object-contain" alt="">
+    <button type="button" data-action="lightbox#close" aria-label="Закрити"
+            class="absolute top-2 right-2 w-8 h-8 rounded-full bg-gray-900/70 text-white text-lg leading-none cursor-pointer">&times;</button>
+  </dialog>
+</div>

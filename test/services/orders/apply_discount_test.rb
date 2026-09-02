@@ -4,7 +4,7 @@ class Orders::ApplyDiscountTest < ActiveSupport::TestCase
   setup do
     @client = clients(:ivan)
     @order = Order.create!(client: @client, bike: bikes(:trek), accepted_by: users(:owner),
-                           accepted_at: Time.current, status: :in_progress)
+                           mechanic: users(:andrii), accepted_at: Time.current, status: :in_progress)
     @order.order_works.create!(name: "Послуга", quantity: 1, price: 2000)
     @order.order_parts.create!(name: "Запчастина", quantity: 1, price: 3000)
     @order.reload
