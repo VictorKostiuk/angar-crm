@@ -12,6 +12,9 @@ class EndToEndSystemTest < ApplicationSystemTestCase
 
     fill_in "client_search", with: clients(:ivan).name.split.first
     click_on clients(:ivan).name
+    # Selecting a client asynchronously replaces both client and bike fields.
+    # Wait for that response before typing a name into the replacement field.
+    assert_selector "input[name='client_id'][value='#{clients(:ivan).id}']", visible: :all
     fill_in "bike_name", with: "Trek Marlin"
     fill_in "problem", with: "Скрипить ланцюг"
     click_on "Прийняти велосипед"
