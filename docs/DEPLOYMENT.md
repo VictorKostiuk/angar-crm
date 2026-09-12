@@ -63,6 +63,11 @@ separate worker for durable Active Storage jobs.
 
 ## GitHub deployment
 
+Until GitHub's dedicated server access is authorized, deploy manually from your
+Mac with Docker Desktop running: `bin/deploy`. It uses your existing SSH access,
+builds exactly the committed HEAD and runs the same server release checks.
+Uncommitted changes are not deployed. Run the CI checks before using this path.
+
 `.github/workflows/deploy.yml` runs for pushes to `master` and manual dispatch.
 It runs the reusable CI workflow first: Ruby tests, browser tests, lint and
 security scans. It builds the AMD64 app image on GitHub and streams a compressed

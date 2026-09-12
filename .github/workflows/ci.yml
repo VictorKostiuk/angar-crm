@@ -21,7 +21,7 @@ jobs:
           --health-retries 12
     env:
       RAILS_ENV: test
-      PGHOST: localhost
+      PGHOST: 127.0.0.1
       PGUSER: postgres
       PGPASSWORD: postgres
       PARALLEL_WORKERS: 2
@@ -33,7 +33,19 @@ jobs:
       - name: Install image processing dependencies
         run: sudo apt-get update -qq && sudo apt-get install -y libvips-dev postgresql-client
       - name: Enable Ukrainian database locale
-        run: docker exec "${{ job.services.postgres.id }}" localedef -i uk_UA -c -f UTF-8 -A /usr/share/locale/locale.alias uk_UA.UTF-8
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker exec "$POSTGRES_CONTAINER" localedef -i uk_UA -c -f UTF-8 -A /usr/share/locale/locale.alias uk_UA.UTF-8
+          # PostgreSQL's parent process must reopen the updated locale archive.
+          docker restart "$POSTGRES_CONTAINER"
+          for attempt in {1..30}; do
+            if docker exec "$POSTGRES_CONTAINER" pg_isready -U postgres; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
       - name: Prepare database and assets
         run: bin/rails db:prepare assets:precompile
       - name: Run tests
