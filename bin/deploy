@@ -13,6 +13,7 @@ echo "Building committed release $release_sha for the CRM."
 docker build --platform linux/amd64 --tag "$image" "$build_dir"
 ssh_options=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
 docker save "$image" | gzip -1 | ssh "${ssh_options[@]}" root@152.53.156.254 'gzip -dc | docker load'
-ssh "${ssh_options[@]}" root@152.53.156.254 "/opt/angar-crm/deploy/release $release_sha"
+ssh "${ssh_options[@]}" root@152.53.156.254 \
+  "flock -w 1200 /opt/angar-crm/deploy.lock /opt/angar-crm/deploy/release $release_sha"
 curl --fail --silent --show-error --retry 5 --retry-all-errors https://crm.angar-velocafe.com/up
 echo "CRM deployed."

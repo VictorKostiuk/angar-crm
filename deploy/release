@@ -27,7 +27,7 @@ if [[ -n $previous_sha ]]; then
   "${compose[@]}" stop crm-web crm-worker
   /opt/angar-crm/deploy/backup
 fi
-"${compose[@]}" run --rm --no-deps crm-web bin/rails db:prepare
+"${compose[@]}" run --rm --no-deps -T --interactive=false crm-web bin/rails db:prepare
 "${compose[@]}" up -d --no-deps --wait --wait-timeout 120 crm-web crm-worker
 "${compose[@]}" exec -T crm-web curl --fail --silent --output /dev/null \
   -H 'Host: crm.angar-velocafe.com' http://localhost:3000/session/new
