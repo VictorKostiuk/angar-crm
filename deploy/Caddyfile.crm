@@ -1,0 +1,7 @@
+# Append to the existing /opt/veloangar/Caddyfile after the CRM passes checks.
+crm.angar-velocafe.com {
+    request_body {
+        max_size 30MB
+    }
+    reverse_proxy crm-web:3000
+}

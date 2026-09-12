@@ -129,8 +129,8 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     click_on "+ Видати в прокат"
     select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
     fill_in "rental[renter_name]", with: "Гість"
-    fill_in "rental[rented_from]", with: "2026-08-20"
-    fill_in "rental[rented_to]", with: "2026-08-22"
+    fill_in "rental[rented_from]", with: Date.current.to_s
+    fill_in "rental[rented_to]", with: (Date.current + 2).to_s
     find("input[type=submit][value='Видати']").trigger("click")
 
     assert_text "Велосипед видано в прокат."
@@ -151,8 +151,8 @@ class EndToEndSystemTest < ApplicationSystemTestCase
 
     select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
     fill_in "rental[renter_name]", with: "Гість"
-    fill_in "rental[rented_from]", with: "2026-08-20"
-    fill_in "rental[rented_to]", with: "2026-08-22"
+    fill_in "rental[rented_from]", with: Date.current.to_s
+    fill_in "rental[rented_to]", with: (Date.current + 2).to_s
     find("input[type=submit][value='Видати']").trigger("click")
 
     assert_text "Велосипед видано в прокат."

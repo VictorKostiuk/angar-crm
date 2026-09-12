@@ -2,10 +2,45 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [ main ]
+  workflow_call:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      RAILS_ENV: test
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PARALLEL_WORKERS: 2
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Install image processing dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y libvips-dev postgresql-client
+      - name: Enable Ukrainian database locale
+        run: docker exec "${{ job.services.postgres.id }}" localedef -i uk_UA -c -f UTF-8 -A /usr/share/locale/locale.alias uk_UA.UTF-8
+      - name: Prepare database and assets
+        run: bin/rails db:prepare assets:precompile
+      - name: Run tests
+        run: bin/rails test
+      - name: Run browser tests
+        run: bin/rails test:system
+
   scan_ruby:
     runs-on: ubuntu-latest
 
@@ -64,4 +99,3 @@ jobs:
 
       - name: Lint code for consistent style
         run: bin/rubocop -f github
-

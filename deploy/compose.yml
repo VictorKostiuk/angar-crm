@@ -1,0 +1,88 @@
+name: angar-crm
+
+x-app: &app
+  image: ${CRM_IMAGE:?Set CRM_IMAGE to the tested release image}
+  restart: unless-stopped
+  env_file: ${CRM_ENV_FILE:-/opt/angar-crm/production.env}
+  environment:
+    RAILS_ENV: production
+    APP_HOST: crm.angar-velocafe.com
+    PGHOST: crm-db
+    PGUSER: angar_crm
+    PGDATABASE: angar_crm_production
+    RAILS_MAX_THREADS: 3
+    WEB_CONCURRENCY: 0
+  volumes:
+    - uploads:/rails/storage
+  depends_on:
+    crm-db:
+      condition: service_healthy
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  crm-web:
+    <<: *app
+    mem_limit: 1g
+    cpus: 1.5
+    networks:
+      - default
+      - website
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, http://localhost:3000/up]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  crm-worker:
+    <<: *app
+    command: [bin/jobs]
+    mem_limit: 512m
+    cpus: 0.5
+    stop_grace_period: 30s
+    healthcheck:
+      test: [CMD, bin/rails, runner, 'exit(SolidQueue::Process.where(kind: "Worker").where("last_heartbeat_at > ?", 2.minutes.ago).exists? ? 0 : 1)']
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+
+  crm-db:
+    image: angar-crm-postgres:17
+    build: ./postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${ANGAR_CRM_DATABASE_PASSWORD:?Set the CRM database password}
+      POSTGRES_USER: angar_crm
+      POSTGRES_DB: angar_crm_production
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=uk_UA.UTF-8
+    volumes:
+      - database:/var/lib/postgresql/data
+    mem_limit: 1g
+    cpus: 1
+    shm_size: 128mb
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U angar_crm -d angar_crm_production']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  default:
+    internal: true
+  website:
+    external: true
+    name: ${CRM_PROXY_NETWORK:-veloangar_default}
+
+volumes:
+  database:
+  uploads:

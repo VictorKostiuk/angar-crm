@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Call while CRM web/worker are stopped for a consistent files + DB snapshot.
+set -euo pipefail
+umask 077
+cd /opt/angar-crm
+if [[ -z ${CRM_IMAGE:-} ]]; then
+  export CRM_IMAGE="angar-crm:$(cat current-release)"
+fi
+compose=(docker compose --project-name angar-crm --env-file production.env -f deploy/compose.yml)
+backup_dir="/opt/angar-crm/backups/$(date -u +%Y%m%dT%H%M%S)-$$"
+mkdir -p "$backup_dir"
+"${compose[@]}" exec -T crm-db pg_dump -U angar_crm -d angar_crm_production -Fc > "$backup_dir/database.dump"
+"${compose[@]}" run --rm --no-deps -T crm-web tar -C /rails/storage -czf - . > "$backup_dir/uploads.tar.gz"
+"${compose[@]}" exec -T crm-db pg_restore --list < "$backup_dir/database.dump" > /dev/null
+tar -tzf "$backup_dir/uploads.tar.gz" > /dev/null
+cp current-release "$backup_dir/release" 2>/dev/null || true
+echo "Backup saved to $backup_dir (copy off-server)."

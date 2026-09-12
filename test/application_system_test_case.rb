@@ -11,6 +11,13 @@ end
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :cuprite
 
+  setup do
+    # Cuprite reuses its browser. A preceding responsive test may leave it at
+    # phone width; subclasses can apply their own viewport after this reset.
+    page.driver.resize_window(1400, 1100)
+    Timeout.timeout(5) { sleep 0.05 until page.evaluate_script("window.innerWidth") == 1400 }
+  end
+
   def sign_in(user, password: "password123")
     visit new_session_path
     fill_in "email_address", with: user.email_address
