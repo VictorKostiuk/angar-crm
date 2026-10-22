@@ -12,7 +12,7 @@ class BikesController < ApplicationController
   # be a dead end. The view labels it as archived instead.
   def show
     @bike = Bike.find(params[:id])
-    @orders = @bike.orders.includes(:mechanic).order(accepted_at: :desc)
+    @orders = @bike.orders.includes(:mechanic).with_attached_photos.order(accepted_at: :desc)
   end
 
   def new
@@ -67,7 +67,8 @@ class BikesController < ApplicationController
     end
 
     def load_index_data
-      @bikes = Bike.active.search(params[:q]).ordered.includes(:client)
+      @bikes = Bike.active.search(params[:q]).ordered
+                   .includes(:client, orders: { photos_attachments: :blob }).with_attached_photos
       @in_shop_ids = Bike.in_shop_ids(@bikes)
       @bike = params[:edit].present? ? Bike.find(params[:edit]) : nil
     end

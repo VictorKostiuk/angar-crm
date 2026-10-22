@@ -44,8 +44,13 @@ class Client < ApplicationRecord
     digits
   end
 
-  # "380501234567" -> "+380 50 123 45 67"
   def formatted_phone
+    Client.format_phone(phone)
+  end
+
+  # "380501234567" -> "+380 50 123 45 67". Class-level so a renter's phone,
+  # which never passes through Client, reads the same way a client's does.
+  def self.format_phone(phone)
     return phone if phone.blank? || phone.length != 12
 
     "+#{phone[0..2]} #{phone[3..4]} #{phone[5..7]} #{phone[8..9]} #{phone[10..11]}"

@@ -16,7 +16,9 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     fill_in "problem", with: "Скрипить ланцюг"
     click_on "Прийняти велосипед"
 
-    assert_text "Скрипить ланцюг"
+    # The problem stays editable while the order is open, so it comes back in
+    # its textarea rather than as plain text.
+    assert_field "order[problem]", with: "Скрипить ланцюг"
 
     # Services cannot be added to an order with nobody assigned — the line would
     # belong to no mechanic and count toward no payroll. Pick one first, through
@@ -129,8 +131,8 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     click_on "+ Видати в прокат"
     select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
     fill_in "rental[renter_name]", with: "Гість"
-    fill_in "rental[rented_from]", with: "2026-08-20"
-    fill_in "rental[rented_to]", with: "2026-08-22"
+    fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
+    fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 2).iso8601
     find("input[type=submit][value='Видати']").trigger("click")
 
     assert_text "Велосипед видано в прокат."
@@ -151,8 +153,8 @@ class EndToEndSystemTest < ApplicationSystemTestCase
 
     select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
     fill_in "rental[renter_name]", with: "Гість"
-    fill_in "rental[rented_from]", with: "2026-08-20"
-    fill_in "rental[rented_to]", with: "2026-08-22"
+    fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
+    fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 2).iso8601
     find("input[type=submit][value='Видати']").trigger("click")
 
     assert_text "Велосипед видано в прокат."

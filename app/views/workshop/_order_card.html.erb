@@ -20,7 +20,7 @@
         <span class="shrink-0 text-sm font-medium text-gray-400"><%= order_number(order) %></span>
       </div>
       <div class="mt-2 space-y-1 text-sm text-gray-600">
-        <p><%= order.client.name %> · <%= order.client.formatted_phone %></p>
+        <p><%= order.client.name %> · <%= render "shared/phone_actions", phone: order.client.phone %></p>
         <p>Механік: <%= order.mechanic&.name || "не призначено" %></p>
         <p>Прийнято: <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
         <% if order.problem.present? %>
@@ -38,6 +38,8 @@
     <%= link_to "Відкрити", order, class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
 
     <% if order.waiting_approval? %>
+      <%= link_to "Повідомлення клієнту", order_approval_message_path(order), data: { turbo_frame: "modal" },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
       <%= button_to "Позначити як погоджено", approve_workshop_order_path(order), method: :patch,
             data: { turbo_stream: true },
             class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>

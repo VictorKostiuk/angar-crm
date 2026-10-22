@@ -8,7 +8,8 @@
   <div>
     <h1 class="text-2xl font-bold text-gray-900"><%= @bike.name %></h1>
     <p class="text-gray-500 text-sm mt-1">
-      <%= link_to @bike.client.name, @bike.client, class: "hover:underline" %> · <%= @bike.client.formatted_phone %>
+      <%= link_to @bike.client.name, @bike.client, class: "hover:underline" %> ·
+      <%= render "shared/phone_actions", phone: @bike.client.phone %>
     </p>
   </div>
   <% if @bike.active? %>
@@ -32,6 +33,49 @@
     <div>
       <p class="text-xs text-gray-500">Примітки</p>
       <p class="text-sm text-gray-900 whitespace-pre-line"><%= @bike.notes.presence || "—" %></p>
+    </div>
+
+    <%# The bike's own photos (deletable here) first, then the intake photos
+        from its orders — read-only, they belong to the visit they record. %>
+    <% order_photos = @orders.flat_map(&:photos) %>
+    <div data-controller="lightbox">
+      <p class="text-xs text-gray-500 mb-1">Фото</p>
+      <% if @bike.photos.attached? || order_photos.any? %>
+        <div class="grid grid-cols-3 gap-2 mb-2">
+          <% @bike.photos.each do |photo| %>
+            <div class="relative">
+              <%= image_tag photo.variant(resize_to_limit: [ 150, 150 ]),
+                    data: { action: "click->lightbox#open",
+                            full_src: url_for(photo.variant(resize_to_limit: [ 1600, 1600 ])),
+                            full_alt: @bike.name },
+                    class: "rounded-md border border-gray-200 aspect-square object-cover w-full cursor-zoom-in" %>
+              <%= button_to "×", bike_photo_path(@bike, photo), method: :delete,
+                    data: { turbo_confirm: "Видалити фото?" },
+                    class: "absolute top-1 right-1 w-5 h-5 rounded-full bg-gray-900/70 text-white text-xs leading-none cursor-pointer" %>
+            </div>
+          <% end %>
+          <% order_photos.each do |photo| %>
+            <%= image_tag photo.variant(resize_to_limit: [ 150, 150 ]),
+                  title: "З прийому в ремонт",
+                  data: { action: "click->lightbox#open",
+                          full_src: url_for(photo.variant(resize_to_limit: [ 1600, 1600 ])),
+                          full_alt: @bike.name },
+                  class: "rounded-md border border-gray-200 aspect-square object-cover w-full cursor-zoom-in" %>
+          <% end %>
+        </div>
+      <% end %>
+      <%= form_with url: bike_photos_path(@bike), multipart: true, class: "flex items-center gap-2" do %>
+        <%= file_field_tag "photos[]", multiple: true, accept: "image/*",
+              class: "block w-full text-xs text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-gray-200" %>
+        <%= submit_tag "Додати", class: "shrink-0 rounded-md border border-gray-300 text-xs font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+      <% end %>
+
+      <dialog data-lightbox-target="dialog" data-action="click->lightbox#closeOnBackdrop"
+              class="max-w-[90vw] max-h-[90vh] rounded-xl p-0 m-auto bg-transparent backdrop:bg-gray-900/80">
+        <img data-lightbox-target="image" class="max-w-[90vw] max-h-[90vh] rounded-xl object-contain" alt="">
+        <button type="button" data-action="lightbox#close" aria-label="Закрити"
+                class="absolute top-2 right-2 w-8 h-8 rounded-full bg-gray-900/70 text-white text-lg leading-none cursor-pointer">&times;</button>
+      </dialog>
     </div>
   </div>
 

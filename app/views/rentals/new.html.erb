@@ -10,12 +10,27 @@
       </div>
     <% end %>
 
-    <div>
+    <div data-controller="bike-preview">
       <%= f.label :rental_bike_id, "Велосипед", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.collection_select :rental_bike_id, @free_bikes, :id,
             ->(b) { "#{b.display_name} — #{number_to_currency(b.daily_rate, unit: 'грн', format: '%n %u', precision: 0)}/доба" },
             { include_blank: "Оберіть велосипед" },
+            data: { bike_preview_target: "select", action: "change->bike-preview#show" },
             class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+      <%# The chosen bike's photos, so the one being handed over can be checked
+          against how it looked. All rendered, one shown — no round trip. %>
+      <% @free_bikes.each do |bike| %>
+        <div data-bike-preview-target="preview" data-bike-id="<%= bike.id %>" hidden class="mt-2 flex flex-wrap gap-1">
+          <% if bike.photos.attached? %>
+            <% bike.photos.each do |photo| %>
+              <%= image_tag photo.variant(resize_to_limit: [ 160, 160 ]), alt: bike.display_name,
+                    class: "w-16 h-16 rounded border border-gray-200 object-cover" %>
+            <% end %>
+          <% else %>
+            <p class="text-xs text-gray-400">Фото цього велосипеда ще немає.</p>
+          <% end %>
+        </div>
+      <% end %>
       <% if @free_bikes.none? %>
         <p class="mt-1 text-xs text-red-600">
           <% if RentalBike.active.none? %>

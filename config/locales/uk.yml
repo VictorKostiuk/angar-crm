@@ -30,6 +30,16 @@ uk:
     total: "До сплати: %{amount}"
     closing: "Чекаємо вас у майстерні!"
 
+  # The «Очікує погодження» counterpart: what the mechanic found and proposes,
+  # sent before any of it is done. Reuses ready_message's line formats and
+  # discount line, so both messages price a line the same way.
+  approval_message:
+    inspected: "Ми оглянули ваш велосипед «%{bike}»."
+    works_header: "Рекомендовані роботи:"
+    parts_header: "Потрібні запчастини:"
+    total: "Орієнтовна вартість: %{amount}"
+    closing: "Підтвердіть, будь ласка, чи погоджуєте ці роботи — після цього беремося до справи."
+
   discount_scopes:
     all: "Усе замовлення"
     services: "Тільки послуги"

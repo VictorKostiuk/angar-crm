@@ -87,7 +87,7 @@
         <% end %>
 
         <% if @closed_orders.none? %>
-          <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">За цей період немає закритих замовлень.</td></tr>
+          <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">За цей період немає закритих замовлень.</td></tr>
         <% end %>
       </tbody>
       <% if @closed_orders.any? %>
@@ -197,6 +197,7 @@
             <th class="px-4 py-3 font-medium">Послуги</th>
             <th class="px-4 py-3 font-medium">% заробітку</th>
             <th class="px-4 py-3 font-medium">Заробіток з послуг</th>
+            <th class="px-4 py-3 font-medium">Із запчастин</th>
             <th class="px-4 py-3 font-medium">Комісія з продажів</th>
             <th class="px-4 py-3 font-medium">Всього</th>
           </tr>
@@ -208,13 +209,14 @@
               <td data-label="Послуги" class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
               <td data-label="% заробітку" class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
               <td data-label="Заробіток з послуг" class="px-4 py-3 text-gray-600"><%= money(row.payout) %></td>
+              <td data-label="Із запчастин" class="px-4 py-3 text-gray-600"><%= money(row.parts_commission) %></td>
               <td data-label="Комісія з продажів" class="px-4 py-3 text-gray-600"><%= money(row.sales_commission) %></td>
               <td data-label="Всього" class="px-4 py-3 font-medium text-green-700"><%= money(row.earnings) %></td>
             </tr>
           <% end %>
 
           <% if @payroll_rows.empty? %>
-            <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">Немає механіків із ненульовим % заробітку</td></tr>
+            <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Немає механіків із ненульовим % заробітку</td></tr>
           <% end %>
         </tbody>
       </table>

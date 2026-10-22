@@ -15,7 +15,9 @@ Rails.application.routes.draw do
     resources :bikes, only: %i[ new create ]
     get :search, on: :collection
   end
-  resources :bikes, only: %i[ index show update destroy ]
+  resources :bikes, only: %i[ index show update destroy ] do
+    resources :photos, only: %i[ create destroy ], controller: "bike_photos"
+  end
 
   resources :services, only: %i[ index create update destroy ] do
     get :search, on: :collection
@@ -44,6 +46,7 @@ Rails.application.routes.draw do
     resource :closure, only: %i[ edit update ], controller: "order_closures"
     resource :cancellation, only: %i[ edit update ], controller: "order_cancellations"
     resource :ready_message, only: :show, controller: "order_ready_messages"
+    resource :approval_message, only: :show, controller: "order_approval_messages"
 
     resources :order_works, only: %i[ new create update destroy ]
     resources :order_parts, only: %i[ new create update destroy ]

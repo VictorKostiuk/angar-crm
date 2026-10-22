@@ -21,6 +21,23 @@ module OrdersHelper
     blocks.reject(&:blank?).map { |block| block.join("\n") }.join("\n\n")
   end
 
+  # The «Очікує погодження» message: what the mechanic found and recommends,
+  # with prices, for the client to agree to before work starts. Same block
+  # assembly as order_ready_message, so an order with no parts yet simply has
+  # no materials section.
+  def order_approval_message(order)
+    blocks = [
+      [ t("ready_message.greeting", name: client_first_name(order.client)) ],
+      [ t("approval_message.inspected", bike: order.bike.name) ],
+      ready_message_section(order.order_works, t("approval_message.works_header")),
+      ready_message_section(order.order_parts, t("approval_message.parts_header")),
+      ready_message_totals(order, total_key: "approval_message.total"),
+      [ t("approval_message.closing") ]
+    ]
+
+    blocks.reject(&:blank?).map { |block| block.join("\n") }.join("\n\n")
+  end
+
   private
     def ready_message_section(lines, header)
       return [] if lines.none?
@@ -42,10 +59,10 @@ module OrdersHelper
 
     # order.total is already net of the discount (Orders::RecalculateTotals),
     # so the two lines need no arithmetic of their own.
-    def ready_message_totals(order)
+    def ready_message_totals(order, total_key: "ready_message.total")
       lines = []
       lines << t("ready_message.discount", amount: money(order.discount)) if order.discount.positive?
-      lines << t("ready_message.total", amount: money(order.total))
+      lines << t(total_key, amount: money(order.total))
       lines
     end
 

@@ -1,0 +1,31 @@
+<%# locals: (phone:) %>
+<%# A phone number with one-tap «Подзвонити» and «Написати в Telegram». Takes
+    any spelling — a client's stored 380… digits or a renter's hand-typed
+    "097 123 45 67" — and normalises it the way Client does, so both links
+    dial the same international number. t.me/+<number> opens a chat by phone
+    number; it only resolves if the person allows being found by it, which
+    is the client's setting, not something the app can fix.
+    Links only for a full 12-digit number: "97 123 45 67" typed without its
+    leading 0 would otherwise dial +971…, which is the UAE. %>
+<% digits = Client.normalize_phone(phone) %>
+<% if digits.length == 12 %>
+  <span class="inline-flex flex-wrap items-center gap-1 align-middle">
+    <span class="whitespace-nowrap"><%= Client.format_phone(digits) %></span>
+    <%= link_to "tel:+#{digits}", title: "Подзвонити", "aria-label": "Подзвонити",
+          class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-green-600 hover:bg-green-50" do %>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+      </svg>
+    <% end %>
+    <%= link_to "https://t.me/+#{digits}", target: "_blank", rel: "noopener", title: "Написати в Telegram", "aria-label": "Написати в Telegram",
+          class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-sky-600 hover:bg-sky-50" do %>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 4 3 11l6 2.5M21 4l-3 16-9-6.5M21 4 9 13.5V19l3-3.5" />
+      </svg>
+    <% end %>
+  </span>
+<% elsif phone.present? %>
+  <span class="whitespace-nowrap"><%= phone %></span>
+<% else %>
+  <span class="text-gray-400">—</span>
+<% end %>

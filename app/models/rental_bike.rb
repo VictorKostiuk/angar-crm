@@ -1,6 +1,7 @@
 class RentalBike < ApplicationRecord
   has_many :rentals, dependent: :restrict_with_error
-  # Documents and condition shots for the bike — the same treatment orders get.
+  # What the bike looks like and its condition — the renter's ID goes on the
+  # hire itself (Rental#documents), not here.
   has_many_attached :photos
 
   normalizes :name, with: ->(name) { name.strip.squeeze(" ") }

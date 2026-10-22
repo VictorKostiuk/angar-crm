@@ -3,10 +3,11 @@ class RentalsController < ApplicationController
 
   def index
     @period = PeriodFilter.new(**period_params)
-    @bikes = RentalBike.active.ordered
+    @bikes = RentalBike.active.ordered.with_attached_photos
     @out_ids = RentalBike.out_ids(@bikes)
-    @current_by_bike = Rental.outstanding.includes(:client).index_by(&:rental_bike_id)
-    @rentals = Rental.in_range(@period.range).includes(:rental_bike, :client, :issued_by).with_attached_documents.ordered
+    @current_by_bike = Rental.outstanding.includes(:client).with_attached_documents.index_by(&:rental_bike_id)
+    @rentals = Rental.in_range(@period.range).includes(:client, :issued_by, rental_bike: { photos_attachments: :blob })
+                     .with_attached_documents.ordered
     @total = @rentals.sum(&:amount)
     @rental_bike = RentalBike.new
   end
@@ -43,7 +44,7 @@ class RentalsController < ApplicationController
     end
 
     def load_form_data
-      @free_bikes = RentalBike.active.ordered.reject(&:out?)
+      @free_bikes = RentalBike.active.ordered.with_attached_photos.reject(&:out?)
       @clients = Client.order(:name)
     end
 

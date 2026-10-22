@@ -14,7 +14,7 @@
   </div>
 </div>
 
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
   <div class="bg-white border border-gray-200 rounded-xl p-4">
     <p class="text-sm text-gray-500">Послуги</p>
     <p class="text-xl font-bold text-gray-900"><%= money(@row.works_total) %></p>
@@ -38,6 +38,11 @@
     <p class="text-xl font-bold text-green-700"><%= @row.payout.positive? ? money(@row.payout) : "—" %></p>
     <p class="mt-1 text-xs text-gray-400"><%= @mechanic.payroll_percent.to_i %>% від послуг</p>
   </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Заробіток із запчастин</p>
+    <p class="text-xl font-bold text-green-700"><%= @row.parts_commission.positive? ? money(@row.parts_commission) : "—" %></p>
+    <p class="mt-1 text-xs text-gray-400"><%= Reports::MechanicStats::PARTS_COMMISSION_PERCENT %>% від запчастин</p>
+  </div>
 </div>
 
 <%# Counter sales earn their own rate (D40) and are settled by the same
@@ -58,7 +63,7 @@
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <p class="text-sm text-gray-500">Всього зароблено</p>
       <p class="text-xl font-bold text-green-700"><%= @row.earnings.positive? ? money(@row.earnings) : "—" %></p>
-      <p class="mt-1 text-xs text-gray-400">послуги + комісія</p>
+      <p class="mt-1 text-xs text-gray-400">послуги + запчастини + комісія</p>
     </div>
   </div>
 <% end %>

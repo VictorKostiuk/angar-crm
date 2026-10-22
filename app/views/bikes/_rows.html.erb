@@ -2,7 +2,15 @@
 <% bikes.each do |bike| %>
   <tr class="hover:bg-gray-50" id="bike_row_<%= bike.id %>">
     <td data-label="Велосипед" class="px-4 py-3">
-      <%= link_to bike.name, bike, class: "font-medium text-gray-900 hover:text-brand-600" %>
+      <%= link_to bike, class: "inline-flex items-center gap-2 font-medium text-gray-900 hover:text-brand-600" do %>
+        <% if (photo = bike.cover_photo) %>
+          <%= image_tag photo.variant(resize_to_limit: [ 80, 80 ]), alt: "",
+                class: "w-10 h-10 rounded border border-gray-200 object-cover shrink-0" %>
+        <% else %>
+          <span class="w-10 h-10 rounded border border-gray-200 bg-gray-100 shrink-0"></span>
+        <% end %>
+        <%= bike.name %>
+      <% end %>
     </td>
     <td data-label="Стан" class="px-4 py-3">
       <% in_shop = in_shop_ids ? in_shop_ids.include?(bike.id) : bike.in_shop? %>

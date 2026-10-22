@@ -51,7 +51,18 @@
         <p class="mt-1 text-xs text-brand-700"><%= t("discount_sources.#{@order.discount_source}") %></p>
       <% end %>
     </div>
-    <% if @order.problem.present? %>
+    <%# Editable while the order is open: what the client described at the
+        counter is often not what the mechanic finds once the bike is on the
+        stand. A Save button rather than autosubmit — a textarea that posts on
+        every blur would reload the page mid-thought. %>
+    <% if @order.editable? %>
+      <%= form_with model: @order, class: "space-y-1" do |f| %>
+        <%= f.label :problem, "Проблема", class: "block text-xs text-gray-500" %>
+        <%= f.text_area :problem, rows: 3,
+              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-brand-600" %>
+        <%= f.submit t("actions.save"), class: "rounded-md border border-gray-300 text-xs font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+      <% end %>
+    <% elsif @order.problem.present? %>
       <div>
         <p class="text-xs text-gray-500">Проблема</p>
         <p class="text-sm text-gray-900 whitespace-pre-line"><%= @order.problem %></p>
