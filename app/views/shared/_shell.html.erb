@@ -21,6 +21,8 @@
             active: request.path.start_with?(orders_path) && params[:status] != "archive" %>
       <%= render "shared/nav_item", label: t("nav.archive"), icon: :archive, path: orders_path(status: "archive"),
             active: request.path.start_with?(orders_path) && params[:status] == "archive" %>
+      <%= render "shared/nav_item", label: t("nav.bookings"), icon: :calendar, path: bookings_path,
+            active: request.path.start_with?(bookings_path) || request.path.start_with?(booking_settings_path) %>
       <%= render "shared/nav_item", label: t("nav.clients"), icon: :users, path: clients_path, active: request.path.start_with?(clients_path) %>
       <%= render "shared/nav_item", label: t("nav.bikes"), icon: :bike, path: bikes_path, active: request.path.start_with?(bikes_path) %>
       <%= render "shared/nav_item", label: t("nav.services"), icon: :wrench, path: services_path, active: request.path.start_with?(services_path) %>

@@ -26,6 +26,7 @@ module Orders
 
     def blockers
       return [ "Замовлення вже закрито або скасовано" ] unless @order.open_status?
+      return [ "Клієнт ще не приїхав — спершу позначте прийом велосипеда" ] if @order.booked?
 
       list = []
       list << "Замовлення не оплачено" unless @order.paid?

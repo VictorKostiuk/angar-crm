@@ -20,9 +20,15 @@
         <span class="shrink-0 text-sm font-medium text-gray-400"><%= order_number(order) %></span>
       </div>
       <div class="mt-2 space-y-1 text-sm text-gray-600">
-        <p><%= order.client.name %> · <%= render "shared/phone_actions", phone: order.client.phone %></p>
-        <p>Механік: <%= order.mechanic&.name || "не призначено" %></p>
-        <p>Прийнято: <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
+        <p><%= order.client.name %> · <%= render "shared/phone_actions", phone: order.client.phone %> <%= render "shared/telegram_tag", client: order.client %></p>
+        <% if order.booked? %>
+          <p class="font-medium text-sky-700">
+            Запис: <%= order.scheduled_at.strftime("%d.%m %H:%M") %><%= " · #{order.maintenance_type.name}" if order.maintenance_type %>
+          </p>
+        <% else %>
+          <p>Механік: <%= order.mechanic&.name || "не призначено" %></p>
+          <p>Прийнято: <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
+        <% end %>
         <% if order.problem.present? %>
           <p class="truncate">Проблема: <%= order.problem %></p>
         <% end %>
@@ -42,6 +48,11 @@
             class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
       <%= button_to "Позначити як погоджено", approve_workshop_order_path(order), method: :patch,
             data: { turbo_stream: true },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+    <% end %>
+
+    <% if order.booked? %>
+      <%= button_to "Клієнт приїхав", order_arrival_path(order), method: :patch,
             class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
     <% end %>
 

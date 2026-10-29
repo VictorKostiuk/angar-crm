@@ -1,1 +1,8 @@
-<%= render "orders/client_message", order: @order, message: order_ready_message(@order), title: "Повідомлення клієнту" %>
+<%# With the bot on, the send button appears for clients who have shared their
+    phone with it, and its absence is explained for those who have not. %>
+<% telegram_ready = @order.waiting_pickup? && Telegram::Notifier.available_for?(@order.client) %>
+<%= render "orders/client_message", order: @order, message: order_ready_message(@order), title: "Повідомлення клієнту",
+      send_path: (order_ready_message_path(@order) if telegram_ready),
+      sent_at: (@order.ready_notified_at if telegram_ready),
+      error: @telegram_error,
+      note: ("Клієнт ще не підключив Telegram-бот — скопіюйте текст і надішліть вручну." if Telegram::Api.configured? && @order.client.telegram_chat.nil?) %>

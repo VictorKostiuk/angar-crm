@@ -11,7 +11,9 @@
     <% end %>
 
     <div class="space-y-2">
-      <% Order::OPEN_STATUSES.each do |status| %>
+      <%# «Запис» is only entered through the calendar (Orders::ChangeStatus
+          refuses it), so it is listed only while it is the current status. %>
+      <% (@order.booked? ? Order::OPEN_STATUSES : Order::IN_SHOP_STATUSES).each do |status| %>
         <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 has-checked:border-brand-600 has-checked:bg-brand-50 cursor-pointer">
           <%= f.radio_button :status, status, checked: @order.status == status, class: "mt-1" %>
           <span>

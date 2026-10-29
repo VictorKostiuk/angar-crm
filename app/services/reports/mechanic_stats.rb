@@ -91,7 +91,7 @@ module Reports
       Row.new(
         mechanic: mechanic,
         accepted_count: Order.where(accepted_by_id: mechanic.id, accepted_at: @range).count,
-        in_progress_count: Order.open_orders.where(mechanic_id: mechanic.id).count,
+        in_progress_count: Order.in_shop.where(mechanic_id: mechanic.id).count,
         completed_count: closed_orders_owned_by(mechanic).count,
         works_total: works_by_order.values.sum,
         parts_total: OrderPart.joins(:order).merge(closed_orders_owned_by(mechanic)).sum(:total),

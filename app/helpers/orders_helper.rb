@@ -70,6 +70,6 @@ module OrdersHelper
     # Іван Петренко" reads like a bank letter. Falls back to the whole string
     # for a single-token name.
     def client_first_name(client)
-      client.name.to_s.split.first.presence || client.name
+      client.first_name
     end
 end

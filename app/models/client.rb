@@ -3,12 +3,17 @@ class Client < ApplicationRecord
   has_many :orders, dependent: :restrict_with_error
   # A discount pinned to this client, applied to their orders automatically.
   belongs_to :discount, optional: true
+  # The Telegram chat this person books from, if they have used the bot.
+  has_one :telegram_chat, dependent: :destroy
 
   normalizes :name, with: ->(name) { name.strip.squeeze(" ") }
   normalizes :phone, with: ->(phone) { Client.normalize_phone(phone) }
   normalizes :email, with: ->(email) { email.strip.downcase }
+  # Stored bare: "@ivan_p", "t.me/ivan_p" and "ivan_p" are the same person.
+  normalizes :telegram_username, with: ->(tag) { tag.strip.sub(%r{\A(https?://)?t\.me/}i, "").delete_prefix("@").presence }
 
   validates :name, presence: true
+  validates :telegram_username, format: { with: /\A[A-Za-z0-9_]{4,32}\z/, message: "недійсний Telegram-нік" }, allow_nil: true
   validates :phone, presence: true, uniqueness: true, format: { with: /\A\d{12}\z/, message: "недійсний номер телефону" }
 
   # Phone-substring matching only kicks in at 4+ digits — a 1-2 digit query
@@ -36,6 +41,10 @@ class Client < ApplicationRecord
 
   def loyalty_percent
     Clients::LoyaltyTier.percent_for(services_spent)
+  end
+
+  def first_name
+    name.to_s.split.first.presence || name
   end
 
   def self.normalize_phone(phone)

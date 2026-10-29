@@ -183,4 +183,58 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     visit root_path
     assert_selector ".led-ticker", text: "У суботу до 15:00"
   end
+  # D61: the slot picker is JavaScript — changing the type re-fetches the free
+  # times — so the whole booking path is worth one run in a real browser.
+  test "booking a slot from the calendar, then the client arriving" do
+    WorkingHour.week.each(&:save!)
+    MaintenanceType.create!(name: "Базове ТО", duration_minutes: 60)
+    MaintenanceType.create!(name: "Повне ТО", duration_minutes: 120)
+    date = (Date.current + 1..Date.current + 7).find { |d| Bookings::Day.new(d).open? }
+    sign_in @owner
+
+    visit new_booking_path(date: date)
+    fill_in "client_search", with: clients(:ivan).name.split.first
+    click_on clients(:ivan).name
+    fill_in "bike_name", with: "Trek Marlin"
+
+    select "Повне ТО (2 год)", from: "maintenance_type_id"
+    assert_text "Повне ТО триває 2 год"
+    find("label", text: "10:00").click
+    fill_in "telegram_username", with: "@ivan_p"
+    click_on "Записати"
+
+    assert_text "Записано на #{date.strftime('%d.%m.%Y')} 10:00"
+    assert_text "10:00–12:00"
+    assert_selector "#upcoming_bookings a", text: "Повне ТО · Trek Marlin"
+
+    within("#booking_day") { click_on "Повне ТО · Trek Marlin" }
+    assert_text "@ivan_p"
+    click_on "Клієнт приїхав"
+    assert_text "Велосипед прийнято."
+    assert_selector "span", text: "Нове"
+  end
+
+  # D64: the send button is a form inside the modal's <dialog>, so one browser
+  # run is worth it — the Turbo round trip has to close it and report back.
+  test "sending the ready message through the Telegram bot" do
+    factory_was = Telegram::Notifier.api_factory
+    api = FakeTelegramApi.new
+    Telegram::Notifier.api_factory = -> { api }
+    ENV["TELEGRAM_BOT_TOKEN"] = "123456:test-token"
+    TelegramChat.create!(chat_id: 4242, client: clients(:ivan))
+    order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
+                          accepted_at: Time.current, status: :waiting_pickup)
+    sign_in @owner
+
+    visit order_path(order)
+    find("a[title='Повідомлення клієнту']").click
+    find("button", text: "Надіслати в Telegram").trigger("click")
+
+    assert_text "Повідомлення надіслано клієнту в Telegram."
+    assert_no_selector "dialog[open]"
+    assert_equal 4242, api.calls.last.last[:chat_id]
+  ensure
+    ENV.delete("TELEGRAM_BOT_TOKEN")
+    Telegram::Notifier.api_factory = factory_was
+  end
 end

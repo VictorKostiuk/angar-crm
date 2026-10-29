@@ -1,7 +1,9 @@
 class WorkshopController < ApplicationController
   def index
-    orders = Order.open_orders.includes(:client, :bike, :mechanic).with_attached_photos.order(accepted_at: :asc)
+    orders = Order.open_orders.includes(:client, :bike, :mechanic, :maintenance_type).with_attached_photos.order(accepted_at: :asc)
     grouped = orders.group_by(&:status)
+    # Bookings read in appointment order — the next client to arrive first.
+    grouped["booked"] = grouped["booked"]&.sort_by(&:scheduled_at)
     @orders_by_status = Order::OPEN_STATUSES.index_with { |status| grouped[status] || [] }
   end
 

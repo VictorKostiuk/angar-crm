@@ -6,6 +6,8 @@ class Order < ApplicationRecord
   # catalog entry produced it, so the picker can show what was chosen.
   belongs_to :discount_record, class_name: "Discount", optional: true
   belongs_to :accepted_by, class_name: "User"
+  # What a booked client is coming in for. Optional: a walk-in has none.
+  belongs_to :maintenance_type, optional: true
 
   has_many :order_works, -> { order(:position) }, dependent: :destroy, inverse_of: :order
   has_many :order_parts, -> { order(:position) }, dependent: :destroy, inverse_of: :order
@@ -15,16 +17,27 @@ class Order < ApplicationRecord
   # NOTE: the "new order" status is intentionally NOT named :new — Rails enum
   # generates a class-level scope with that name, which would silently shadow
   # ActiveRecord::Base.new and break every Order.new(...) call in the app.
-  enum :status, { intake: 0, waiting_approval: 1, in_progress: 2, waiting_parts: 3, waiting_pickup: 4, closed: 5, cancelled: 6 }
+  # booked is first in the hash so it reads first in every dropdown; its
+  # integer is 7 because the others are already stored.
+  enum :status, { booked: 7, intake: 0, waiting_approval: 1, in_progress: 2, waiting_parts: 3, waiting_pickup: 4, closed: 5, cancelled: 6 }
   enum :payment_status, { unpaid: 0, paid: 1 }
   enum :payment_method, { cash: 0, card: 1, transfer: 2 }, prefix: true
 
   # Statuses reachable through the "change status" modal. :closed is only
   # reachable via Orders::Close, :cancelled only via the cancellation flow —
   # both require their own checklists/reasons, not a free-form status pick.
-  OPEN_STATUSES = %w[ intake waiting_approval in_progress waiting_parts waiting_pickup ]
+  OPEN_STATUSES = %w[ booked intake waiting_approval in_progress waiting_parts waiting_pickup ]
+  # Open, minus «Запис»: the bike is physically in the shop. A booking is
+  # open — it can be edited, cancelled, shown on the board — but the bike has
+  # not arrived, so it must not read «У майстерні» or count as work in hand.
+  IN_SHOP_STATUSES = OPEN_STATUSES - %w[ booked ]
 
   scope :open_orders, -> { where(status: OPEN_STATUSES) }
+  scope :in_shop, -> { where(status: IN_SHOP_STATUSES) }
+  # Came in through the booking calendar, whatever has happened to it since —
+  # what the «Запис» filter means on Замовлення and in Архів.
+  scope :via_booking, -> { where.not(scheduled_at: nil) }
+  scope :walk_in, -> { where(scheduled_at: nil) }
 
   # Closed and cancelled orders are settled records — their lines, money,
   # mechanic and photos are frozen. Enforced in the controllers, not just by
@@ -65,6 +78,9 @@ class Order < ApplicationRecord
   validate :bike_belongs_to_client
   validate :photos_must_be_images
   validate :mechanic_must_be_a_mechanic
+  validates :scheduled_at, :booking_minutes, presence: true, if: :booked?
+  validates :booking_channel, inclusion: { in: %w[ crm telegram ] }, allow_nil: true
+  validate :slot_must_be_free, if: -> { booked? && (will_save_change_to_scheduled_at? || will_save_change_to_booking_minutes?) }
 
   # order_works/order_parts trigger Orders::RecalculateTotals on their own
   # save/destroy (§6). Picking a different discount needs its own trigger, or
@@ -76,7 +92,28 @@ class Order < ApplicationRecord
     OPEN_STATUSES.include?(status)
   end
 
+  def via_booking?
+    scheduled_at.present?
+  end
+
+  def via_telegram?
+    booking_channel == "telegram"
+  end
+
+  def booking_ends_at
+    scheduled_at + booking_minutes.to_i.minutes if scheduled_at
+  end
+
   private
+    # The same check the calendar uses to offer times, so a stale form or a
+    # second person booking the same slot is refused rather than overbooked.
+    def slot_must_be_free
+      return if scheduled_at.blank? || booking_minutes.blank?
+      return if Bookings::Day.new(scheduled_at.to_date).free?(scheduled_at, booking_minutes, except: self)
+
+      errors.add(:scheduled_at, "— цей час уже зайнятий або поза робочими годинами")
+    end
+
     def recalculate_totals
       Orders::RecalculateTotals.call(self)
     end

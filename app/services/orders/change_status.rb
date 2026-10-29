@@ -1,6 +1,6 @@
 module Orders
-  # Status modal (docs/PLAN.md §6 rules 1 & 4): free movement between the 5
-  # open statuses, logged to order_status_changes. :closed and :cancelled are
+  # Status modal (docs/PLAN.md §6 rules 1 & 4): free movement between the
+  # open statuses (into «Запис» only from the calendar, D61), logged to order_status_changes. :closed and :cancelled are
   # NOT reachable here — they carry their own checklists/requirements and go
   # through Orders::Close / the cancellation flow instead.
   class ChangeStatus
@@ -18,6 +18,23 @@ module Orders
       unless Order::OPEN_STATUSES.include?(@status) && @order.open_status?
         @order.errors.add(:status, "недоступний для цього замовлення")
         return @order
+      end
+
+      # «Запис» is only ever entered through the booking calendar, which sets
+      # the time and checks the slot. Moving an order back into it from here
+      # would leave a booking with no appointment.
+      if @status == "booked" && !@order.booked?
+        @order.errors.add(:status, "«Запис» створюється через календар записів")
+        return @order
+      end
+
+      # Leaving «Запис» is the client walking in: that is when the bike was
+      # accepted, and by whoever is at the counter — not when or by whom the
+      # booking was typed in. «Дата прийому», its filter and accepted_count
+      # all read these.
+      if @order.booked? && @status != "booked"
+        @order.accepted_at = Time.current
+        @order.accepted_by = @user
       end
 
       # Picking who does the job is part of moving it into work, so it rides the

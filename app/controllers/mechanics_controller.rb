@@ -20,7 +20,7 @@ class MechanicsController < ApplicationController
 
   def show
     @row = Reports::MechanicStats.new(range: @period.range).row_for(@mechanic)
-    @open_orders = @mechanic.assigned_orders.open_orders.includes(:client, :bike).order(:accepted_at)
+    @open_orders = @mechanic.assigned_orders.in_shop.includes(:client, :bike).order(:accepted_at)
     @closed_orders = @mechanic.assigned_orders.closed.where(closed_at: @period.range)
                               .includes(:client, :bike).order(closed_at: :desc)
     @works_by_order = OrderWork.where(mechanic_id: @mechanic.id, order_id: @closed_orders.map(&:id))

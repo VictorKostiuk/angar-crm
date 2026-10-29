@@ -22,11 +22,11 @@ class Bike < ApplicationRecord
   # all closed or cancelled it has been handed back. Batch-friendly companion
   # below so a list doesn't issue one query per row.
   def in_shop?
-    orders.open_orders.any?
+    orders.in_shop.any?
   end
 
   def self.in_shop_ids(bikes)
-    Order.open_orders.where(bike_id: bikes.map(&:id)).distinct.pluck(:bike_id).to_set
+    Order.in_shop.where(bike_id: bikes.map(&:id)).distinct.pluck(:bike_id).to_set
   end
 
   def display_name

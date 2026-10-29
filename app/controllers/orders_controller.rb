@@ -20,6 +20,8 @@ class OrdersController < ApplicationController
     end
     scope = scope.where(payment_status: params[:payment_status]) if Order.payment_statuses.key?(params[:payment_status])
     scope = scope.where(mechanic_id: params[:mechanic_id]) if params[:mechanic_id].present?
+    scope = scope.via_booking if params[:source] == "booking"
+    scope = scope.walk_in if params[:source] == "walk_in"
 
     from = parse_date(params[:from])
     to = parse_date(params[:to])

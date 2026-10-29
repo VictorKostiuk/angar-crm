@@ -8,7 +8,7 @@
 <%= filter_frame "orders_list" do %>
   <%= form_with url: orders_path, method: :get, data: { turbo_frame: "orders_list" },
         class: "bg-white border border-gray-200 rounded-xl p-4 mb-4" do %>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
       <div>
         <label class="block text-xs font-medium text-gray-500 mb-1">Пошук</label>
         <%= text_field_tag :q, params[:q], placeholder: "№, клієнт, телефон, велосипед", class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
@@ -17,6 +17,14 @@
         <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
         <%= select_tag :status, options_for_select([ [ "Усі статуси", "" ], [ "Архів (закриті + скасовані)", "archive" ] ] +
                                Order.statuses.keys.map { |s| [ t("statuses.order.#{s}"), s ] }, params[:status]),
+              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+      </div>
+      <%# Whether the order came in through the booking calendar — still true
+          after it was closed or cancelled, which is what makes it useful in
+          Архів, where no order is in «Запис» any more. %>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Запис</label>
+        <%= select_tag :source, options_for_select([ [ "Усі", "" ], [ "Через запис", "booking" ], [ "Без запису", "walk_in" ] ], params[:source]),
               class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
       </div>
       <div>
@@ -66,12 +74,20 @@
             <td data-label="№" class="px-4 py-3">
               <%= link_to order_number(order), order, class: "font-medium text-brand-600 hover:underline" %>
             </td>
-            <td data-label="Дата прийому" class="px-4 py-3 text-gray-600"><%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></td>
+            <td data-label="Дата прийому" class="px-4 py-3 text-gray-600">
+              <% if order.booked? %>
+                <span class="block text-sky-700">Запис на <%= order.scheduled_at.strftime("%d.%m.%Y %H:%M") %></span>
+              <% else %>
+                <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %>
+                <% if order.via_booking? %><span class="block text-xs text-sky-700">за записом</span><% end %>
+              <% end %>
+            </td>
             <td data-label="Клієнт" class="px-4 py-3">
               <%= link_to order.client, class: "block hover:text-brand-600" do %>
                 <span class="block text-gray-900"><%= order.client.name %></span>
                 <span class="block text-gray-500 text-xs"><%= order.client.formatted_phone %></span>
               <% end %>
+              <span class="text-xs"><%= render "shared/telegram_tag", client: order.client %></span>
             </td>
             <td data-label="Велосипед" class="px-4 py-3">
               <%= link_to order.bike.name, order.bike, class: "text-gray-600 hover:text-brand-600 hover:underline" %>

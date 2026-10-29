@@ -18,6 +18,12 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
     @order.order_parts.create!(name: "Ланцюг КМС X10", quantity: 1, price: 950)
     Part.create!(name: "Камера 700x35", category: Category.part.active.first, base_price: 180)
     RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+    # A booked day on the calendar, so the grid's busiest cell is measured too.
+    WorkingHour.week.each(&:save!)
+    type = MaintenanceType.create!(name: "Повне ТО з мийкою", duration_minutes: 120)
+    start = Bookings::Day.new(Date.current + 1).free_starts(120).first
+    Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner, accepted_at: Time.current,
+                  status: :booked, scheduled_at: start, booking_minutes: 120, maintenance_type: type) if start
   end
 
   # Elements that scroll horizontally on purpose are not overflow bugs.
@@ -48,7 +54,9 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
       "Клієнти" => clients_path, "Клієнт" => client_path(clients(:ivan)), "Велосипеди" => bikes_path,
       "Запчастини" => parts_path, "Послуги" => services_path, "Продажі" => sales_path,
       "Прокат" => rentals_path, "Склад" => stock_path, "Фінанси" => finances_path,
-      "Механіки" => mechanics_path, "Налаштування" => users_path }.each do |label, path|
+      "Механіки" => mechanics_path, "Налаштування" => users_path,
+      "Записи" => bookings_path, "Новий запис" => new_booking_path,
+      "Налаштування запису" => booking_settings_path }.each do |label, path|
       visit path
       assert_fits label
     end

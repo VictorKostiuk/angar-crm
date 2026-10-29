@@ -40,12 +40,28 @@ Rails.application.routes.draw do
   resources :expenses, only: %i[ index create update destroy ]
   resources :categories, only: %i[ new create ]
 
+  # Telegram delivers bot updates here (D62). Secret-checked, no session.
+  post "telegram/webhook", to: "telegram/webhooks#create", as: :telegram_webhook
+
+  # Booking calendar (D61). A booking is an Order in «Запис», so creating one
+  # lives here but everything after that is the order's own page.
+  resources :bookings, only: %i[ index new create ] do
+    get :slots, on: :collection
+  end
+  resource :booking_settings, only: :show
+  resource :working_hours, only: :update
+  resources :maintenance_types, only: %i[ create update destroy ]
+  resources :schedule_exceptions, only: %i[ create destroy ]
+  resources :booking_problems, only: %i[ create update destroy ]
+
   resources :orders, only: %i[ index new create show update ] do
+    resource :arrival, only: :update, controller: "order_arrivals"
     resource :status, only: %i[ edit update ], controller: "order_statuses"
     resource :payment, only: %i[ edit update ], controller: "order_payments"
     resource :closure, only: %i[ edit update ], controller: "order_closures"
     resource :cancellation, only: %i[ edit update ], controller: "order_cancellations"
-    resource :ready_message, only: :show, controller: "order_ready_messages"
+    # POST sends the same text to the client through the Telegram bot (D64).
+    resource :ready_message, only: %i[ show create ], controller: "order_ready_messages"
     resource :approval_message, only: :show, controller: "order_approval_messages"
 
     resources :order_works, only: %i[ new create update destroy ]

@@ -1,0 +1,35 @@
+<%# locals: (day:) %>
+<%# The chosen day: its hours, every booking holding time on it, and a way to
+    book another. Bookings left outside the hours after the day was shortened
+    are flagged, not hidden — somebody still has to call those clients. %>
+<div id="booking_day" class="bg-white border border-gray-200 rounded-xl p-5">
+  <h2 class="font-bold text-gray-900"><%= l day.date, format: "%A, %d.%m.%Y" %></h2>
+  <p class="text-sm mt-1 <%= day.open? ? "text-gray-500" : "text-red-600" %>">
+    <% if day.open? %>
+      <%= MinuteOfDay.format(day.opens_minute) %>–<%= MinuteOfDay.format(day.closes_minute) %> · місць: <%= day.capacity %>
+    <% else %>
+      Вихідний — запис не приймається
+    <% end %>
+  </p>
+  <% if day.exception %>
+    <p class="mt-1 text-xs text-amber-700">
+      Особливий день<%= ": #{day.exception.note}" if day.exception.note.present? %>
+    </p>
+  <% end %>
+
+  <div class="mt-4 space-y-2">
+    <% bookings = day.bookings %>
+    <% bookings.each do |booking| %>
+      <%= render "bookings/booking", order: booking.order, out_of_hours: day.out_of_hours?(booking) %>
+    <% end %>
+
+    <% if bookings.none? %>
+      <p class="text-sm text-gray-400">Записів немає.</p>
+    <% end %>
+  </div>
+
+  <% if day.open? && day.date >= Date.current %>
+    <%= link_to "+ Записати на цей день", new_booking_path(date: day.date), data: { turbo_frame: "_top" },
+          class: "mt-4 block text-center rounded-md border border-gray-300 text-sm font-medium px-4 py-2 hover:bg-gray-50" %>
+  <% end %>
+</div>
