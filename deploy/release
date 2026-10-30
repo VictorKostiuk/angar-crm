@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+release_sha=${1:?Pass the release commit SHA}
+[[ $release_sha =~ ^[0-9a-f]{40}$ ]] || exit 1
+cd /opt/angar-crm
+export CRM_IMAGE="angar-crm:$release_sha"
+compose=(docker compose --project-name angar-crm --env-file production.env -f deploy/compose.yml)
+docker image inspect "$CRM_IMAGE" >/dev/null
+
+previous_sha=$(cat current-release 2>/dev/null || true)
+recover() {
+  local status=$?
+  trap - ERR
+  if [[ $previous_sha =~ ^[0-9a-f]{40}$ ]]; then
+    echo "Release failed; restarting the previous CRM image. Review migrations before restoring data." >&2
+    export CRM_IMAGE="angar-crm:$previous_sha"
+    "${compose[@]}" up -d --no-deps crm-web crm-worker || true
+  fi
+  exit "$status"
+}
+trap recover ERR
+
+"${compose[@]}" up -d --wait crm-db
+if [[ -n $previous_sha ]]; then
+  # Quiesce only the CRM for a consistent pre-migration database + file backup.
+  "${compose[@]}" stop crm-web crm-worker
+  /opt/angar-crm/deploy/backup
+fi
+"${compose[@]}" run --rm --no-deps -T --interactive=false crm-web bin/rails db:prepare
+"${compose[@]}" up -d --no-deps --wait --wait-timeout 120 crm-web crm-worker
+"${compose[@]}" exec -T crm-web curl --fail --silent --output /dev/null \
+  -H 'Host: crm.angar-velocafe.com' http://localhost:3000/session/new
+"${compose[@]}" exec -T crm-web bin/rails runner \
+  'raise "Database unavailable" unless ActiveRecord::Base.connection.select_value("SELECT 1") == 1'
+printf '%s\n' "$release_sha" > current-release
+echo "CRM release $release_sha is running."

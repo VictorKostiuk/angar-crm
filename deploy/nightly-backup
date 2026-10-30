@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+cd /opt/angar-crm
+exec 9>/opt/angar-crm/deploy.lock
+flock -w 1200 9
+export CRM_IMAGE="angar-crm:$(cat current-release)"
+compose=(docker compose --project-name angar-crm --env-file production.env -f deploy/compose.yml)
+trap '"${compose[@]}" up -d --no-deps crm-web crm-worker' EXIT
+"${compose[@]}" stop crm-web crm-worker
+/opt/angar-crm/deploy/backup

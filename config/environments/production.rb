@@ -30,6 +30,16 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
+  config.hosts = [ ENV.fetch("APP_HOST", "crm.angar-velocafe.com") ]
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # File analysis jobs must survive app restarts. Both use the CRM database.
+  config.active_job.queue_adapter = :solid_queue
+  config.cache_store = :memory_store, { size: 64.megabytes }
+
+  # Accounts are managed by owners; this deployment does not send email.
+  config.action_mailer.perform_deliveries = false
+
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 

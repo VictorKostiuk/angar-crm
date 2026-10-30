@@ -1,0 +1,48 @@
+name: Deploy CRM
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crm-production
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: checks
+    if: github.ref == 'refs/heads/master' && vars.CRM_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build the AMD64 release on GitHub
+        run: docker build --platform linux/amd64 --tag "angar-crm:$GITHUB_SHA" .
+      - name: Configure SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.CRM_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.CRM_KNOWN_HOSTS }}
+        run: |
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/crm_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Transfer and deploy this release
+        run: |
+          set -o pipefail
+          docker save "angar-crm:$GITHUB_SHA" | gzip -1 | \
+            ssh -i ~/.ssh/crm_deploy -o BatchMode=yes -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes -o ServerAliveInterval=15 \
+              root@152.53.156.254 "deploy $GITHUB_SHA"
+      - name: Verify public HTTPS
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+            https://crm.angar-velocafe.com/up

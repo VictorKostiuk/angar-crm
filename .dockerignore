@@ -1,0 +1,17 @@
+.git
+.github
+.agents
+.codex
+.bundle
+.env*
+config/*.key
+config/credentials/*.key
+log/*
+tmp/*
+storage/*
+public/assets
+app/assets/builds/*
+test
+docs
+node_modules
+.DS_Store

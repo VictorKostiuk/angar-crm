@@ -91,6 +91,10 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
             over: [...d.querySelectorAll('*')]
               .filter(e => e.scrollWidth > e.clientWidth + 2 && e.clientWidth > 0)
               .filter(e => !['auto','scroll'].includes(getComputedStyle(e).overflowX))
+              // Pickers deliberately shorten long labels with an ellipsis.
+              // Count clipped content otherwise, but not correctly truncated text.
+              .filter(e => !(getComputedStyle(e).textOverflow === 'ellipsis' &&
+                             ['hidden','clip'].includes(getComputedStyle(e).overflowX)))
               .map(e => e.tagName.toLowerCase() + ' ' + e.scrollWidth + '>' + e.clientWidth) }; })()
       JS
 

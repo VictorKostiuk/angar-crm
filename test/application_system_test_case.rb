@@ -11,11 +11,12 @@ end
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :cuprite
 
-  # Cuprite reuses one browser, so a phone-width test left the next one at
-  # 390px — where the desktop-only ticker is hidden, failing whichever test ran
-  # after it. Every test starts at the default size; subclasses that need
-  # another size set it in their own setup, which runs after this one.
-  setup { page.driver.resize_window(1400, 1100) }
+  setup do
+    # Cuprite reuses its browser. A preceding responsive test may leave it at
+    # phone width; subclasses can apply their own viewport after this reset.
+    page.driver.resize_window(1400, 1100)
+    Timeout.timeout(5) { sleep 0.05 until page.evaluate_script("window.innerWidth") == 1400 }
+  end
 
   def sign_in(user, password: "password123")
     visit new_session_path

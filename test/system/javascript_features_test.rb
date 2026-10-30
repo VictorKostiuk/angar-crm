@@ -189,7 +189,15 @@ class JavascriptFeaturesSystemTest < ApplicationSystemTestCase
 
     field = find("input[placeholder='Пошук за назвою запчастини…']")
     field.click
-    field.send_keys("s", "h", "i", "m")
+    page.execute_script("window.originalPartsSearch = document.activeElement")
+    # Type into the focused browser element without retaining Cuprite's CDP
+    # node handle across a Turbo update. Still prove the original DOM input
+    # survives, and let one response finish before continuing to type.
+    page.driver.browser.keyboard.type("s")
+    assert_current_path parts_path(category_id: "", q: "s")
+    assert_no_selector "#parts_rows td", text: "Камера 700x35/43"
+    page.driver.browser.keyboard.type("him")
+    assert_current_path parts_path(category_id: "", q: "shim")
 
     assert_selector "#parts_rows td", text: "Колодки Shimano B01S"
     assert_no_selector "#parts_rows td", text: "Камера 700x35/43"
@@ -198,6 +206,8 @@ class JavascriptFeaturesSystemTest < ApplicationSystemTestCase
       "the search box must still hold focus after the results swap"
     assert_equal "shim", page.evaluate_script("document.activeElement.value"),
       "characters typed while the request was in flight must not be reverted"
+    assert page.evaluate_script("window.originalPartsSearch === document.activeElement && window.originalPartsSearch.isConnected"),
+      "the original search input must survive the results swaps"
 
     # The filtered view still survives a reload and can still be shared (D45's
     # reason for data-turbo-action="advance" on the frame).

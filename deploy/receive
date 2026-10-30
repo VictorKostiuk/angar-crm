@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Fixed forced command for the dedicated GitHub key. No interactive shell,
+# port forwarding or general Docker commands are exposed by that key.
+set -euo pipefail
+umask 077
+
+if [[ ! ${SSH_ORIGINAL_COMMAND:-} =~ ^deploy\ ([0-9a-f]{40})$ ]]; then
+  echo "Expected: deploy <40-character commit SHA>" >&2
+  exit 1
+fi
+release_sha=${BASH_REMATCH[1]}
+cd /opt/angar-crm
+exec 9>/opt/angar-crm/deploy.lock
+flock -w 1200 9
+archive=$(mktemp /opt/angar-crm/incoming.XXXXXX)
+trap 'rm -f "$archive"' EXIT
+gzip -dc > "$archive"
+
+# Do not allow this key to overwrite an image belonging to the website.
+python3 - "$archive" "angar-crm:$release_sha" <<'PY'
+import json
+import sys
+import tarfile
+
+with tarfile.open(sys.argv[1]) as archive:
+    manifest = json.load(archive.extractfile("manifest.json"))
+    if len(manifest) != 1 or manifest[0].get("RepoTags") != [sys.argv[2]]:
+        raise SystemExit("Archive must contain only the requested CRM image")
+PY
+docker load --input "$archive"
+/opt/angar-crm/deploy/release "$release_sha"
