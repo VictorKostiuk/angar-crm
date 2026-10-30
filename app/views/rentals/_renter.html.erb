@@ -1,0 +1,11 @@
+<%# locals: (rental:) %>
+<%# Who has the bike and how to reach them: name, phone with call / Telegram
+    links, and the hire's own ID photos — everything needed to chase a late
+    return, in one cell. %>
+<div class="space-y-1">
+  <p class="text-gray-900"><%= rental.renter %></p>
+  <% if rental.contact_phone %>
+    <p class="text-gray-600"><%= render "shared/phone_actions", phone: rental.contact_phone %></p>
+  <% end %>
+  <%= render "rentals/documents", rental: rental %>
+</div>

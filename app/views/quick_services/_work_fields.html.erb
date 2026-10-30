@@ -1,0 +1,21 @@
+<%# locals: (work:, services:) %>
+<%# A service from the price list, or blank for one typed by hand — the same
+    choice the order screen offers. %>
+<%# The column's default is 1.0, which the field would print as «1,0». %>
+<% quantity = work.object&.quantity || 1 %>
+<% quantity = quantity.to_i if quantity == quantity.to_i %>
+<div class="rounded-md border border-gray-200 p-2 space-y-2">
+  <%= work.collection_select :service_id, services, :id, ->(s) { "#{s.name} — #{money(s.base_price)}" },
+        { include_blank: "Своя послуга (не з прайсу)" },
+        { data: { controller: "combobox", combobox_prompt_value: "Пошук послуги…" },
+          class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" } %>
+
+  <div class="grid grid-cols-2 sm:grid-cols-[1fr_4.5rem_6rem] gap-2">
+    <%= work.text_field :name, value: work.object&.name, placeholder: "Назва (для своєї послуги)",
+          class: "col-span-2 sm:col-span-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <%= work.number_field :quantity, value: quantity, step: "any", min: "0.01",
+          class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <%= work.number_field :price, value: work.object&.price, step: "any", min: 0, placeholder: "Ціна",
+          class: "rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+  </div>
+</div>

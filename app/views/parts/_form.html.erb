@@ -19,7 +19,7 @@
   <div>
     <%= f.label :category_id, "Категорія", class: "block text-sm font-medium text-gray-700 mb-1" %>
     <%= f.collection_select :category_id, Category.part.active.ordered, :id, :name, { prompt: "Оберіть категорію" },
-          class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+          data: { controller: "combobox" }, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
   </div>
 
   <div>
@@ -38,7 +38,7 @@
   <div>
     <%= f.label :supplier_id, "Постачальник", class: "block text-sm font-medium text-gray-700 mb-1" %>
     <%= f.collection_select :supplier_id, @suppliers, :id, :name, { include_blank: "Не вказано" },
-          class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+          data: { controller: "combobox" }, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
   </div>
 
   <div>

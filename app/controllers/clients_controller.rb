@@ -19,6 +19,8 @@ class ClientsController < ApplicationController
     # the client has actually spent.
     @billed_orders = @orders.reject(&:cancelled?)
     @orders_total = @billed_orders.sum(&:total)
+    # ID photos taken on hires before they were kept on the client (D67).
+    @hire_documents = @client.hire_documents
   end
 
   def new
@@ -58,6 +60,6 @@ class ClientsController < ApplicationController
     end
 
     def client_params
-      params.expect(client: %i[ name phone email city notes discount_id ])
+      params.expect(client: %i[ name phone telegram_username email city notes discount_id ])
     end
 end

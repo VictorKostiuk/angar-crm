@@ -16,6 +16,28 @@ class User < ApplicationRecord
 
   scope :active, -> { where(active: true) }
 
+  # The account that "accepts" a booking made through the Telegram bot —
+  # orders need an accepted_by, and the client is the one typing. Inactive so
+  # it can never sign in, admin so no mechanic report or dropdown ever lists
+  # it, and left out of Користувачі (`people`). The moment the client walks in,
+  # D61's arrival replaces it with the person at the counter.
+  TELEGRAM_BOT_EMAIL = "telegram-bot@angar.local"
+
+  scope :people, -> { where.not(email_address: TELEGRAM_BOT_EMAIL) }
+
+  def self.telegram_bot
+    find_or_create_by!(email_address: TELEGRAM_BOT_EMAIL) do |user|
+      user.name = "Telegram-бот"
+      user.role = :admin
+      user.active = false
+      user.password = SecureRandom.hex(32)
+    end
+  end
+
+  def telegram_bot?
+    email_address == TELEGRAM_BOT_EMAIL
+  end
+
   # Who can be assigned work — a superset of role == mechanic. The owner (or an
   # admin) who also turns wrenches ticks works_as_mechanic and shows up in the
   # mechanic dropdowns, the roster and the payroll reports, without inheriting

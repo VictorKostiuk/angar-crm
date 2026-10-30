@@ -20,6 +20,11 @@
     </div>
 
     <div>
+      <%= f.label :telegram_username, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :telegram_username, placeholder: "@нік", autocapitalize: "off", class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+    </div>
+
+    <div>
       <%= f.label :email, class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.email_field :email, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
     </div>
@@ -33,7 +38,7 @@
       <%= f.label :discount_id, "Постійна знижка", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.collection_select :discount_id, Discount.active.ordered, :id,
             ->(d) { "#{d.name} — #{t("discount_scopes.#{d.applies_to}")}" }, { include_blank: "Без постійної знижки" },
-            class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+            data: { controller: "combobox" }, class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
       <p class="mt-1 text-xs text-gray-500">Застосовується автоматично. Якщо клієнт заробив більшу знижку за обігом — діє більша.</p>
     </div>
 

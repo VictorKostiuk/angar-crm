@@ -14,7 +14,7 @@
   </div>
 </div>
 
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
   <div class="bg-white border border-gray-200 rounded-xl p-4">
     <p class="text-sm text-gray-500">Послуги</p>
     <p class="text-xl font-bold text-gray-900"><%= money(@row.works_total) %></p>
@@ -38,6 +38,11 @@
     <p class="text-xl font-bold text-green-700"><%= @row.payout.positive? ? money(@row.payout) : "—" %></p>
     <p class="mt-1 text-xs text-gray-400"><%= @mechanic.payroll_percent.to_i %>% від послуг</p>
   </div>
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <p class="text-sm text-gray-500">Заробіток із запчастин</p>
+    <p class="text-xl font-bold text-green-700"><%= @row.parts_commission.positive? ? money(@row.parts_commission) : "—" %></p>
+    <p class="mt-1 text-xs text-gray-400"><%= Reports::MechanicStats::PARTS_COMMISSION_PERCENT %>% від запчастин</p>
+  </div>
 </div>
 
 <%# Counter sales earn their own rate (D40) and are settled by the same
@@ -58,7 +63,7 @@
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <p class="text-sm text-gray-500">Всього зароблено</p>
       <p class="text-xl font-bold text-green-700"><%= @row.earnings.positive? ? money(@row.earnings) : "—" %></p>
-      <p class="mt-1 text-xs text-gray-400">послуги + комісія</p>
+      <p class="mt-1 text-xs text-gray-400">послуги + запчастини + комісія</p>
     </div>
   </div>
 <% end %>
@@ -107,15 +112,17 @@
 <div class="mb-6">
   <h2 class="font-bold text-gray-900 mb-3">Зараз в роботі</h2>
   <% if @open_orders.any? %>
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto sm:overflow-x-auto">
+    <%# Each row is one link to its order, and wraps on a phone instead of
+        squeezing five columns into 340px (D70). %>
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <% @open_orders.each do |order| %>
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0 text-sm">
-          <span class="font-medium text-brand-600"><%= link_to order_number(order), order %></span>
-          <span class="text-gray-900"><%= order.bike.name %></span>
-          <span class="text-gray-600"><%= order.client.name %></span>
+        <%= link_to order, class: "flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-1 px-4 py-3 border-b border-gray-100 last:border-0 text-sm hover:bg-gray-50" do %>
+          <span class="font-medium text-brand-600"><%= order_number(order) %></span>
+          <span class="min-w-0 flex-1 truncate text-gray-900"><%= order_title(order) %></span>
+          <span class="order-last basis-full sm:order-none sm:basis-auto text-gray-600"><%= order.client&.name %></span>
           <%= render "shared/status_badge", order: order %>
-          <%= link_to "Відкрити замовлення →", order, class: "text-gray-400 hover:text-brand-600" %>
-        </div>
+          <span class="hidden sm:inline text-gray-400">Відкрити замовлення →</span>
+        <% end %>
       <% end %>
     </div>
   <% else %>
@@ -126,11 +133,11 @@
 <div>
   <h2 class="font-bold text-gray-900 mb-3">Завершені замовлення</h2>
   <% if @closed_orders.any? %>
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto sm:overflow-x-auto">
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <% @closed_orders.each do |order| %>
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0 text-sm">
-          <span class="font-medium text-brand-600"><%= link_to order_number(order), order %></span>
-          <span class="text-gray-900"><%= order.bike.name %></span>
+        <%= link_to order, class: "flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-1 px-4 py-3 border-b border-gray-100 last:border-0 text-sm hover:bg-gray-50" do %>
+          <span class="font-medium text-brand-600"><%= order_number(order) %></span>
+          <span class="min-w-0 flex-1 truncate text-gray-900"><%= order_title(order) %></span>
           <span class="text-gray-500"><%= order.closed_at.strftime("%d.%m") %></span>
           <%# This mechanic's own work lines, not the order's — the list is keyed on
               who owns the order, the money on who each line is attributed to, and
@@ -138,15 +145,17 @@
               added. Saying so beats printing a bare «Послуги: 0 грн» next to a
               «Разом» that plainly contains services. %>
           <% own_works = @works_by_order[order.id] || 0 %>
-          <span class="text-gray-600">
-            Послуги: <%= money(own_works) %>
-            <% if own_works < order.works_total %>
-              <span class="text-xs text-amber-700">(<%= money(order.works_total - own_works) %> — інший механік)</span>
-            <% end %>
+          <span class="flex basis-full sm:basis-auto items-baseline justify-between sm:justify-start gap-3">
+            <span class="text-gray-600">
+              Послуги: <%= money(own_works) %>
+              <% if own_works < order.works_total %>
+                <span class="text-xs text-amber-700">(<%= money(order.works_total - own_works) %> — інший механік)</span>
+              <% end %>
+            </span>
+            <span class="font-medium text-gray-900">Разом: <%= money(order.total) %></span>
           </span>
-          <span class="font-medium text-gray-900">Разом: <%= money(order.total) %></span>
-          <%= link_to "Відкрити замовлення →", order, class: "text-gray-400 hover:text-brand-600" %>
-        </div>
+          <span class="hidden sm:inline text-gray-400">Відкрити замовлення →</span>
+        <% end %>
       <% end %>
     </div>
   <% else %>

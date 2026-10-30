@@ -11,14 +11,17 @@ class SalesController < ApplicationController
   end
 
   def new
-    @sale = Sale.new(sold_at: Time.current)
+    @sale = Sale.new(sold_at: Time.current, sold_by: Current.user)
     @sale.sale_items.build
     load_form_data
   end
 
   def create
     @sale = Sale.new(sale_params)
-    @sale.sold_by = Current.user
+    # Whoever rang it up at the counter is not always who is logged in on the
+    # shop tablet — the seller is picked on the form and earns the commission.
+    # Defaults to the current user when the field is left out.
+    @sale.sold_by ||= Current.user
     @sale.sold_at ||= Time.current
 
     if @sale.save
@@ -38,9 +41,10 @@ class SalesController < ApplicationController
     def load_form_data
       @parts = Part.active.ordered.includes(:category)
       @clients = Client.order(:name)
+      @sellers = User.active.order(:name)
     end
 
     def sale_params
-      params.expect(sale: [ :client_id, :note, { sale_items_attributes: [ [ :part_id, :name, :quantity, :price ] ] } ])
+      params.expect(sale: [ :client_id, :sold_by_id, :note, { sale_items_attributes: [ [ :part_id, :name, :quantity, :price ] ] } ])
     end
 end

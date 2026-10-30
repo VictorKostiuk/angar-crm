@@ -19,7 +19,9 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     fill_in "problem", with: "Скрипить ланцюг"
     click_on "Прийняти велосипед"
 
-    assert_text "Скрипить ланцюг"
+    # The problem stays editable while the order is open, so it comes back in
+    # its textarea rather than as plain text.
+    assert_field "order[problem]", with: "Скрипить ланцюг"
 
     # Services cannot be added to an order with nobody assigned — the line would
     # belong to no mechanic and count toward no payroll. Pick one first, through
@@ -84,7 +86,7 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     visit root_path
     click_on "+ Новий продаж"
     within("[data-controller='sale-items']") do
-      select "Камера 700 — 180 грн (5 шт)", from: find("select[name*='part_id']")[:name]
+      pick "Камера 700 — 180 грн (5 шт)", from: "select[name*='part_id']"
       fill_in find("input[name*='quantity']")[:name], with: "2"
     end
     find("input[type=submit][value='Записати продаж']").trigger("click")
@@ -112,7 +114,7 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     # Second line: straight from the shelf.
     click_on "+ Ще позиція"
     within all("[data-sale-items-target='rows'] > div").last do
-      select "Камера 700 — 180 грн (5 шт)", from: find("select[name*='part_id']")[:name]
+      pick "Камера 700 — 180 грн (5 шт)", from: "select[name*='part_id']"
     end
 
     find("input[type=submit][value='Записати продаж']").trigger("click")
@@ -130,10 +132,10 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_text "Доступний"
 
     click_on "+ Видати в прокат"
-    select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
+    pick "Trek прокат — 300 грн/доба", from: "#rental_rental_bike_ids"
     fill_in "rental[renter_name]", with: "Гість"
-    fill_in "rental[rented_from]", with: Date.current.to_s
-    fill_in "rental[rented_to]", with: (Date.current + 2).to_s
+    fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
+    fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 2).iso8601
     find("input[type=submit][value='Видати']").trigger("click")
 
     assert_text "Велосипед видано в прокат."
@@ -145,6 +147,29 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_text "Доступний"
   end
 
+  # D67: two bikes in one handover, to a client whose passport is on file.
+  test "issuing two bikes to a client whose documents are already on file" do
+    RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+    RentalBike.create!(name: "Merida прокат", daily_rate: 350)
+    clients(:ivan).documents.attach(io: file_fixture("test_photo.png").open, filename: "passport.png", content_type: "image/png")
+    sign_in @owner
+
+    visit rentals_path
+    click_on "+ Видати в прокат"
+    pick "Trek прокат — 300 грн/доба", from: "#rental_rental_bike_ids"
+    pick "Merida прокат — 350 грн/доба", from: "#rental_rental_bike_ids"
+    pick clients(:ivan).name, from: "#rental_client_id", search: "Петренко"
+    assert_text "Документи вже є в картці клієнта"
+
+    fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
+    fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 1).iso8601
+    find("input[type=submit][value='Видати']").trigger("click")
+
+    assert_text "Видано в прокат: 2 велосипеди."
+    assert_equal [ clients(:ivan) ], Rental.all.map(&:client).uniq
+    assert_equal [ 300, 350 ], Rental.all.map { |rental| rental.amount.to_i }.sort
+  end
+
   test "a rental can be issued straight from the board" do
     RentalBike.create!(name: "Trek прокат", daily_rate: 300)
     sign_in @owner
@@ -152,10 +177,10 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     visit root_path
     click_on "+ Новий прокат"
 
-    select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
+    pick "Trek прокат — 300 грн/доба", from: "#rental_rental_bike_ids"
     fill_in "rental[renter_name]", with: "Гість"
-    fill_in "rental[rented_from]", with: Date.current.to_s
-    fill_in "rental[rented_to]", with: (Date.current + 2).to_s
+    fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
+    fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 2).iso8601
     find("input[type=submit][value='Видати']").trigger("click")
 
     assert_text "Велосипед видано в прокат."
@@ -183,5 +208,59 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_text "Оголошення збережено."
     visit root_path
     assert_selector ".led-ticker", text: "У суботу до 15:00"
+  end
+  # D61: the slot picker is JavaScript — changing the type re-fetches the free
+  # times — so the whole booking path is worth one run in a real browser.
+  test "booking a slot from the calendar, then the client arriving" do
+    WorkingHour.week.each(&:save!)
+    MaintenanceType.create!(name: "Базове ТО", duration_minutes: 60)
+    MaintenanceType.create!(name: "Повне ТО", duration_minutes: 120)
+    date = (Date.current + 1..Date.current + 7).find { |d| Bookings::Day.new(d).open? }
+    sign_in @owner
+
+    visit new_booking_path(date: date)
+    fill_in "client_search", with: clients(:ivan).name.split.first
+    click_on clients(:ivan).name
+    fill_in "bike_name", with: "Trek Marlin"
+
+    select "Повне ТО (2 год)", from: "maintenance_type_id"
+    assert_text "Повне ТО триває 2 год"
+    find("label", text: "10:00").click
+    fill_in "telegram_username", with: "@ivan_p"
+    click_on "Записати"
+
+    assert_text "Записано на #{date.strftime('%d.%m.%Y')} 10:00"
+    assert_text "10:00–12:00"
+    assert_selector "#upcoming_bookings a", text: "Повне ТО · Trek Marlin"
+
+    within("#booking_day") { click_on "Повне ТО · Trek Marlin" }
+    assert_text "@ivan_p"
+    click_on "Клієнт приїхав"
+    assert_text "Велосипед прийнято."
+    assert_selector "span", text: "Нове"
+  end
+
+  # D64: the send button is a form inside the modal's <dialog>, so one browser
+  # run is worth it — the Turbo round trip has to close it and report back.
+  test "sending the ready message through the Telegram bot" do
+    factory_was = Telegram::Notifier.api_factory
+    api = FakeTelegramApi.new
+    Telegram::Notifier.api_factory = -> { api }
+    ENV["TELEGRAM_BOT_TOKEN"] = "123456:test-token"
+    TelegramChat.create!(chat_id: 4242, client: clients(:ivan))
+    order = Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner,
+                          accepted_at: Time.current, status: :waiting_pickup)
+    sign_in @owner
+
+    visit order_path(order)
+    find("a[title='Повідомлення клієнту']").click
+    find("button", text: "Надіслати в Telegram").trigger("click")
+
+    assert_text "Повідомлення надіслано клієнту в Telegram."
+    assert_no_selector "dialog[open]"
+    assert_equal 4242, api.calls.last.last[:chat_id]
+  ensure
+    ENV.delete("TELEGRAM_BOT_TOKEN")
+    Telegram::Notifier.api_factory = factory_was
   end
 end

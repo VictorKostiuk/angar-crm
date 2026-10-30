@@ -110,72 +110,213 @@
 }
 
 /*
- * Tables that become stacked cards on a phone.
+ * Tables that become cards on a phone.
  *
- * A 9-column orders table is ~770px wide inside a 340px column — horizontal
- * scrolling "works" but is miserable to read one hand on a bike. Below the sm
- * breakpoint each row becomes a card and each cell carries its column name from
- * data-label, so nothing is cut off and every value keeps its heading. From sm
- * up it is an ordinary table again.
+ * A 9-column orders table is ~770px wide inside a 340px column, so below the
+ * sm breakpoint each row becomes a card (D45). From sm up it is an ordinary
+ * table again.
  *
- * A cell with no data-label (the actions column) still shows, just without a
- * heading; add data-label="" deliberately to keep it label-less.
+ * D70: a card is laid out by the role each cell plays, set with data-card,
+ * so it reads like a list item rather than a form — one record used to take
+ * a whole screen of "label … value" lines:
+ *
+ *   title   first line, left, bold — the record's name or number. A link in
+ *           it with .card-link stretches over the whole card, so the card is
+ *           one tap target; other links and controls stay on top of it.
+ *   badge   first line, right — status.
+ *   line    a full-width line of its own, no label — client, bike.
+ *   info    small inline detail, no label — a date, a payment badge.
+ *   meta    small inline detail with its column name before it.
+ *   amount  the money, right-aligned on the details line.
+ *   actions edit / delete / return buttons, right after the amount (or
+ *           right-aligned on the details line when there is none).
+ *   hide    not shown on a phone (a chevron the whole card replaces).
+ *
+ * A cell with no data-card keeps the D45 layout: a full-width line with its
+ * column name from data-label on the left. data-label="" still means an
+ * actions cell with no heading.
+ *
+ * Deliberately outside any @layer: the cells carry the table's own padding
+ * and alignment utilities (px-4 py-3, text-right), and a layered rule loses
+ * to a utility whatever its specificity, so before D70 every card line kept
+ * its 12px table padding.
  */
-@layer components {
-  @media (width < 40rem) {
-    .data-table,
-    .data-table tbody,
-    .data-table tfoot,
-    .data-table tr,
-    .data-table td {
-      display: block;
-      width: auto;
-    }
+@media (width < 40rem) {
+  .data-table,
+  .data-table tbody,
+  .data-table tfoot,
+  .data-table td {
+    display: block;
+    width: auto;
+  }
 
-    .data-table thead {
-      display: none;
-    }
+  .data-table thead {
+    display: none;
+  }
 
-    .data-table tr {
-      padding: 0.875rem 1rem;
-    }
+  .data-table tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.75rem;
+    row-gap: 0.125rem;
+    position: relative;
+    padding: 0.75rem 1rem;
+  }
 
-    .data-table tbody tr + tr,
-    .data-table tfoot tr {
-      border-top: 1px solid var(--color-gray-100);
-    }
+  /* The first line holds only the title and its badge; everything else
+     starts below, however much room the title leaves. */
+  .data-table tr::after {
+    content: "";
+    order: 3;
+    flex: 1 1 100%;
+    height: 0;
+  }
 
-    .data-table td {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.1875rem 0;
-      text-align: left;
-    }
+  .data-table tbody tr + tr,
+  .data-table tfoot tr {
+    border-top: 1px solid var(--color-gray-100);
+  }
 
-    .data-table td::before {
-      content: attr(data-label);
-      flex: none;
-      color: var(--color-gray-500);
-      font-size: 0.75rem;
-      line-height: 1.4;
-    }
+  /* The default cell: a full-width "label … value" line, after the roles. */
+  .data-table td {
+    order: 6;
+    flex: 1 1 100%;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.1875rem 0;
+    text-align: left;
+  }
 
-    /* The value side wins the space; the label stays put. */
-    .data-table td > * {
-      text-align: right;
-    }
+  .data-table td::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--color-gray-500);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
 
-    /* An empty cell in a card layout is just a blank line. */
-    .data-table td:empty {
-      display: none;
-    }
+  /* The value side wins the space; the label stays put. */
+  .data-table td > * {
+    text-align: right;
+  }
 
-    /* Row actions sit on their own line, aligned with the values. */
-    .data-table td[data-label=""] {
-      justify-content: flex-end;
-      padding-top: 0.5rem;
-    }
+  /* An empty cell in a card layout is just a blank line. */
+  .data-table td:empty {
+    display: none;
+  }
+
+  /* Row actions sit on their own line, aligned with the values. */
+  .data-table td[data-label=""] {
+    order: 8;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+  }
+
+  /* --- roles (D70) --- */
+
+  .data-table td[data-card] {
+    display: block;
+    padding: 0;
+  }
+
+  .data-table td[data-card]::before {
+    content: none;
+  }
+
+  .data-table td[data-card] > * {
+    text-align: left;
+  }
+
+  .data-table td[data-card="title"] {
+    order: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+  }
+
+  .data-table td[data-card="badge"] {
+    order: 2;
+    flex: none;
+  }
+
+  .data-table td[data-card="line"] {
+    order: 4;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .data-table td[data-card="info"],
+  .data-table td[data-card="meta"] {
+    order: 5;
+    flex: none;
+    max-width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+  }
+
+  .data-table td[data-card="meta"]::before {
+    content: attr(data-label) " ";
+    font-size: 0.75rem;
+    color: var(--color-gray-400);
+  }
+
+  .data-table td[data-card="amount"] {
+    order: 7;
+    flex: none;
+    margin-left: auto;
+    margin-top: 0.25rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+  }
+
+  .data-table td[data-card="actions"] {
+    order: 8;
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-top: 0.25rem;
+  }
+
+  /* Two auto margins would split the space; the amount alone pushes right. */
+  .data-table tr:has(> td[data-card="amount"]) td[data-card="actions"] {
+    margin-left: 0;
+  }
+
+  .data-table td[data-card="actions"] > * {
+    text-align: right;
+  }
+
+  .data-table td[data-card="hide"] {
+    display: none;
+  }
+
+  /* The whole card is one tap target… */
+  .data-table .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  /* …except the links and controls inside it, which stay on top. */
+  .data-table td a:not(.card-link),
+  .data-table td button,
+  .data-table td input,
+  .data-table td select,
+  .data-table td label,
+  .data-table td summary,
+  .data-table td form,
+  .data-table td img {
+    position: relative;
+    z-index: 1;
   }
 }

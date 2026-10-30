@@ -13,8 +13,15 @@ class RentalBikesController < ApplicationController
 
   def update
     @rental_bike = RentalBike.find(params[:id])
+    # Photos are attached, never assigned: has_many_attached's `photos =`
+    # replaces the whole set, so every new batch from the fleet's "+" used to
+    # wipe the earlier ones.
+    attributes = rental_bike_params
+    new_photos = Array(attributes.delete(:photos)).compact_blank
+    @rental_bike.assign_attributes(attributes)
+    @rental_bike.photos.attach(new_photos) if new_photos.any?
 
-    if @rental_bike.update(rental_bike_params)
+    if @rental_bike.save
       redirect_to rentals_path, notice: "Велосипед оновлено."
     else
       redirect_to rentals_path, alert: @rental_bike.errors.full_messages.to_sentence

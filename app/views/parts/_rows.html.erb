@@ -1,10 +1,10 @@
 <%# locals: (parts:, category_id:) %>
 <% parts.each do |part| %>
   <tr class="hover:bg-gray-50" id="part_row_<%= part.id %>">
-    <td data-label="Назва позиції" class="px-4 py-3 text-gray-900"><%= part.name %></td>
-    <td data-label="Категорія" class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
-    <td data-label="Ціна" class="px-4 py-3 text-gray-600"><%= money(part.base_price) %></td>
-    <td data-label="" class="px-4 py-3 text-right whitespace-nowrap">
+    <td data-label="Назва позиції" data-card="title" class="px-4 py-3 text-gray-900"><%= part.name %></td>
+    <td data-label="Категорія" data-card="info" class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
+    <td data-label="Ціна" data-card="amount" class="px-4 py-3 text-gray-600"><%= money(part.base_price) %></td>
+    <td data-label="" data-card="actions" class="px-4 py-3 text-right whitespace-nowrap">
       <%= link_to parts_path(edit: part.id, category_id: category_id),
             title: t("actions.edit"), "aria-label": t("actions.edit"),
             class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>

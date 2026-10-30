@@ -1,10 +1,14 @@
 class Bike < ApplicationRecord
   belongs_to :client, counter_cache: :bikes_count
   has_many :orders, dependent: :restrict_with_error
+  # The bike itself, kept across visits. Intake photos stay on each order
+  # (they record its condition on that day); #cover_photo falls back to them.
+  has_many_attached :photos
 
   normalizes :name, with: ->(name) { name.strip.squeeze(" ") }
 
   validates :name, presence: true
+  validate :photos_must_be_images
 
   scope :active, -> { where(active: true) }
   scope :ordered, -> { order(:name) }
@@ -14,18 +18,52 @@ class Bike < ApplicationRecord
     left_joins(:client).where("bikes.name ILIKE :q OR clients.name ILIKE :q", q: "%#{query}%")
   }
 
+  # The header search (D69): every word has to appear in the bike's name,
+  # brand, model or colour, in any order — "marlin trek" finds "Trek Marlin 7".
+  scope :matching, ->(query) {
+    query.to_s.split.reduce(all) do |scope, word|
+      scope.where("bikes.name ILIKE :w OR bikes.brand ILIKE :w OR bikes.model ILIKE :w OR bikes.color ILIKE :w",
+                  w: "%#{sanitize_sql_like(word)}%")
+    end
+  }
+
   # A bike is in the shop while any of its orders is still open; once they are
   # all closed or cancelled it has been handed back. Batch-friendly companion
   # below so a list doesn't issue one query per row.
   def in_shop?
-    orders.open_orders.any?
+    orders.in_shop.any?
   end
 
   def self.in_shop_ids(bikes)
-    Order.open_orders.where(bike_id: bikes.map(&:id)).distinct.pluck(:bike_id).to_set
+    Order.in_shop.where(bike_id: bikes.map(&:id)).distinct.pluck(:bike_id).to_set
   end
 
   def display_name
     [ name, size ].compact_blank.join(", ")
   end
+
+  # The bike's own photo, else the newest intake photo from any of its orders —
+  # most bikes were only ever photographed at the counter. Reads loaded
+  # associations, so a list that preloads both stays one query per table.
+  def cover_photo
+    photos.first || order_photos.first
+  end
+
+  def order_photos
+    orders.sort_by(&:accepted_at).reverse.flat_map(&:photos)
+  end
+
+  # What the base already holds for this bike, shown on an order that has no
+  # photos of its own so nobody re-shoots a bike that is on file (D68): its
+  # own photos, then intake photos from its other visits, newest first.
+  def stored_photos(except: nil)
+    photos.to_a + orders.where.not(id: except&.id).with_attached_photos.order(accepted_at: :desc).flat_map(&:photos)
+  end
+
+  private
+    def photos_must_be_images
+      return unless photos.attached?
+
+      errors.add(:photos, "має бути зображенням") unless photos.all? { |p| p.content_type.to_s.start_with?("image/") }
+    end
 end

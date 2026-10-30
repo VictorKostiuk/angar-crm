@@ -44,7 +44,7 @@ class UsersController < ApplicationController
     end
 
     def load_index_data
-      @users = User.order(:name)
+      @users = User.people.order(:name)
     end
 
     def load_index_data_and_reset_form

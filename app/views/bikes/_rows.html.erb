@@ -1,18 +1,26 @@
 <%# locals: (bikes:, in_shop_ids: nil) %>
 <% bikes.each do |bike| %>
   <tr class="hover:bg-gray-50" id="bike_row_<%= bike.id %>">
-    <td data-label="Велосипед" class="px-4 py-3">
-      <%= link_to bike.name, bike, class: "font-medium text-gray-900 hover:text-brand-600" %>
+    <td data-label="Велосипед" data-card="title" class="px-4 py-3">
+      <%= link_to bike, class: "card-link inline-flex items-center gap-2 font-medium text-gray-900 hover:text-brand-600" do %>
+        <% if (photo = bike.cover_photo) %>
+          <%= image_tag photo.variant(resize_to_limit: [ 80, 80 ]), alt: "",
+                class: "w-10 h-10 rounded border border-gray-200 object-cover shrink-0" %>
+        <% else %>
+          <span class="w-10 h-10 rounded border border-gray-200 bg-gray-100 shrink-0"></span>
+        <% end %>
+        <%= bike.name %>
+      <% end %>
     </td>
-    <td data-label="Стан" class="px-4 py-3">
+    <td data-label="Стан" data-card="badge" class="px-4 py-3">
       <% in_shop = in_shop_ids ? in_shop_ids.include?(bike.id) : bike.in_shop? %>
       <span class="inline-block rounded-full px-2.5 py-1 text-xs font-medium <%= in_shop ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600" %>">
         <%= in_shop ? "У майстерні" : "Видано" %>
       </span>
     </td>
-    <td data-label="Клієнт" class="px-4 py-3 text-gray-600"><%= link_to bike.client.name, bike.client, class: "hover:underline" %></td>
-    <td data-label="Бренд / модель" class="px-4 py-3 text-gray-600"><%= [ bike.brand, bike.model ].compact_blank.join(" ").presence || "—" %></td>
-    <td data-label="" class="px-4 py-3 text-right whitespace-nowrap">
+    <td data-label="Клієнт" data-card="line" class="px-4 py-3 text-gray-600"><%= link_to bike.client.name, bike.client, class: "hover:underline" %></td>
+    <td data-label="Бренд / модель" data-card="info" class="px-4 py-3 text-gray-600"><%= [ bike.brand, bike.model ].compact_blank.join(" ").presence || tag.span("—", class: "hidden sm:inline") %></td>
+    <td data-label="" data-card="actions" class="px-4 py-3 text-right whitespace-nowrap">
       <%= link_to bikes_path(edit: bike.id, q: params[:q]),
             title: t("actions.edit"), "aria-label": t("actions.edit"),
             class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>

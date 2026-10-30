@@ -1,0 +1,6 @@
+<%# locals: (client:) %>
+<%# The client's Telegram nick as a link straight into a chat with them. %>
+<% if client.telegram_username.present? %>
+  <%= link_to "@#{client.telegram_username}", "https://t.me/#{client.telegram_username}",
+        target: "_blank", rel: "noopener", class: "text-sky-600 hover:underline whitespace-nowrap" %>
+<% end %>

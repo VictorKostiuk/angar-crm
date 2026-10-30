@@ -3,14 +3,33 @@
     modal changes the status, since the badge and the action buttons both
     depend on it. %>
 <div>
-  <h1 class="text-2xl font-bold text-gray-900"><%= order.bike.name %></h1>
-  <p class="text-gray-500 text-sm mt-1">
-    <%= link_to order.client.name, order.client, class: "hover:underline" %> · <%= order.client.formatted_phone %>
-  </p>
+  <h1 class="text-2xl font-bold text-gray-900"><%= order_title(order) %></h1>
+  <% if order.client %>
+    <p class="text-gray-500 text-sm mt-1">
+      <%= link_to order.client.name, order.client, class: "hover:underline" %> ·
+      <%= render "shared/phone_actions", phone: order.client.phone %>
+      <%= render "shared/telegram_tag", client: order.client %>
+    </p>
+  <% elsif order.quick? %>
+    <p class="text-gray-500 text-sm mt-1">Без клієнта й велосипеда — записано й закрито одразу.</p>
+  <% end %>
+  <% if order.via_booking? %>
+    <p class="mt-2 text-sm <%= order.booked? ? "text-sky-700" : "text-gray-500" %>">
+      Запис на <%= l order.scheduled_at, format: "%d.%m.%Y %H:%M" %>–<%= order.booking_ends_at.strftime("%H:%M") %>
+      <%= "· #{order.maintenance_type.name}" if order.maintenance_type %>
+      <%= "· через Telegram-бот" if order.via_telegram? %>
+    </p>
+  <% end %>
 </div>
 <div class="sm:text-right">
   <p class="text-sm text-gray-400 mb-1"><%= order_number(order) %></p>
   <%= render "shared/status_badge", order: order %>
+  <%# The walk-in moment for a booking — the same transition the status modal
+      offers, one tap away since it is the only thing to do with a booking. %>
+  <% if order.booked? %>
+    <%= button_to "Клієнт приїхав", order_arrival_path(order), method: :patch, form_class: "mt-2",
+          class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+  <% end %>
   <div class="mt-2 sm:flex sm:justify-end">
     <%= render "orders/action_buttons", order: order %>
   </div>

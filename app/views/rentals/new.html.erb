@@ -10,12 +10,33 @@
       </div>
     <% end %>
 
-    <div>
-      <%= f.label :rental_bike_id, "Велосипед", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.collection_select :rental_bike_id, @free_bikes, :id,
-            ->(b) { "#{b.display_name} — #{number_to_currency(b.daily_rate, unit: 'грн', format: '%n %u', precision: 0)}/доба" },
-            { include_blank: "Оберіть велосипед" },
+    <%# One or more bikes to the same person (D67): each becomes its own hire. %>
+    <div data-controller="bike-preview">
+      <label for="rental_rental_bike_ids" class="block text-sm font-medium text-gray-700 mb-1">Велосипеди</label>
+      <%= select_tag "rental[rental_bike_ids]",
+            options_from_collection_for_select(@free_bikes, :id,
+              ->(b) { "#{b.display_name} — #{number_to_currency(b.daily_rate, unit: 'грн', format: '%n %u', precision: 0)}/доба" }, @bike_ids),
+            multiple: true, id: "rental_rental_bike_ids",
+            data: { controller: "combobox", combobox_placeholder_value: "Оберіть один або кілька велосипедів",
+                    bike_preview_target: "select", action: "change->bike-preview#show" },
             class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+      <%# The chosen bikes' photos, so each one being handed over can be checked
+          against how it looked. All rendered, the chosen shown — no round trip. %>
+      <% @free_bikes.each do |bike| %>
+        <div data-bike-preview-target="preview" data-bike-id="<%= bike.id %>" hidden class="mt-2">
+          <p class="text-xs text-gray-500 mb-1"><%= bike.display_name %></p>
+          <div class="flex flex-wrap gap-1">
+            <% if bike.photos.attached? %>
+              <% bike.photos.each do |photo| %>
+                <%= image_tag photo.variant(resize_to_limit: [ 160, 160 ]), alt: bike.display_name,
+                      class: "w-16 h-16 rounded border border-gray-200 object-cover" %>
+              <% end %>
+            <% else %>
+              <p class="text-xs text-gray-400">Фото цього велосипеда ще немає.</p>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
       <% if @free_bikes.none? %>
         <p class="mt-1 text-xs text-red-600">
           <% if RentalBike.active.none? %>
@@ -29,7 +50,9 @@
 
     <div>
       <%= f.label :client_id, "Клієнт", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.collection_select :client_id, @clients, :id, :name, { include_blank: "Не з бази" },
+      <%= f.collection_select :client_id, @clients, :id, ->(c) { "#{c.name} — #{c.formatted_phone}" }, { include_blank: "Не з бази" },
+            data: { controller: "combobox frame-source", action: "change->frame-source#load",
+                    frame_source_url_value: client_documents_path("__id__"), frame_source_frame_value: "rental_client_documents" },
             class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
     </div>
 
@@ -59,19 +82,22 @@
               class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
       </div>
     </div>
-    <p class="text-xs text-gray-500">Сума = ставка × доби. Порожня ставка береться з картки велосипеда.</p>
+    <p class="text-xs text-gray-500">Сума = ставка × доби, окремо за кожен велосипед. Порожня ставка береться з картки кожного велосипеда.</p>
 
     <div>
       <%= f.label :documents, "Документи клієнта", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%# What is already on file for the chosen client, so nobody shoots the
+          same passport twice (D67). Follows the client select. %>
+      <%= turbo_frame_tag "rental_client_documents", src: (client_documents_path(@rental.client_id) if @rental.client_id.present?) %>
       <%= f.file_field :documents, multiple: true, accept: "image/*",
             class: "block w-full text-xs text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-gray-100 file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-gray-200" %>
       <%# A browser cannot repopulate a file input, so a rejected form comes
           back with the picker empty even though files were chosen. Say so,
           rather than letting the documents vanish without a word. %>
-      <% if @rental.documents.attached? %>
+      <% if @documents_lost %>
         <p class="mt-1 text-xs text-amber-700">Файли не збереглися — оберіть їх ще раз.</p>
       <% else %>
-        <p class="mt-1 text-xs text-gray-500">Фото паспорта чи іншого документа — можна додати й пізніше зі списку прокату.</p>
+        <p class="mt-1 text-xs text-gray-500">Фото паспорта чи іншого документа. Клієнтові з бази вони збережуться в картці й наступного разу не знадобляться. Можна додати й пізніше зі списку прокату.</p>
       <% end %>
     </div>
   </div>

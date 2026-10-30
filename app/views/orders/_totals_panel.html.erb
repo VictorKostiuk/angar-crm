@@ -6,7 +6,8 @@
 <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
   <div>
     <%= render "shared/payment_badge", order: order %>
-    <% if order.paid? %>
+    <%# A quick service is paid with no method recorded (D71). %>
+    <% if order.paid? && order.payment_method %>
       <span class="text-xs text-gray-500 ml-1">
         <%= t("payment_methods.#{order.payment_method}") %><% if order.receipt_number.present? %>, чек №<%= order.receipt_number %><% end %>
       </span>

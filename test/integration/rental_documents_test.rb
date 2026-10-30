@@ -103,4 +103,103 @@ class RentalDocumentsTest < ActionDispatch::IntegrationTest
     assert_match "вже у прокаті", response.body
     assert_match "Файли не збереглися", response.body
   end
+
+  # --- D67: documents kept on the client ------------------------------------
+
+  test "a client from the base keeps the photos, and the next hire is told they are on file" do
+    sign_in_as @owner
+    client = clients(:ivan)
+
+    get client_documents_path(client)
+    assert_match "документів ще немає", response.body
+
+    rental = issue!(client_id: client.id, renter_name: "", documents: [ document, document ])
+
+    assert_equal 2, client.reload.documents.count
+    assert_not rental.documents.attached?, "kept with the person, not this hire"
+
+    get client_documents_path(client)
+    assert_select "turbo-frame#rental_client_documents img", 2
+    assert_match "фотографувати повторно не треба", response.body
+
+    get rentals_path
+    assert_select "td[data-label=Документи] img[data-action=?]", "click->lightbox#open", 2
+  end
+
+  test "a photo added from the rentals list for a base client goes to the client" do
+    sign_in_as @owner
+    rental = issue!(client_id: clients(:ivan).id, renter_name: "")
+
+    post rental_documents_path(rental), params: { documents: [ document ] }
+
+    assert_equal 1, clients(:ivan).documents.count
+    assert_not rental.reload.documents.attached?
+  end
+
+  # Before D67 a base client's photos were kept on each hire; they still show.
+  test "older photos kept on a hire still show on it and on the client page" do
+    sign_in_as @owner
+    rental = issue!(client_id: clients(:ivan).id, renter_name: "")
+    rental.documents.attach(document)
+
+    get rentals_path
+    assert_select "td[data-label=Документи] img[data-action=?]", "click->lightbox#open", 1
+
+    get client_path(clients(:ivan))
+    assert_select "img[title=?]", "З попередньої видачі в прокат", 1
+
+    get client_documents_path(clients(:ivan))
+    assert_match "фотографувати повторно не треба", response.body
+  end
+
+  # Two bikes to someone outside the base: one upload, on both hires.
+  test "a renter outside the base with two bikes has the photo on both, and removing it from one keeps the other" do
+    sign_in_as @owner
+    other = RentalBike.create!(name: "Merida прокат", daily_rate: 350)
+
+    issue!(rental_bike_id: nil, rental_bike_ids: [ @bike.id, other.id ], documents: [ document ])
+    first, second = Rental.order(:id).last(2)
+
+    assert_equal first.documents.first.blob, second.documents.first.blob, "one upload, shared"
+    assert_equal 1, ActiveStorage::Blob.count
+
+    delete rental_document_path(first, first.documents.first.id)
+
+    assert_not first.reload.documents.attached?
+    assert second.reload.documents.attached?, "the other hire keeps its photo"
+    assert second.documents.first.blob.service.exist?(second.documents.first.blob.key)
+  end
+
+  test "on the client page any role adds a document, and only admin or owner removes one" do
+    client = clients(:ivan)
+    sign_in_as @mechanic
+
+    get client_path(client)
+    assert_select "form[action=?]", client_documents_path(client)
+
+    assert_difference -> { client.documents.count }, 1 do
+      post client_documents_path(client), params: { documents: [ document ] }, headers: { "HTTP_REFERER" => client_url(client) }
+    end
+    assert_redirected_to client_url(client)
+
+    target = client.documents.first
+    assert_no_difference -> { client.documents.count } do
+      delete client_document_path(client, target.id)
+    end
+    assert_redirected_to root_path
+
+    sign_in_as @owner
+    assert_difference -> { client.documents.count }, -1 do
+      delete client_document_path(client, target.id)
+    end
+  end
+
+  test "a non-image is refused on the client page" do
+    sign_in_as @owner
+
+    post client_documents_path(clients(:ivan)), params: { documents: [ document("not_an_image.txt", "text/plain") ] }
+
+    assert_equal "Документ має бути зображенням.", flash[:alert]
+    assert_equal 0, clients(:ivan).documents.count
+  end
 end

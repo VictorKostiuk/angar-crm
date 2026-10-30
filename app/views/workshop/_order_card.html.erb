@@ -1,8 +1,10 @@
 <%# locals: (order:) %>
 <div id="board_card_<%= order.id %>" class="bg-white border border-gray-200 rounded-xl p-4">
   <div class="flex items-start gap-3">
-    <% if order.photos.attached? %>
-      <%= image_tag order.photos.first.variant(resize_to_limit: [ 56, 56 ]),
+    <%# Today's intake photo, else the bike's own from the base (D68). %>
+    <% photo = order.photos.first || order.bike.cover_photo %>
+    <% if photo %>
+      <%= image_tag photo.variant(resize_to_limit: [ 56, 56 ]),
             class: "w-14 h-14 rounded-lg object-cover border border-gray-200 shrink-0" %>
     <% else %>
       <div class="w-14 h-14 rounded-lg bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center text-gray-300">
@@ -20,9 +22,15 @@
         <span class="shrink-0 text-sm font-medium text-gray-400"><%= order_number(order) %></span>
       </div>
       <div class="mt-2 space-y-1 text-sm text-gray-600">
-        <p><%= order.client.name %> · <%= order.client.formatted_phone %></p>
-        <p>Механік: <%= order.mechanic&.name || "не призначено" %></p>
-        <p>Прийнято: <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
+        <p><%= order.client.name %> · <%= render "shared/phone_actions", phone: order.client.phone %> <%= render "shared/telegram_tag", client: order.client %></p>
+        <% if order.booked? %>
+          <p class="font-medium text-sky-700">
+            Запис: <%= order.scheduled_at.strftime("%d.%m %H:%M") %><%= " · #{order.maintenance_type.name}" if order.maintenance_type %>
+          </p>
+        <% else %>
+          <p>Механік: <%= order.mechanic&.name || "не призначено" %></p>
+          <p>Прийнято: <%= order.accepted_at.strftime("%d.%m.%Y %H:%M") %></p>
+        <% end %>
         <% if order.problem.present? %>
           <p class="truncate">Проблема: <%= order.problem %></p>
         <% end %>
@@ -38,8 +46,15 @@
     <%= link_to "Відкрити", order, class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
 
     <% if order.waiting_approval? %>
+      <%= link_to "Повідомлення клієнту", order_approval_message_path(order), data: { turbo_frame: "modal" },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50" %>
       <%= button_to "Позначити як погоджено", approve_workshop_order_path(order), method: :patch,
             data: { turbo_stream: true },
+            class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
+    <% end %>
+
+    <% if order.booked? %>
+      <%= button_to "Клієнт приїхав", order_arrival_path(order), method: :patch,
             class: "rounded-md border border-gray-300 text-sm font-medium px-3 py-1.5 hover:bg-gray-50 cursor-pointer" %>
     <% end %>
 

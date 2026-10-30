@@ -22,6 +22,16 @@ class RentalBikePhotosTest < ActionDispatch::IntegrationTest
     assert_select "[data-controller=lightbox] img[data-action=?]", "click->lightbox#open", 2
   end
 
+  # has_many_attached's `photos =` replaces the whole set, so a second batch
+  # sent through #update used to wipe the first — the fleet column only ever
+  # showed whatever was uploaded last.
+  test "a second batch adds to the photos instead of replacing them" do
+    patch rental_bike_path(@bike), params: { rental_bike: { photos: [ photo ] } }
+    patch rental_bike_path(@bike), params: { rental_bike: { photos: [ photo, photo ] } }
+
+    assert_equal 3, @bike.reload.photos.count
+  end
+
   test "photos can be attached while creating the bike" do
     assert_difference -> { RentalBike.count }, 1 do
       post rental_bikes_path, params: { rental_bike: { name: "Cube прокат", daily_rate: 250, photos: [ photo ] } }

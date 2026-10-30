@@ -1,0 +1,220 @@
+<% content_for :title, "Налаштування запису" %>
+
+<h1 class="text-2xl font-bold text-gray-900 mb-6"><%= Current.user.owner? ? t("nav.settings") : "Налаштування запису" %></h1>
+<% if Current.user.owner? %>
+  <%= render "shared/settings_tabs", active: :booking %>
+<% end %>
+
+<% input = "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-brand-600" %>
+
+<% if WorkingHour.unconfigured? %>
+  <div class="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-4">
+    Розклад нижче ще не збережено — це лише заготовка. Поки ви не натиснете «Зберегти розклад», календар вважає всі дні вихідними.
+  </div>
+<% end %>
+
+<div class="space-y-6">
+  <%# The bot reads the same schedule and types as the calendar, so there is
+      nothing to configure here beyond the token — this only says whether it
+      is on. %>
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <h2 class="font-bold text-gray-900">Telegram-бот</h2>
+    <% if Telegram::Api.configured? %>
+      <p class="text-sm text-gray-600 mt-1">
+        Увімкнено. Клієнти бачать вільний час за цим розкладом і записуються самі; такі записи позначені «Telegram» у календарі.
+      </p>
+    <% else %>
+      <p class="text-sm text-amber-700 mt-1">
+        Не налаштовано — потрібен токен бота (<code class="text-xs">TELEGRAM_BOT_TOKEN</code>). Запис через CRM працює як завжди.
+      </p>
+    <% end %>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden sm:overflow-x-auto">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="font-bold text-gray-900">Робочий тиждень</h2>
+      <p class="text-xs text-gray-500 mt-0.5">
+        Коли приймаємо записи. <b>Крок</b> — як часто починаються слоти (кожні 30 хв: 10:00, 10:30…).
+        <b>Місць</b> — скільки записів може йти одночасно.
+      </p>
+    </div>
+    <%= form_with url: working_hours_path, method: :patch do %>
+      <table class="data-table w-full text-sm">
+        <thead class="bg-gray-50 text-left text-gray-500">
+          <tr>
+            <th class="px-4 py-3 font-medium">День</th>
+            <th class="px-4 py-3 font-medium">Вихідний</th>
+            <th class="px-4 py-3 font-medium">З</th>
+            <th class="px-4 py-3 font-medium">До</th>
+            <th class="px-4 py-3 font-medium">Крок, хв</th>
+            <th class="px-4 py-3 font-medium">Місць</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @week.each_with_index do |row, index| %>
+            <% prefix = "working_hours[#{index}]" %>
+            <tr>
+              <td data-label="День" class="px-4 py-3 font-medium text-gray-900">
+                <%= row.day_name %>
+                <%= hidden_field_tag "#{prefix}[weekday]", row.weekday, id: nil %>
+              </td>
+              <td data-label="Вихідний" class="px-4 py-3">
+                <%= hidden_field_tag "#{prefix}[closed]", "0", id: nil %>
+                <%= check_box_tag "#{prefix}[closed]", "1", row.closed?, id: "closed_#{row.weekday}", "aria-label": "#{row.day_name} — вихідний" %>
+              </td>
+              <td data-label="З" class="px-4 py-3"><%= time_field_tag "#{prefix}[opens_at]", row.opens_at, id: nil, "aria-label": "#{row.day_name} — з", class: input %></td>
+              <td data-label="До" class="px-4 py-3"><%= time_field_tag "#{prefix}[closes_at]", row.closes_at, id: nil, "aria-label": "#{row.day_name} — до", class: input %></td>
+              <td data-label="Крок, хв" class="px-4 py-3"><%= number_field_tag "#{prefix}[slot_minutes]", row.slot_minutes, min: 5, step: 5, id: nil, "aria-label": "#{row.day_name} — крок", class: input %></td>
+              <td data-label="Місць" class="px-4 py-3"><%= number_field_tag "#{prefix}[capacity]", row.capacity, min: 1, id: nil, "aria-label": "#{row.day_name} — місць", class: input %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <div class="px-5 py-4 border-t border-gray-100 flex justify-end">
+        <%= submit_tag "Зберегти розклад", class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    <div class="bg-white border border-gray-200 rounded-xl p-5">
+      <h2 class="font-bold text-gray-900">Типи ТО</h2>
+      <p class="text-xs text-gray-500 mt-0.5 mb-4">Тривалість визначає, скільки часу запис займає в розкладі. Зміна тривалості не зсуває вже зроблені записи.</p>
+
+      <div class="space-y-2 mb-4">
+        <% @types.each do |type| %>
+          <%= form_with model: type, class: class_names("flex flex-wrap items-end gap-2 rounded-lg border p-3", type.active? ? "border-gray-200" : "border-dashed border-gray-200 opacity-60") do |f| %>
+            <div class="flex-1 min-w-36">
+              <%= f.label :name, "Назва", class: "block text-xs text-gray-500 mb-1", for: "maintenance_type_#{type.id}_name" %>
+              <%= f.text_field :name, id: "maintenance_type_#{type.id}_name", class: input %>
+            </div>
+            <div class="w-24">
+              <%= f.label :duration_minutes, "Хвилин", class: "block text-xs text-gray-500 mb-1", for: "maintenance_type_#{type.id}_duration" %>
+              <%= f.number_field :duration_minutes, min: 5, step: 5, id: "maintenance_type_#{type.id}_duration", class: input %>
+            </div>
+            <%= f.hidden_field :active, value: true, id: nil %>
+            <%= f.submit type.active? ? t("actions.save") : "Повернути", class: "rounded-md border border-gray-300 text-xs font-medium px-3 py-2 hover:bg-gray-50 cursor-pointer" %>
+          <% end %>
+          <% if type.active? %>
+            <div class="-mt-1 text-right">
+              <%= button_to "Прибрати із запису", maintenance_type_path(type), method: :delete,
+                    form_class: "inline", data: { turbo_confirm: "Прибрати «#{type.name}» із запису?" },
+                    class: "text-xs text-red-600 hover:underline cursor-pointer bg-transparent" %>
+            </div>
+          <% end %>
+        <% end %>
+        <% if @types.none? %>
+          <p class="text-sm text-gray-400">Ще немає жодного типу.</p>
+        <% end %>
+      </div>
+
+      <%= form_with model: @type, class: "flex flex-wrap items-end gap-2 pt-4 border-t border-gray-100" do |f| %>
+        <div class="flex-1 min-w-36">
+          <%= f.label :name, "Новий тип", class: "block text-xs text-gray-500 mb-1" %>
+          <%= f.text_field :name, placeholder: "Базове ТО", class: input %>
+        </div>
+        <div class="w-24">
+          <%= f.label :duration_minutes, "Хвилин", class: "block text-xs text-gray-500 mb-1" %>
+          <%= f.number_field :duration_minutes, min: 5, step: 5, class: input %>
+        </div>
+        <%= f.submit t("actions.add"), class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-3 py-2 cursor-pointer" %>
+      <% end %>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl p-5">
+      <h2 class="font-bold text-gray-900">Особливі дні</h2>
+      <p class="text-xs text-gray-500 mt-0.5 mb-4">Скорочений день, вихідний чи менше місць на конкретну дату. Порожнє поле — як у звичайний день тижня.</p>
+
+      <div class="space-y-2 mb-4">
+        <% @exceptions.each do |exception| %>
+          <div class="flex items-center justify-between gap-2 rounded-lg border border-gray-200 p-3 text-sm">
+            <div>
+              <p class="font-medium text-gray-900"><%= l exception.date, format: "%a, %d.%m.%Y" %></p>
+              <p class="text-gray-500">
+                <% if exception.closed? %>
+                  Вихідний
+                <% else %>
+                  <%= [ ([ exception.opens_at, exception.closes_at ].compact.join("–").presence),
+                        ("місць: #{exception.capacity}" if exception.capacity) ].compact.join(" · ").presence || "Як звичайно" %>
+                <% end %>
+                <%= "· #{exception.note}" if exception.note.present? %>
+              </p>
+            </div>
+            <%= button_to "×", schedule_exception_path(exception), method: :delete, "aria-label": "Прибрати",
+                  data: { turbo_confirm: "Прибрати особливий день?" },
+                  class: "w-7 h-7 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 cursor-pointer" %>
+          </div>
+        <% end %>
+        <% if @exceptions.none? %>
+          <p class="text-sm text-gray-400">Найближчим часом усе за звичайним розкладом.</p>
+        <% end %>
+      </div>
+
+      <%= form_with model: @exception, class: "space-y-3 pt-4 border-t border-gray-100" do |f| %>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <%= f.label :date, "Дата", class: "block text-xs text-gray-500 mb-1" %>
+            <%= f.date_field :date, class: input %>
+          </div>
+          <label class="flex items-end gap-2 pb-2 text-sm text-gray-700">
+            <%= f.check_box :closed %> Вихідний
+          </label>
+          <div>
+            <%= f.label :opens_at, "З", class: "block text-xs text-gray-500 mb-1" %>
+            <%= f.time_field :opens_at, class: input %>
+          </div>
+          <div>
+            <%= f.label :closes_at, "До", class: "block text-xs text-gray-500 mb-1" %>
+            <%= f.time_field :closes_at, class: input %>
+          </div>
+          <div>
+            <%= f.label :capacity, "Місць", class: "block text-xs text-gray-500 mb-1" %>
+            <%= f.number_field :capacity, min: 1, class: input %>
+          </div>
+          <div>
+            <%= f.label :note, "Примітка", class: "block text-xs text-gray-500 mb-1" %>
+            <%= f.text_field :note, placeholder: "Передсвятковий", class: input %>
+          </div>
+        </div>
+        <%= f.submit t("actions.add"), class: "w-full rounded-md bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# The bot's quick picks at «Що турбує?». The client can always write their
+      own instead, so an empty list only removes the shortcut. %>
+  <div class="bg-white border border-gray-200 rounded-xl p-5">
+    <h2 class="font-bold text-gray-900">Типові проблеми</h2>
+    <p class="text-xs text-gray-500 mt-0.5 mb-4">
+      Кнопки, які Telegram-бот пропонує на питання «Що турбує?». Клієнт також може написати своїми словами. Текст копіюється в запис, тож зміни тут не чіпають уже зроблені записи.
+    </p>
+
+    <div class="space-y-2 mb-4">
+      <% @problems.each do |problem| %>
+        <div class="flex items-end gap-2">
+          <%= form_with model: problem, class: "flex flex-1 items-end gap-2" do |f| %>
+            <div class="flex-1">
+              <%= f.label :name, "Проблема", class: "sr-only", for: "booking_problem_#{problem.id}_name" %>
+              <%= f.text_field :name, id: "booking_problem_#{problem.id}_name", maxlength: BookingProblem::NAME_LIMIT, required: true, class: input %>
+            </div>
+            <%= f.submit t("actions.save"), class: "rounded-md border border-gray-300 text-xs font-medium px-3 py-2 hover:bg-gray-50 cursor-pointer" %>
+          <% end %>
+          <%= button_to "×", booking_problem_path(problem), method: :delete, "aria-label": "Прибрати «#{problem.name}»",
+                data: { turbo_confirm: "Прибрати «#{problem.name}» зі списку?" },
+                class: "w-8 h-8 rounded-md text-gray-400 hover:text-red-600 hover:bg-gray-100 cursor-pointer" %>
+        </div>
+      <% end %>
+      <% if @problems.none? %>
+        <p class="text-sm text-gray-400">Список порожній — бот одразу запропонує описати проблему своїми словами.</p>
+      <% end %>
+    </div>
+
+    <%= form_with model: @problem, class: "flex flex-wrap items-end gap-2 pt-4 border-t border-gray-100" do |f| %>
+      <div class="flex-1 min-w-48">
+        <%= f.label :name, "Нова проблема", class: "block text-xs text-gray-500 mb-1" %>
+        <%= f.text_field :name, placeholder: "Вісімка на колесі", maxlength: BookingProblem::NAME_LIMIT, required: true, class: input %>
+      </div>
+      <%= f.submit t("actions.add"), class: "rounded-md bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-3 py-2 cursor-pointer" %>
+    <% end %>
+  </div>
+</div>

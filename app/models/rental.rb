@@ -33,6 +33,12 @@ class Rental < ApplicationRecord
     client&.name.presence || renter_name.presence || "—"
   end
 
+  # Whom to call about this bike: the client's own number when the renter is
+  # in the base, otherwise whatever was typed at handover.
+  def contact_phone
+    client&.phone.presence || renter_phone.presence
+  end
+
   def out?
     returned_at.nil?
   end

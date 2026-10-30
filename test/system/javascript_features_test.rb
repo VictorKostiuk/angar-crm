@@ -83,40 +83,96 @@ class JavascriptFeaturesSystemTest < ApplicationSystemTestCase
     visit root_path
     click_on "+ Новий продаж"
 
-    assert_selector "select[name*='part_id']", count: 1
+    assert_selector "select[name*='part_id']", visible: :all, count: 1
     click_on "+ Ще позиція"
-    assert_selector "select[name*='part_id']", count: 2
+    assert_selector "select[name*='part_id']", visible: :all, count: 2
+    # The added line gets its own searchable picker too (D66).
+    assert_selector "[data-sale-items-target='rows'] [data-combobox-ui]", count: 2
   end
 
-  # Type-to-narrow over the parts list. Asserted through the <select>'s own
-  # options rather than by clicking: the point of the design is that the native
-  # control survives filtering, so that is the thing worth checking.
-  test "the sale form's part list narrows as you type" do
+  # D71: a short job goes from Майстерня to a closed, paid order in one form —
+  # a service from the price list, a one-off one typed on an added row.
+  test "a quick service is entered from the workshop in one form" do
+    sign_in @owner
+    visit root_path
+    click_on "+ Швидкий сервіс"
+
+    within("dialog[open]") do
+      select users(:andrii).name, from: "Механік"
+      pick("Заміна ланцюга", from: "select[name='order[order_works_attributes][0][service_id]']", search: "ланц")
+      click_on "+ Ще послуга"
+      all("input[name^='order[order_works_attributes]'][name$='[name]']").last.set("Підкачати колеса")
+      all("input[name^='order[order_works_attributes]'][name$='[price]']").last.set("50")
+      click_on "Записати"
+    end
+
+    assert_text(/Швидкий сервіс #\d+ записано — 300 грн\./)
+    assert_current_path root_path
+    order = Order.quick.last
+    assert order.closed?
+    assert_equal [ "Заміна ланцюга", "Підкачати колеса" ], order.order_works.map(&:name).sort
+  end
+
+  # D69: the header box opens a dropdown as you type; Escape closes it.
+  test "the header search finds a bike by name as you type" do
+    sign_in @owner
+    visit orders_path
+
+    find("header input[name=q]").send_keys("marlin")
+    within("#global_search_results") { assert_link bikes(:trek).display_name }
+
+    find("header input[name=q]").send_keys(:escape)
+    assert_no_selector "#global_search_results a"
+
+    find("header input[name=q]").send_keys(" 7")
+    within("#global_search_results") { click_on bikes(:trek).display_name }
+    assert_current_path bike_path(bikes(:trek))
+  end
+
+  # D66: select2-style search over the parts list. The native <select> stays
+  # in the form, hidden, and is what gets submitted — so the pick is asserted
+  # on it, not only on what the picker shows.
+  test "the sale form's part picker searches as you type and fills the select" do
     category = Category.part.active.first
     Part.create!(name: "Колодки Shimano B01S", category: category, base_price: 350)
     Part.create!(name: "Каретка Shimano BB-RS500", category: category, base_price: 650)
-    Part.create!(name: "Камера 700x35/43", category: category, base_price: 180)
+    camera = Part.create!(name: "Камера 700x35/43", category: category, base_price: 180)
 
     sign_in @owner
     visit root_path
     click_on "+ Новий продаж"
 
+    picker = find("[data-sale-items-target='rows'] [data-combobox-ui]")
+    picker.find("[role=combobox]").click
     # +1 for «Своя позиція» — counted off the catalogue rather than hardcoded,
     # since the parts fixture contributes rows of its own.
-    all_options = Part.active.count + 1
-    assert_selector "select[name*='part_id'] option", count: all_options
+    assert_selector "[role=option]", count: Part.active.count + 1
 
-    fill_in "Пошук позиції…", with: "shimano"
-    assert_selector "select[name*='part_id'] option", count: 3
-    assert_no_selector "select[name*='part_id'] option", text: "Камера 700x35/43"
+    picker.find("input[type=search]").send_keys("shimano")
+    assert_selector "[role=option]", count: 3
+    assert_no_selector "[role=option]", text: "Камера 700x35/43"
     # The blank row is never filtered away — it is how a one-off line is chosen.
-    assert_selector "select[name*='part_id'] option", text: "Своя позиція (не зі складу)"
+    assert_selector "[role=option]", text: "Своя позиція (не зі складу)"
 
-    # Real backspace keys, not `fill_in with: ""`: Cuprite clears by assignment
-    # there and fires no input event, so the filter never hears about it —
-    # verified against the browser, not assumed.
-    find("input[placeholder='Пошук позиції…']").send_keys(*Array.new(8) { :backspace })
-    assert_selector "select[name*='part_id'] option", count: all_options
+    picker.find("input[type=search]").send_keys(*Array.new(7) { :backspace }, "камера")
+    find("[role=option]", text: "Камера 700x35/43").click
+
+    assert_no_selector "[role=listbox]"
+    assert_selector "[role=combobox]", text: "Камера 700x35/43"
+    assert_equal camera.id.to_s, find("select[name*='part_id']", visible: :all).value
+  end
+
+  # The picker sits inside a <dialog>: Escape must close the list, not the modal.
+  test "Escape closes the picker's list and leaves the modal open" do
+    sign_in @owner
+    visit root_path
+    click_on "+ Новий продаж"
+
+    find("[data-sale-items-target='rows'] [role=combobox]").click
+    within("dialog[open]") { find("input[type=search]").send_keys(:escape) }
+
+    assert_no_selector "[role=listbox]"
+    assert_selector "dialog[open]"
   end
 
   # Reported: "every time i type 1 letter page refreshes and field focus removes".

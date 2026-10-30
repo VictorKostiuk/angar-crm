@@ -2,18 +2,12 @@
 <%# Either pick a catalogue item, or leave it blank and type your own name and
     price — the same choice the order screen offers. %>
 <div class="rounded-md border border-gray-200 p-2 space-y-2">
-  <%# The filter narrows the native <select> below it rather than replacing it —
-      see select_filter_controller.js for why the OS picker is worth keeping. %>
-  <div data-controller="select-filter" class="space-y-1">
-    <input type="text" placeholder="Пошук позиції…" autocomplete="off"
-           data-select-filter-target="input" data-action="input->select-filter#filter"
-           class="block w-full rounded-md border border-gray-200 px-2 py-1 text-xs placeholder:text-gray-400">
-    <%= item.collection_select :part_id, parts, :id,
-          ->(p) { "#{p.name} — #{number_to_currency(p.base_price, unit: 'грн', format: '%n %u', precision: 0)} (#{p.stock_quantity} шт)" },
-          { include_blank: "Своя позиція (не зі складу)" },
-          { data: { select_filter_target: "select" },
-            class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" } %>
-  </div>
+  <%# Searchable (D66); the blank row is how a one-off line is chosen. %>
+  <%= item.collection_select :part_id, parts, :id,
+        ->(p) { "#{p.name} — #{number_to_currency(p.base_price, unit: 'грн', format: '%n %u', precision: 0)} (#{p.stock_quantity} шт)" },
+        { include_blank: "Своя позиція (не зі складу)" },
+        { data: { controller: "combobox", combobox_prompt_value: "Пошук позиції…" },
+          class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" } %>
 
   <div class="grid grid-cols-2 sm:grid-cols-[1fr_4.5rem_6rem] gap-2">
     <%= item.text_field :name, value: item.object&.name, placeholder: "Назва (для своєї позиції)",

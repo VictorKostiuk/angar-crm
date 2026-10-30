@@ -196,6 +196,38 @@ ALTER SEQUENCE public.bikes_id_seq OWNED BY public.bikes.id;
 
 
 --
+-- Name: booking_problems; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.booking_problems (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: booking_problems_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.booking_problems_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: booking_problems_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.booking_problems_id_seq OWNED BY public.booking_problems.id;
+
+
+--
 -- Name: categories; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -244,7 +276,8 @@ CREATE TABLE public.clients (
     orders_count integer DEFAULT 0 NOT NULL,
     phone character varying NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    discount_id bigint
+    discount_id bigint,
+    telegram_username character varying
 );
 
 
@@ -336,6 +369,41 @@ CREATE SEQUENCE public.expenses_id_seq
 --
 
 ALTER SEQUENCE public.expenses_id_seq OWNED BY public.expenses.id;
+
+
+--
+-- Name: maintenance_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.maintenance_types (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    duration_minutes integer DEFAULT 60 NOT NULL,
+    description text,
+    "position" integer DEFAULT 0 NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: maintenance_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.maintenance_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: maintenance_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.maintenance_types_id_seq OWNED BY public.maintenance_types.id;
 
 
 --
@@ -467,8 +535,8 @@ ALTER SEQUENCE public.order_works_id_seq OWNED BY public.order_works.id;
 CREATE TABLE public.orders (
     id bigint NOT NULL,
     number integer DEFAULT nextval('public.order_number_seq'::regclass) NOT NULL,
-    client_id bigint NOT NULL,
-    bike_id bigint NOT NULL,
+    client_id bigint,
+    bike_id bigint,
     mechanic_id bigint,
     accepted_by_id bigint NOT NULL,
     status integer DEFAULT 0 NOT NULL,
@@ -490,7 +558,13 @@ CREATE TABLE public.orders (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     discount_record_id bigint,
-    discount_source character varying
+    discount_source character varying,
+    scheduled_at timestamp(6) without time zone,
+    booking_minutes integer,
+    maintenance_type_id bigint,
+    booking_channel character varying,
+    ready_notified_at timestamp(6) without time zone,
+    quick boolean DEFAULT false NOT NULL
 );
 
 
@@ -733,6 +807,42 @@ CREATE SEQUENCE public.sales_id_seq
 --
 
 ALTER SEQUENCE public.sales_id_seq OWNED BY public.sales.id;
+
+
+--
+-- Name: schedule_exceptions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.schedule_exceptions (
+    id bigint NOT NULL,
+    date date NOT NULL,
+    closed boolean DEFAULT false NOT NULL,
+    opens_minute integer,
+    closes_minute integer,
+    capacity integer,
+    note character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: schedule_exceptions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.schedule_exceptions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: schedule_exceptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.schedule_exceptions_id_seq OWNED BY public.schedule_exceptions.id;
 
 
 --
@@ -1254,6 +1364,43 @@ ALTER SEQUENCE public.suppliers_id_seq OWNED BY public.suppliers.id;
 
 
 --
+-- Name: telegram_chats; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.telegram_chats (
+    id bigint NOT NULL,
+    chat_id bigint NOT NULL,
+    client_id bigint,
+    username character varying,
+    first_name character varying,
+    step character varying,
+    draft jsonb DEFAULT '{}'::jsonb NOT NULL,
+    last_update_id bigint,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: telegram_chats_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.telegram_chats_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: telegram_chats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.telegram_chats_id_seq OWNED BY public.telegram_chats.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1293,6 +1440,42 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: working_hours; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.working_hours (
+    id bigint NOT NULL,
+    weekday integer NOT NULL,
+    closed boolean DEFAULT false NOT NULL,
+    opens_minute integer DEFAULT 600 NOT NULL,
+    closes_minute integer DEFAULT 1140 NOT NULL,
+    slot_minutes integer DEFAULT 30 NOT NULL,
+    capacity integer DEFAULT 1 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: working_hours_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.working_hours_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: working_hours_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.working_hours_id_seq OWNED BY public.working_hours.id;
+
+
+--
 -- Name: active_storage_attachments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1328,6 +1511,13 @@ ALTER TABLE ONLY public.bikes ALTER COLUMN id SET DEFAULT nextval('public.bikes_
 
 
 --
+-- Name: booking_problems id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.booking_problems ALTER COLUMN id SET DEFAULT nextval('public.booking_problems_id_seq'::regclass);
+
+
+--
 -- Name: categories id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1353,6 +1543,13 @@ ALTER TABLE ONLY public.discounts ALTER COLUMN id SET DEFAULT nextval('public.di
 --
 
 ALTER TABLE ONLY public.expenses ALTER COLUMN id SET DEFAULT nextval('public.expenses_id_seq'::regclass);
+
+
+--
+-- Name: maintenance_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maintenance_types ALTER COLUMN id SET DEFAULT nextval('public.maintenance_types_id_seq'::regclass);
 
 
 --
@@ -1423,6 +1620,13 @@ ALTER TABLE ONLY public.sale_items ALTER COLUMN id SET DEFAULT nextval('public.s
 --
 
 ALTER TABLE ONLY public.sales ALTER COLUMN id SET DEFAULT nextval('public.sales_id_seq'::regclass);
+
+
+--
+-- Name: schedule_exceptions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_exceptions ALTER COLUMN id SET DEFAULT nextval('public.schedule_exceptions_id_seq'::regclass);
 
 
 --
@@ -1531,10 +1735,24 @@ ALTER TABLE ONLY public.suppliers ALTER COLUMN id SET DEFAULT nextval('public.su
 
 
 --
+-- Name: telegram_chats id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.telegram_chats ALTER COLUMN id SET DEFAULT nextval('public.telegram_chats_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: working_hours id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.working_hours ALTER COLUMN id SET DEFAULT nextval('public.working_hours_id_seq'::regclass);
 
 
 --
@@ -1586,6 +1804,14 @@ ALTER TABLE ONLY public.bikes
 
 
 --
+-- Name: booking_problems booking_problems_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.booking_problems
+    ADD CONSTRAINT booking_problems_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1615,6 +1841,14 @@ ALTER TABLE ONLY public.discounts
 
 ALTER TABLE ONLY public.expenses
     ADD CONSTRAINT expenses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: maintenance_types maintenance_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.maintenance_types
+    ADD CONSTRAINT maintenance_types_pkey PRIMARY KEY (id);
 
 
 --
@@ -1695,6 +1929,14 @@ ALTER TABLE ONLY public.sale_items
 
 ALTER TABLE ONLY public.sales
     ADD CONSTRAINT sales_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: schedule_exceptions schedule_exceptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_exceptions
+    ADD CONSTRAINT schedule_exceptions_pkey PRIMARY KEY (id);
 
 
 --
@@ -1826,11 +2068,27 @@ ALTER TABLE ONLY public.suppliers
 
 
 --
+-- Name: telegram_chats telegram_chats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.telegram_chats
+    ADD CONSTRAINT telegram_chats_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: working_hours working_hours_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.working_hours
+    ADD CONSTRAINT working_hours_pkey PRIMARY KEY (id);
 
 
 --
@@ -2009,6 +2267,13 @@ CREATE INDEX index_orders_on_discount_record_id ON public.orders USING btree (di
 
 
 --
+-- Name: index_orders_on_maintenance_type_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_orders_on_maintenance_type_id ON public.orders USING btree (maintenance_type_id);
+
+
+--
 -- Name: index_orders_on_mechanic_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2027,6 +2292,13 @@ CREATE UNIQUE INDEX index_orders_on_number ON public.orders USING btree (number)
 --
 
 CREATE INDEX index_orders_on_payment_status ON public.orders USING btree (payment_status);
+
+
+--
+-- Name: index_orders_on_scheduled_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_orders_on_scheduled_at ON public.orders USING btree (scheduled_at);
 
 
 --
@@ -2160,6 +2432,13 @@ CREATE INDEX index_sales_on_sold_at ON public.sales USING btree (sold_at);
 --
 
 CREATE INDEX index_sales_on_sold_by_id ON public.sales USING btree (sold_by_id);
+
+
+--
+-- Name: index_schedule_exceptions_on_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_schedule_exceptions_on_date ON public.schedule_exceptions USING btree (date);
 
 
 --
@@ -2408,6 +2687,20 @@ CREATE INDEX index_stock_movements_on_user_id ON public.stock_movements USING bt
 
 
 --
+-- Name: index_telegram_chats_on_chat_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_telegram_chats_on_chat_id ON public.telegram_chats USING btree (chat_id);
+
+
+--
+-- Name: index_telegram_chats_on_client_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_telegram_chats_on_client_id ON public.telegram_chats USING btree (client_id);
+
+
+--
 -- Name: index_users_on_email_address; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2419,6 +2712,13 @@ CREATE UNIQUE INDEX index_users_on_email_address ON public.users USING btree (em
 --
 
 CREATE INDEX index_users_on_role ON public.users USING btree (role);
+
+
+--
+-- Name: index_working_hours_on_weekday; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_working_hours_on_weekday ON public.working_hours USING btree (weekday);
 
 
 --
@@ -2507,6 +2807,14 @@ ALTER TABLE ONLY public.sales
 
 ALTER TABLE ONLY public.solid_queue_blocked_executions
     ADD CONSTRAINT fk_rails_4cd34e2228 FOREIGN KEY (job_id) REFERENCES public.solid_queue_jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: orders fk_rails_4fedd9b903; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT fk_rails_4fedd9b903 FOREIGN KEY (maintenance_type_id) REFERENCES public.maintenance_types(id);
 
 
 --
@@ -2662,6 +2970,14 @@ ALTER TABLE ONLY public.clients
 
 
 --
+-- Name: telegram_chats fk_rails_b120bd4260; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.telegram_chats
+    ADD CONSTRAINT fk_rails_b120bd4260 FOREIGN KEY (client_id) REFERENCES public.clients(id);
+
+
+--
 -- Name: stock_movements fk_rails_c399f74509; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2756,6 +3072,10 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261030100000'),
+('20261028100000'),
+('20261026100000'),
+('20261022120000'),
 ('20260912000000'),
 ('20260823004032'),
 ('20260820160655'),

@@ -1,0 +1,16 @@
+<%# locals: (orders:) %>
+<%# The next bookings whatever month the grid shows (D65). Nobody at the shop
+    is told when a client books through the bot, so a booking for next week
+    must not depend on someone paging to the right month and day. %>
+<div id="upcoming_bookings" class="bg-white border border-gray-200 rounded-xl p-5">
+  <h2 class="font-bold text-gray-900">Найближчі записи</h2>
+  <div class="mt-4 space-y-2">
+    <% orders.each do |order| %>
+      <%= render "bookings/booking", order: order, with_date: true %>
+    <% end %>
+
+    <% if orders.none? %>
+      <p class="text-sm text-gray-400">Найближчих записів немає.</p>
+    <% end %>
+  </div>
+</div>

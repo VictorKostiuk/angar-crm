@@ -1,0 +1,29 @@
+<%# locals: (day:, type:, selected:) %>
+<%# Free start times for the chosen date and type, as radio pills. Re-fetched
+    into this frame whenever the date or type changes (slot_picker_controller). %>
+<%= turbo_frame_tag "booking_slots", data: { slot_picker_target: "frame" } do %>
+  <% if type.nil? %>
+    <p class="text-sm text-gray-400">Спершу оберіть тип ТО.</p>
+  <% elsif !day.open? %>
+    <p class="text-sm text-red-600">Цього дня запис не приймається.</p>
+  <% else %>
+    <% starts = day.free_starts(type.duration_minutes) %>
+    <% if starts.any? %>
+      <div class="flex flex-wrap gap-2">
+        <% starts.each do |start| %>
+          <label class="rounded-md border border-gray-300 px-3 py-1.5 text-sm cursor-pointer has-checked:border-brand-600 has-checked:bg-brand-50 has-checked:text-brand-700">
+            <input type="radio" name="scheduled_at" value="<%= start.iso8601 %>" class="sr-only"
+                   <%= "checked" if selected && start == selected %>>
+            <%= start.strftime("%H:%M") %>
+          </label>
+        <% end %>
+      </div>
+      <p class="mt-2 text-xs text-gray-500">
+        <%= type.name %> триває <%= Bookings::Format.duration(type.duration_minutes) %>.
+        Працюємо <%= MinuteOfDay.format(day.opens_minute) %>–<%= MinuteOfDay.format(day.closes_minute) %>.
+      </p>
+    <% else %>
+      <p class="text-sm text-gray-500">На цей день вільного часу для «<%= type.name %>» немає — оберіть інший день.</p>
+    <% end %>
+  <% end %>
+<% end %>

@@ -11,8 +11,15 @@
     <% end %>
 
     <div>
+      <%= f.label :sold_by_id, "Хто продав", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.collection_select :sold_by_id, @sellers, :id, :name, {},
+            class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+    </div>
+
+    <div>
       <%= f.label :client_id, "Клієнт (необов'язково)", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.collection_select :client_id, @clients, :id, :name, { include_blank: "Без клієнта" },
+      <%= f.collection_select :client_id, @clients, :id, ->(c) { "#{c.name} — #{c.formatted_phone}" }, { include_blank: "Без клієнта" },
+            data: { controller: "combobox" },
             class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
     </div>
 

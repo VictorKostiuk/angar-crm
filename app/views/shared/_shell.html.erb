@@ -21,6 +21,8 @@
             active: request.path.start_with?(orders_path) && params[:status] != "archive" %>
       <%= render "shared/nav_item", label: t("nav.archive"), icon: :archive, path: orders_path(status: "archive"),
             active: request.path.start_with?(orders_path) && params[:status] == "archive" %>
+      <%= render "shared/nav_item", label: t("nav.bookings"), icon: :calendar, path: bookings_path,
+            active: request.path.start_with?(bookings_path) || request.path.start_with?(booking_settings_path) %>
       <%= render "shared/nav_item", label: t("nav.clients"), icon: :users, path: clients_path, active: request.path.start_with?(clients_path) %>
       <%= render "shared/nav_item", label: t("nav.bikes"), icon: :bike, path: bikes_path, active: request.path.start_with?(bikes_path) %>
       <%= render "shared/nav_item", label: t("nav.services"), icon: :wrench, path: services_path, active: request.path.start_with?(services_path) %>
@@ -73,10 +75,20 @@
           <path d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
-      <%= form_with url: orders_path, method: :get, class: "flex-1 min-w-0 max-w-md" do %>
-        <%= search_field_tag :q, params[:q], placeholder: "#{t('actions.search')} замовлення…",
-              class: "w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-brand-600" %>
-      <% end %>
+      <%# Bikes by name, clients, order numbers (D69). Typing opens a dropdown;
+          Enter opens the full results page. %>
+      <div class="relative flex-1 min-w-0 max-w-md" data-controller="global-search"
+           data-global-search-url-value="<%= search_path %>"
+           data-action="click@document->global-search#outside keydown->global-search#keydown">
+        <%= form_with url: search_path, method: :get, data: { turbo_frame: "_top" } do %>
+          <%= search_field_tag :q, (params[:q] if controller_name == "search"), autocomplete: "off",
+                placeholder: "#{t('actions.search')}: велосипед, клієнт, №…", "aria-label": "Пошук",
+                data: { global_search_target: "input", action: "input->global-search#search" },
+                class: "w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-brand-600" %>
+        <% end %>
+        <%= turbo_frame_tag "global_search_results", target: "_top", data: { global_search_target: "frame" },
+              class: "absolute left-0 right-0 top-full mt-1 z-40 block min-w-72" %>
+      </div>
 
       <%= render "shared/announcement_ticker" %>
     </header>

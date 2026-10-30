@@ -63,9 +63,15 @@
   <% if client && client.bikes.active.any? %>
     <p class="text-sm text-gray-500 mb-2">Якщо у клієнта вже є велосипеди:</p>
     <div class="flex flex-wrap gap-3 mb-3">
-      <% client.bikes.active.order(:name).each do |bike| %>
+      <% client.bikes.active.order(:name).with_attached_photos.includes(orders: { photos_attachments: :blob }).each do |bike| %>
+        <% cover = bike.cover_photo %>
         <label class="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm cursor-pointer has-checked:border-brand-600 has-checked:bg-brand-50">
           <input type="radio" name="bike_id" value="<%= bike.id %>" <%= "checked" if attempted_bike.persisted? && attempted_bike.id == bike.id %>>
+          <%# Its photo from the base (D68) — the bike is recognisable, and is
+              already photographed. %>
+          <% if cover %>
+            <%= image_tag cover.variant(resize_to_limit: [ 80, 80 ]), alt: "", class: "w-8 h-8 rounded object-cover border border-gray-200" %>
+          <% end %>
           <%= bike.display_name %>
         </label>
       <% end %>

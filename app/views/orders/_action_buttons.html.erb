@@ -11,6 +11,18 @@
     <% end %>
   <% end %>
 
+  <%# Only at «Очікує погодження»: the recommended works and their estimate,
+      for the client to agree to. Amber matches that status's badge. %>
+  <% if order.waiting_approval? %>
+    <%= link_to order_approval_message_path(order), data: { turbo_frame: "modal" }, title: "Повідомлення для погодження", "aria-label": "Повідомлення для погодження",
+          class: "p-2.5 rounded-md text-amber-600 hover:bg-amber-50" do %>
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 5H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4v4l5-4h7a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z" />
+        <path d="M12 8.5v3M12 14h.01" />
+      </svg>
+    <% end %>
+  <% end %>
+
   <% if order.open_status? %>
     <%= link_to edit_order_status_path(order), data: { turbo_frame: "modal" }, title: "Змінити статус", "aria-label": "Змінити статус",
           class: "p-2.5 rounded-md text-brand-600 hover:bg-brand-50" do %>

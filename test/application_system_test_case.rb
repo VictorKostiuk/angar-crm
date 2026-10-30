@@ -27,4 +27,15 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     # sign-in page's chrome — the assertion has to prove the session took.
     assert_selector "aside", text: user.name, wait: 10
   end
+
+  # Picks an option in a searchable select (D66): the <select> itself is
+  # hidden, so open the picker next to it, optionally type, and click.
+  def pick(text, from:, search: nil)
+    select = find(from, visible: :all)
+    picker = select.find(:xpath, "following-sibling::*[@data-combobox-ui][1]")
+    # A multiple picker stays open between picks; a click would close it.
+    picker.find("[role=combobox]").click unless picker.has_css?("[role=listbox]", wait: 0)
+    picker.find("input[type=search]").set(search) if search
+    picker.find("[role=option]", text: text, match: :prefer_exact).click
+  end
 end

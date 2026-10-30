@@ -18,13 +18,21 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
     @order.order_parts.create!(name: "Ланцюг КМС X10", quantity: 1, price: 950)
     Part.create!(name: "Камера 700x35", category: Category.part.active.first, base_price: 180)
     RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+    # A booked day on the calendar, so the grid's busiest cell is measured too.
+    WorkingHour.week.each(&:save!)
+    type = MaintenanceType.create!(name: "Повне ТО з мийкою", duration_minutes: 120)
+    start = Bookings::Day.new(Date.current + 1).free_starts(120).first
+    Order.create!(client: clients(:ivan), bike: bikes(:trek), accepted_by: @owner, accepted_at: Time.current,
+                  status: :booked, scheduled_at: start, booking_minutes: 120, maintenance_type: type) if start
   end
 
-  # Elements that scroll horizontally on purpose are not overflow bugs.
+  # Elements that scroll horizontally on purpose are not overflow bugs, and
+  # neither is text cut short with an ellipsis (Tailwind's `truncate`).
   OVERFLOW_JS = <<~JS
     (() => [...document.querySelectorAll('main, main *')]
       .filter(e => e.scrollWidth > e.clientWidth + 2 && e.clientWidth > 0)
       .filter(e => !['auto','scroll'].includes(getComputedStyle(e).overflowX))
+      .filter(e => getComputedStyle(e).textOverflow !== 'ellipsis')
       .map(e => e.tagName.toLowerCase() + (e.id ? '#'+e.id : '') + ' ' + e.scrollWidth + '>' + e.clientWidth))()
   JS
 
@@ -48,7 +56,10 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
       "Клієнти" => clients_path, "Клієнт" => client_path(clients(:ivan)), "Велосипеди" => bikes_path,
       "Запчастини" => parts_path, "Послуги" => services_path, "Продажі" => sales_path,
       "Прокат" => rentals_path, "Склад" => stock_path, "Фінанси" => finances_path,
-      "Механіки" => mechanics_path, "Налаштування" => users_path }.each do |label, path|
+      "Механіки" => mechanics_path, "Налаштування" => users_path,
+      "Записи" => bookings_path, "Новий запис" => new_booking_path,
+      "Налаштування запису" => booking_settings_path, "Пошук" => search_path(q: "trek"),
+      "Велосипед" => bike_path(bikes(:trek)) }.each do |label, path|
       visit path
       assert_fits label
     end
@@ -89,19 +100,41 @@ class ResponsiveSystemTest < ApplicationSystemTestCase
     end
   end
 
-  # Below sm each row becomes a card and every value keeps its column heading.
-  test "wide tables become labelled cards instead of being cut off" do
+  # D70: below sm each row is a compact card — title and status on top, details
+  # in a line — not a screen of "label … value" rows per record, and tapping
+  # anywhere on it opens the record.
+  test "list rows become compact, tappable cards on a phone" do
     sign_in @owner
     visit orders_path
 
     assert_selector "table.data-table"
     layout = page.evaluate_script(<<~JS)
-      (() => { const td = document.querySelector('.data-table tbody td');
-        return { display: getComputedStyle(td).display,
-                 label: getComputedStyle(td, '::before').content }; })()
+      (() => { const tr = document.querySelector('.data-table tbody tr'),
+                 meta = tr.querySelector('td[data-card=meta]'),
+                 chevron = tr.querySelector('td[data-card=hide]'),
+                 box = tr.getBoundingClientRect(),
+                 corner = document.elementFromPoint(box.left + 4, box.bottom - 4);
+        return { display: getComputedStyle(tr).display,
+                 label: getComputedStyle(meta, '::before').content,
+                 chevron: getComputedStyle(chevron).display,
+                 height: Math.round(box.height),
+                 tap: corner && corner.closest('a') && corner.closest('a').getAttribute('href'),
+                 own: tr.querySelector('.card-link').getAttribute('href') }; })()
     JS
-    assert_equal "flex", layout["display"], "cells must stack as cards on a phone"
-    assert_match "№", layout["label"], "each value must carry its column heading"
+    assert_equal "flex", layout["display"], "a row is laid out as a card on a phone"
+    assert_match "Механік", layout["label"], "a detail still says what it is"
+    assert_equal "none", layout["chevron"], "the card itself replaces the chevron"
+    assert_operator layout["height"], :<, 200, "one order is a list item, not a screen of label/value lines"
+    assert_equal layout["own"], layout["tap"], "an empty corner of the card opens its order"
+  end
+
+  test "the orders filter folds behind a button on a phone" do
+    sign_in @owner
+    visit orders_path
+
+    assert_no_selector "select[name=status]"
+    click_on "Фільтри"
+    assert_selector "select[name=status]"
   end
 
   test "the same tables are ordinary tables on a tablet" do

@@ -1,11 +1,11 @@
 <%# locals: (discounts:) %>
 <% discounts.each do |discount| %>
   <tr class="hover:bg-gray-50" id="discount_row_<%= discount.id %>">
-    <td data-label="Назва" class="px-4 py-3 text-gray-900"><%= discount.name %></td>
-    <td data-label="Тип" class="px-4 py-3 text-gray-600"><%= t("statuses.discount.#{discount.kind}") %></td>
-    <td data-label="Діє на" class="px-4 py-3 text-gray-600"><%= t("discount_scopes.#{discount.applies_to}") %></td>
-    <td data-label="Розмір" class="px-4 py-3 text-gray-600"><%= discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %></td>
-    <td data-label="" class="px-4 py-3 text-right whitespace-nowrap">
+    <td data-label="Назва" data-card="title" class="px-4 py-3 text-gray-900"><%= discount.name %></td>
+    <td data-label="Тип" data-card="info" class="px-4 py-3 text-gray-600"><%= t("statuses.discount.#{discount.kind}") %></td>
+    <td data-label="Діє на" data-card="info" class="px-4 py-3 text-gray-600"><%= t("discount_scopes.#{discount.applies_to}") %></td>
+    <td data-label="Розмір" data-card="amount" class="px-4 py-3 text-gray-600"><%= discount.percentage? ? "#{discount.value.to_i}%" : money(discount.value) %></td>
+    <td data-label="" data-card="actions" class="px-4 py-3 text-right whitespace-nowrap">
       <%= link_to discounts_path(edit: discount.id),
             title: t("actions.edit"), "aria-label": t("actions.edit"),
             class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>

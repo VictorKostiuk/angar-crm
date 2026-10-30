@@ -32,13 +32,13 @@
       <tbody class="divide-y divide-gray-100">
         <% @clients.each do |client| %>
           <tr class="hover:bg-gray-50">
-            <td data-label="Клієнт" class="px-4 py-3">
-              <%= link_to client.name, client, class: "font-medium text-gray-900 hover:text-brand-600" %>
+            <td data-label="Клієнт" data-card="title" class="px-4 py-3">
+              <%= link_to client.name, client, class: "card-link font-medium text-gray-900 hover:text-brand-600" %>
             </td>
-            <td data-label="Телефон" class="px-4 py-3 text-gray-600"><%= client.formatted_phone %></td>
-            <td data-label="Велосипеди" class="px-4 py-3 text-gray-600"><%= client.bikes_count %></td>
-            <td data-label="Замовлення" class="px-4 py-3 text-gray-600"><%= client.orders_count %></td>
-            <td data-label="" class="px-4 py-3">
+            <td data-label="Телефон" data-card="info" class="px-4 py-3 text-gray-600"><%= client.formatted_phone %></td>
+            <td data-label="Велосипеди" data-card="meta" class="px-4 py-3 text-gray-600"><%= client.bikes_count %></td>
+            <td data-label="Замовлення" data-card="meta" class="px-4 py-3 text-gray-600"><%= client.orders_count %></td>
+            <td data-label="" data-card="actions" class="px-4 py-3">
               <div class="flex items-center justify-end gap-1">
               <%= link_to client, title: "Відкрити картку", "aria-label": "Відкрити картку",
                     class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100" do %>

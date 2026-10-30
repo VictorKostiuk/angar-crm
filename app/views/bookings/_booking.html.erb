@@ -1,0 +1,28 @@
+<%# locals: (order:, out_of_hours: false, with_date: false) %>
+<%# One booking, linking to its order — the chosen day's list and «Найближчі
+    записи» show the same card. The upcoming list adds the day and drops the
+    status badge: everything in it is «Запис». %>
+<%= link_to order, class: class_names("block rounded-lg border p-3 hover:bg-gray-50",
+                                      out_of_hours ? "border-red-300 bg-red-50" : "border-gray-200") do %>
+  <div class="flex items-baseline justify-between gap-2">
+    <span class="font-medium text-gray-900">
+      <%= "#{booking_day_label(order.scheduled_at.to_date)}, " if with_date %><%= order.scheduled_at.strftime("%H:%M") %>–<%= order.booking_ends_at.strftime("%H:%M") %>
+    </span>
+    <%= render "shared/status_badge", order: order unless with_date %>
+  </div>
+  <p class="text-sm text-gray-700 mt-1">
+    <%= order.maintenance_type&.name || "Запис" %> · <%= order.bike.name %>
+    <%# Booked by the client themselves — nobody at the shop has spoken to
+        them, so the problem text below is all there is. %>
+    <% if order.via_telegram? %>
+      <span class="ml-1 rounded bg-sky-50 text-sky-700 text-xs px-1.5 py-0.5">Telegram</span>
+    <% end %>
+  </p>
+  <% if order.problem.present? %>
+    <p class="text-sm text-gray-500 truncate" title="<%= order.problem %>"><%= order.problem %></p>
+  <% end %>
+  <p class="text-sm text-gray-500"><%= order.client.name %> · <%= order.client.formatted_phone %></p>
+  <% if out_of_hours %>
+    <p class="text-xs text-red-600 mt-1">Поза робочими годинами. Перенести запис не можна: скасуйте його й запишіть клієнта на інший час.</p>
+  <% end %>
+<% end %>

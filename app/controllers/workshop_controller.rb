@@ -1,7 +1,13 @@
 class WorkshopController < ApplicationController
   def index
-    orders = Order.open_orders.includes(:client, :bike, :mechanic).with_attached_photos.order(accepted_at: :asc)
+    # The bike's photos and its other visits' photos feed the card's thumbnail
+    # when this order has none of its own (D68).
+    orders = Order.open_orders.includes(:client, :mechanic, :maintenance_type,
+                                        bike: [ { photos_attachments: :blob }, { orders: { photos_attachments: :blob } } ])
+                  .with_attached_photos.order(accepted_at: :asc)
     grouped = orders.group_by(&:status)
+    # Bookings read in appointment order — the next client to arrive first.
+    grouped["booked"] = grouped["booked"]&.sort_by(&:scheduled_at)
     @orders_by_status = Order::OPEN_STATUSES.index_with { |status| grouped[status] || [] }
   end
 

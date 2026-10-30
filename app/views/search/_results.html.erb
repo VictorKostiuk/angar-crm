@@ -1,0 +1,55 @@
+<%# locals: () %>
+<%# Bikes first — that is what the box is mostly for (D69) — then clients and
+    an order typed by its number. The dropdown and the full page share this. %>
+<% row = "flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50" %>
+<% heading = "px-4 pt-3 pb-1 text-xs font-medium uppercase tracking-wide text-gray-400" %>
+
+<% if @orders.any? %>
+  <p class="<%= heading %>">Замовлення</p>
+  <% @orders.each do |order| %>
+    <%= link_to order, class: row do %>
+      <span class="font-medium text-brand-600"><%= order_number(order) %></span>
+      <span class="min-w-0 flex-1 truncate text-sm text-gray-700"><%= [ order_title(order), order.client&.name ].compact.join(" · ") %></span>
+      <%= render "shared/status_badge", order: order %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @bikes.any? %>
+  <p class="<%= heading %>">Велосипеди</p>
+  <% @bikes.each do |bike| %>
+    <% cover = bike.cover_photo %>
+    <%= link_to bike, class: row do %>
+      <% if cover %>
+        <%= image_tag cover.variant(resize_to_limit: [ 80, 80 ]), alt: "", class: "w-10 h-10 shrink-0 rounded object-cover border border-gray-200" %>
+      <% else %>
+        <span class="w-10 h-10 shrink-0 rounded bg-gray-100 border border-gray-200"></span>
+      <% end %>
+      <span class="min-w-0 flex-1">
+        <span class="block truncate text-sm font-medium text-gray-900"><%= bike.display_name %></span>
+        <span class="block truncate text-xs text-gray-500"><%= bike.client.name %> · <%= bike.client.formatted_phone %></span>
+      </span>
+      <% if @in_shop_ids.include?(bike.id) %>
+        <span class="shrink-0 rounded-full bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5">У майстерні</span>
+      <% elsif !bike.active? %>
+        <span class="shrink-0 rounded-full bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5">В архіві</span>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @clients.any? %>
+  <p class="<%= heading %>">Клієнти</p>
+  <% @clients.each do |client| %>
+    <%= link_to client, class: row do %>
+      <span class="min-w-0 flex-1 truncate text-sm font-medium text-gray-900"><%= client.name %></span>
+      <span class="shrink-0 text-xs text-gray-500"><%= client.formatted_phone %></span>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @orders.none? && @bikes.none? && @clients.none? %>
+  <p class="px-4 py-4 text-sm text-gray-500">
+    <%= @query.present? ? "Нічого не знайдено за «#{@query}»." : "Введіть назву велосипеда, ім'я чи телефон клієнта або номер замовлення." %>
+  </p>
+<% end %>

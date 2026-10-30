@@ -30,6 +30,116 @@ uk:
     total: "До сплати: %{amount}"
     closing: "Чекаємо вас у майстерні!"
 
+  # The «Очікує погодження» counterpart: what the mechanic found and proposes,
+  # sent before any of it is done. Reuses ready_message's line formats and
+  # discount line, so both messages price a line the same way.
+  approval_message:
+    inspected: "Ми оглянули ваш велосипед «%{bike}»."
+    works_header: "Рекомендовані роботи:"
+    parts_header: "Потрібні запчастини:"
+    total: "Орієнтовна вартість: %{amount}"
+    closing: "Підтвердіть, будь ласка, чи погоджуєте ці роботи — після цього беремося до справи."
+
+  # Nominative, for the calendar heading — rails-i18n's date.month_names are
+  # genitive («Жовтня»), which is right inside a date and wrong above a grid.
+  calendar:
+    month_names: [ ~, "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+                   "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень" ]
+
+  # Everything the Telegram booking bot says (Telegram::Bot). Plain text, no
+  # markup — Telegram's parse modes need escaping that bike names and problem
+  # descriptions typed by clients would trip over.
+  telegram:
+    weekdays: [ "Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб" ]
+    fallback_name: "Клієнт з Telegram"
+    share_phone: "Вітаємо в «Ангарі»! Щоб записатися на обслуговування, поділіться номером телефону — натисніть кнопку нижче."
+    share_phone_button: "📱 Поділитися номером"
+    phone_invalid: "Не вдалося зберегти номер: %{errors}. Зателефонуйте нам — запишемо вас вручну."
+    linked_new: "Дякуємо, %{name}! Тепер можна записатися."
+    linked_known: "Раді бачити, %{name}!"
+    menu: "Що робимо?"
+    menu_book: "📅 Записатися"
+    menu_list: "🗓 Мої записи"
+    menu_back: "← На початок"
+    # Typed text outside a step — often a reply to a notice ("Дякую!"). Nobody
+    # at the shop reads the bot, so it says so rather than pretending.
+    unknown: "Я лише бот для запису й не читаю повідомлень — у майстерні їх ніхто не побачить. Якщо треба щось уточнити, зателефонуйте нам. Або оберіть дію нижче:"
+    unavailable: "Онлайн-запис тимчасово недоступний — зателефонуйте нам, і ми запишемо вас вручну."
+    pick_type: "Оберіть, що потрібно:"
+    pick_date: "%{type} — оберіть день:"
+    no_dates: "Найближчим часом вільного часу немає — зателефонуйте нам, спробуємо щось підібрати."
+    other_type: "← Інша послуга"
+    pick_time: "%{date} — оберіть час (працюємо %{hours}):"
+    no_times: "На %{date} вільного часу вже немає. Оберіть інший день."
+    other_day: "← Інший день"
+    pick_bike: "Який велосипед привезете?"
+    other_bike: "➕ Інший велосипед"
+    ask_bike_name: "Напишіть, який велосипед привезете (марка, модель, колір):"
+    # The quick picks themselves are BookingProblem rows (Налаштування › Запис, D63).
+    pick_problem: "Що турбує? Оберіть зі списку або напишіть своїми словами."
+    pick_problem_empty: "Що турбує? Напишіть своїми словами або пропустіть."
+    write_problem: "✍️ Написати своє"
+    skip_problem: "Пропустити"
+    ask_problem_text: "Опишіть своїми словами, що турбує:"
+    no_problem: "—"
+    confirm: |-
+      Перевірте запис:
+
+      Що: %{type}
+      Коли: %{when}
+      Велосипед: %{bike}
+      Проблема: %{problem}
+      Телефон: %{phone}
+    confirm_yes: "✅ Підтвердити"
+    confirm_no: "❌ Скасувати"
+    booked: |-
+      ✅ Вас записано!
+
+      Замовлення %{number}
+      Коли: %{when}
+      Що: %{type}
+      Велосипед: %{bike}
+
+      Чекаємо вас у майстерні. Якщо плани зміняться — скасуйте запис у «Мої записи».
+    slot_taken: "На жаль, цей час щойно зайняли."
+    booking_failed: "Не вдалося записати: %{errors}"
+    cancelled_draft: "Запис не створено."
+    booking: "Запис"
+    none_booked: "Активних записів немає."
+    my_bookings: "Ваші записи:"
+    booking_line: "• %{when} — %{type}, %{bike}"
+    cancel_button: "❌ Скасувати %{when}"
+    cancel_confirm: "Скасувати запис на %{when}?"
+    cancel_yes: "Так, скасувати"
+    cancel_no: "Ні, залишити"
+    cancelled: "Запис на %{when} скасовано."
+    cancel_gone: "Цей запис уже не активний."
+    cancel_reason: "Скасовано клієнтом у Telegram"
+
+    # Sent by the shop, not in reply to anything (Telegram::Notifier, D64).
+    notice_booking_cancelled: |-
+      На жаль, ваш запис на %{when} (%{type}) скасовано.
+
+      Щоб обрати інший час — натисніть «📅 Записатися» нижче.
+    notice_errors:
+      not_linked: "клієнт не підключений до бота"
+      not_configured: "бот не налаштовано"
+      blocked: "клієнт заблокував бота"
+      chat_gone: "Telegram не знайшов чат із клієнтом"
+      failed: "Telegram відхилив повідомлення"
+      unreachable: "Telegram не відповідає, спробуйте пізніше"
+
+    # The bot's profile in Telegram — bin/rails telegram:profile.
+    profile:
+      short_description: "Запис на обслуговування велосипеда в майстерні «Ангар»."
+      description: |-
+        Запис на обслуговування велосипеда в майстерні «Ангар».
+
+        Натисніть «Почати», поділіться номером телефону — і оберіть зручний день і час. Тут же можна переглянути або скасувати свої записи.
+      commands:
+        start: "Меню: записатися, мої записи"
+        cancel: "Перервати оформлення запису"
+
   discount_scopes:
     all: "Усе замовлення"
     services: "Тільки послуги"
@@ -56,6 +166,7 @@ uk:
     stock: "Склад"
     sales: "Продажі"
     rentals: "Прокат"
+    bookings: "Записи"
     suppliers: "Постачальники"
     finances: "Фінанси"
 
@@ -81,6 +192,7 @@ uk:
 
   statuses:
     order:
+      booked: "Запис"
       intake: "Нове"
       waiting_approval: "Очікує погодження"
       in_progress: "В роботі"
@@ -95,6 +207,7 @@ uk:
       percentage: "Відсоток"
       fixed_amount: "Фіксована сума"
     order_descriptions:
+      booked: "Клієнт записався, велосипед ще не привезли"
       intake: "Велосипед прийнятий, але ще не взятий у роботу"
       waiting_approval: "Потрібно погодити послуги, запчастини або суму"
       in_progress: "Велосипед зараз ремонтується"
@@ -151,9 +264,24 @@ uk:
       sale_item: "Позиція продажу"
       rental: "Прокат"
       rental_bike: "Велосипед прокату"
+      maintenance_type: "Тип ТО"
+      working_hour: "Робочі години"
+      schedule_exception: "Особливий день"
     attributes:
+      maintenance_type:
+        name: "Назва"
+        duration_minutes: "Тривалість"
+      working_hour:
+        slot_minutes: "Крок"
+        capacity: "Місць"
+        closes_at: "Кінець"
+      schedule_exception:
+        date: "Дата"
+        capacity: "Місць"
+        closes_at: "Кінець"
       client:
         name: "Ім'я"
+        telegram_username: "Telegram"
         phone: "Телефон"
         email: "Email"
         city: "Місто"
@@ -206,6 +334,8 @@ uk:
       order:
         client: "Клієнт"
         bike: "Велосипед"
+        scheduled_at: "Час запису"
+        booking_minutes: "Тип ТО"
         mechanic: "Механік"
         accepted_by: "Прийняв"
         problem: "Проблема"

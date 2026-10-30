@@ -1,15 +1,26 @@
 class Client < ApplicationRecord
   has_many :bikes, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
+  has_many :rentals, dependent: :restrict_with_error
+  # Photos of the client's ID, kept with the person so the next hire does not
+  # need them shot again (D67). A renter who is not in the base keeps theirs
+  # on the hire itself (Rental#documents).
+  has_many_attached :documents
   # A discount pinned to this client, applied to their orders automatically.
   belongs_to :discount, optional: true
+  # The Telegram chat this person books from, if they have used the bot.
+  has_one :telegram_chat, dependent: :destroy
 
   normalizes :name, with: ->(name) { name.strip.squeeze(" ") }
   normalizes :phone, with: ->(phone) { Client.normalize_phone(phone) }
   normalizes :email, with: ->(email) { email.strip.downcase }
+  # Stored bare: "@ivan_p", "t.me/ivan_p" and "ivan_p" are the same person.
+  normalizes :telegram_username, with: ->(tag) { tag.strip.sub(%r{\A(https?://)?t\.me/}i, "").delete_prefix("@").presence }
 
   validates :name, presence: true
+  validates :telegram_username, format: { with: /\A[A-Za-z0-9_]{4,32}\z/, message: "недійсний Telegram-нік" }, allow_nil: true
   validates :phone, presence: true, uniqueness: true, format: { with: /\A\d{12}\z/, message: "недійсний номер телефону" }
+  validate :documents_must_be_images
 
   # Phone-substring matching only kicks in at 4+ digits — a 1-2 digit query
   # is too short to mean anything as a phone fragment (any 12-digit number
@@ -38,16 +49,42 @@ class Client < ApplicationRecord
     Clients::LoyaltyTier.percent_for(services_spent)
   end
 
+  def first_name
+    name.to_s.split.first.presence || name
+  end
+
+  # Every ID photo on file for this person: the ones kept on the client, then
+  # any taken on their earlier hires, before documents moved to the client.
+  def all_documents
+    documents.to_a + hire_documents
+  end
+
+  def hire_documents
+    rentals.with_attached_documents.order(:rented_from).flat_map(&:documents)
+  end
+
   def self.normalize_phone(phone)
     digits = phone.to_s.gsub(/\D/, "")
     digits = "38#{digits}" if digits.start_with?("0") && digits.length == 10
     digits
   end
 
-  # "380501234567" -> "+380 50 123 45 67"
   def formatted_phone
+    Client.format_phone(phone)
+  end
+
+  # "380501234567" -> "+380 50 123 45 67". Class-level so a renter's phone,
+  # which never passes through Client, reads the same way a client's does.
+  def self.format_phone(phone)
     return phone if phone.blank? || phone.length != 12
 
     "+#{phone[0..2]} #{phone[3..4]} #{phone[5..7]} #{phone[8..9]} #{phone[10..11]}"
   end
+
+  private
+    def documents_must_be_images
+      return unless documents.attached?
+
+      errors.add(:documents, "має бути зображенням") unless documents.all? { |d| d.content_type.to_s.start_with?("image/") }
+    end
 end

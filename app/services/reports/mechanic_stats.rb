@@ -21,9 +21,17 @@ module Reports
     # instead would pay the minimum once no matter how many orders.
     MIN_PAYOUT_PER_ORDER = 100
 
+    # D56: the mechanic who owns a closed order earns this share of its parts
+    # — the brakes they talked the client into and then fitted. Attributed by
+    # order ownership, like parts_total, since parts carry no per-line mechanic.
+    # Only orders closed from the day it was introduced: counting older ones
+    # would open new debt on months that were already paid out.
+    PARTS_COMMISSION_PERCENT = 2
+    PARTS_COMMISSION_SINCE = Date.new(2026, 10, 22)
+
     Row = Struct.new(:mechanic, :accepted_count, :in_progress_count, :completed_count,
                      :works_total, :parts_total, :works_by_order, :sales_total, :sales_commission,
-                     keyword_init: true) do
+                     :parts_commission, keyword_init: true) do
       def total
         works_total + parts_total
       end
@@ -52,7 +60,7 @@ module Reports
       # and the roster prints the Послуги × % chain beside it so the figure can
       # be checked on screen rather than taken on faith.
       def earnings
-        payout + sales_commission
+        payout + sales_commission + parts_commission
       end
 
       # Whether the sales figures are worth their screen space. A shop that
@@ -83,17 +91,30 @@ module Reports
       Row.new(
         mechanic: mechanic,
         accepted_count: Order.where(accepted_by_id: mechanic.id, accepted_at: @range).count,
-        in_progress_count: Order.open_orders.where(mechanic_id: mechanic.id).count,
+        in_progress_count: Order.in_shop.where(mechanic_id: mechanic.id).count,
         completed_count: closed_orders_owned_by(mechanic).count,
         works_total: works_by_order.values.sum,
         parts_total: OrderPart.joins(:order).merge(closed_orders_owned_by(mechanic)).sum(:total),
         works_by_order: works_by_order,
         sales_total: sales.sum(&:total),
-        sales_commission: sales.sum(&:commission)
+        sales_commission: sales.sum(&:commission),
+        parts_commission: parts_commission_for(mechanic)
       )
     end
 
     private
+      # Rounded per order, then summed — the same shape as the payout minimum,
+      # so the figure is the sum of what each order visibly earned. A 0% mechanic
+      # is on no payroll (D12) and earns nothing here either, mirroring #payout.
+      def parts_commission_for(mechanic)
+        return 0 if mechanic.payroll_percent.zero?
+
+        OrderPart.joins(:order).merge(closed_orders_owned_by(mechanic))
+                 .where(orders: { closed_at: PARTS_COMMISSION_SINCE.beginning_of_day.. })
+                 .group(:order_id).sum(:total)
+                 .sum { |_order_id, parts| (parts * PARTS_COMMISSION_PERCENT / 100).round }
+      end
+
       # Summed from each sale's own rounded commission, never as
       # (sales_total × sales_percent).round — SalesController#index sums the
       # per-sale figures, and rounding the aggregate instead would put a
