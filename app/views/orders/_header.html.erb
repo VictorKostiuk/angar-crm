@@ -3,12 +3,16 @@
     modal changes the status, since the badge and the action buttons both
     depend on it. %>
 <div>
-  <h1 class="text-2xl font-bold text-gray-900"><%= order.bike.name %></h1>
-  <p class="text-gray-500 text-sm mt-1">
-    <%= link_to order.client.name, order.client, class: "hover:underline" %> ·
-    <%= render "shared/phone_actions", phone: order.client.phone %>
-    <%= render "shared/telegram_tag", client: order.client %>
-  </p>
+  <h1 class="text-2xl font-bold text-gray-900"><%= order_title(order) %></h1>
+  <% if order.client %>
+    <p class="text-gray-500 text-sm mt-1">
+      <%= link_to order.client.name, order.client, class: "hover:underline" %> ·
+      <%= render "shared/phone_actions", phone: order.client.phone %>
+      <%= render "shared/telegram_tag", client: order.client %>
+    </p>
+  <% elsif order.quick? %>
+    <p class="text-gray-500 text-sm mt-1">Без клієнта й велосипеда — записано й закрито одразу.</p>
+  <% end %>
   <% if order.via_booking? %>
     <p class="mt-2 text-sm <%= order.booked? ? "text-sky-700" : "text-gray-500" %>">
       Запис на <%= l order.scheduled_at, format: "%d.%m.%Y %H:%M" %>–<%= order.booking_ends_at.strftime("%H:%M") %>

@@ -114,4 +114,46 @@ class RentalsFlowTest < ActionDispatch::IntegrationTest
       issue!
     end
   end
+
+  # D67: a family takes three bikes — one form, one hire per bike.
+  test "several bikes go out to one person in one go, each a hire of its own" do
+    other = RentalBike.create!(name: "Merida прокат", size: "L", daily_rate: 350)
+
+    assert_difference -> { Rental.count }, 2 do
+      post rentals_path, params: { rental: { rental_bike_ids: [ @bike.id, other.id ], renter_name: "Родина",
+                                             rented_from: Date.current, rented_to: Date.current + 2 } }
+    end
+
+    assert_redirected_to rentals_path
+    assert_equal "Видано в прокат: 2 велосипеди.", flash[:notice]
+    hires = Rental.order(:id).last(2)
+    assert_equal [ 600, 700 ], hires.map(&:amount), "each bike at its own rate"
+    assert_equal [ "Родина" ], hires.map(&:renter).uniq
+
+    patch rental_path(hires.first)
+    assert hires.first.reload.returned_at
+    assert hires.last.reload.out?, "each bike comes back on its own"
+  end
+
+  test "if one of the bikes is already out, none goes, and the message names it" do
+    other = RentalBike.create!(name: "Merida прокат", size: "L", daily_rate: 350)
+    issue!(bike: other)
+
+    assert_no_difference -> { Rental.count } do
+      issue!(rental_bike_ids: [ @bike.id, other.id ])
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Merida прокат, L: вже у прокаті", response.body
+  end
+
+  test "issuing with no bike chosen is refused" do
+    assert_no_difference -> { Rental.count } do
+      post rentals_path, params: { rental: { renter_name: "Гість", rented_from: Date.current, rented_to: Date.current + 1 } },
+           headers: { "Accept" => "#{Mime[:turbo_stream]}, text/html, application/xhtml+xml" }
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Оберіть велосипед", response.body
+  end
 end

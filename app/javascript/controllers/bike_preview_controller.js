@@ -1,8 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Shows the photos of whichever bike is picked in a <select>. Each preview
-// carries data-bike-id; the one matching the select's value is shown, the
-// rest stay hidden. The <select> itself stays native (see D52 on why).
+// Shows the photos of whichever bikes are picked in a <select> — one, or
+// several when the select is `multiple` (D67). Each preview carries
+// data-bike-id; the ones matching a chosen option are shown, the rest stay
+// hidden.
 export default class extends Controller {
   static targets = [ "select", "preview" ]
 
@@ -11,9 +12,9 @@ export default class extends Controller {
   }
 
   show() {
-    const id = this.selectTarget.value
+    const ids = Array.from(this.selectTarget.selectedOptions).map((option) => option.value)
     this.previewTargets.forEach((preview) => {
-      preview.hidden = preview.dataset.bikeId !== id
+      preview.hidden = !ids.includes(preview.dataset.bikeId)
     })
   }
 }

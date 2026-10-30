@@ -1,0 +1,15 @@
+<%= turbo_frame_tag "rental_client_documents" do %>
+  <% if @documents.any? %>
+    <div class="mb-2 rounded-md bg-green-50 px-3 py-2">
+      <p class="text-xs text-green-800 mb-1.5">Документи вже є в картці клієнта — фотографувати повторно не треба.</p>
+      <div class="flex flex-wrap gap-1">
+        <% @documents.each do |document| %>
+          <%= image_tag document.variant(resize_to_limit: [ 96, 96 ]), alt: "Документ — #{@client.name}",
+                class: "w-12 h-12 rounded border border-green-200 object-cover" %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <p class="mb-2 text-xs text-gray-500">У картці клієнта документів ще немає.</p>
+  <% end %>
+<% end %>

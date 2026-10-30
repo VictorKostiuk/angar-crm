@@ -6,50 +6,60 @@
 </div>
 
 <%= filter_frame "orders_list" do %>
-  <%= form_with url: orders_path, method: :get, data: { turbo_frame: "orders_list" },
+  <%# On a phone the seven fields fold behind a button (D70); a filter in use
+      keeps them open, so what narrowed the list stays visible. %>
+  <% active_filters = %i[ q status source payment_status mechanic_id from to ].count { |key| params[key].present? } %>
+  <%= form_with url: orders_path, method: :get, data: { turbo_frame: "orders_list", controller: "toggle" },
         class: "bg-white border border-gray-200 rounded-xl p-4 mb-4" do %>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Пошук</label>
-        <%= text_field_tag :q, params[:q], placeholder: "№, клієнт, телефон, велосипед", class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+    <button type="button" data-toggle-target="button" data-action="toggle#toggle" aria-expanded="<%= active_filters.positive? %>"
+            class="sm:hidden flex w-full items-center justify-between text-sm font-medium text-gray-700 cursor-pointer">
+      <span>Фільтри<%= " (#{active_filters})" if active_filters.positive? %></span>
+      <span class="text-gray-400" aria-hidden="true">▾</span>
+    </button>
+    <div data-toggle-target="content" class="<%= class_names("sm:block", "hidden" => active_filters.zero?, "mt-3 sm:mt-0" => true) %>">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Пошук</label>
+          <%= text_field_tag :q, params[:q], placeholder: "№, клієнт, телефон, велосипед", class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
+          <%= select_tag :status, options_for_select([ [ "Усі статуси", "" ], [ "Архів (закриті + скасовані)", "archive" ] ] +
+                                 Order.statuses.keys.map { |s| [ t("statuses.order.#{s}"), s ] }, params[:status]),
+                class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
+        <%# Whether the order came in through the booking calendar — still true
+            after it was closed or cancelled, which is what makes it useful in
+            Архів, where no order is in «Запис» any more. %>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Запис</label>
+          <%= select_tag :source, options_for_select([ [ "Усі", "" ], [ "Через запис", "booking" ], [ "Без запису", "walk_in" ] ], params[:source]),
+                class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Оплата</label>
+          <%= select_tag :payment_status, options_for_select([ [ "Усі", "" ] ] + Order.payment_statuses.keys.map { |s| [ t("statuses.payment.#{s}"), s ] }, params[:payment_status]),
+                class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Механік</label>
+          <%= select_tag :mechanic_id, options_for_select([ [ "Усі механіки", "" ] ] + @mechanics.map { |m| [ m.name, m.id ] }, params[:mechanic_id]),
+                class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Прийнято від</label>
+          <%= date_field_tag :from, params[:from], class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Прийнято до</label>
+          <%= date_field_tag :to, params[:to], class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
+        </div>
       </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
-        <%= select_tag :status, options_for_select([ [ "Усі статуси", "" ], [ "Архів (закриті + скасовані)", "archive" ] ] +
-                               Order.statuses.keys.map { |s| [ t("statuses.order.#{s}"), s ] }, params[:status]),
-              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-      </div>
-      <%# Whether the order came in through the booking calendar — still true
-          after it was closed or cancelled, which is what makes it useful in
-          Архів, where no order is in «Запис» any more. %>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Запис</label>
-        <%= select_tag :source, options_for_select([ [ "Усі", "" ], [ "Через запис", "booking" ], [ "Без запису", "walk_in" ] ], params[:source]),
-              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Оплата</label>
-        <%= select_tag :payment_status, options_for_select([ [ "Усі", "" ] ] + Order.payment_statuses.keys.map { |s| [ t("statuses.payment.#{s}"), s ] }, params[:payment_status]),
-              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Механік</label>
-        <%= select_tag :mechanic_id, options_for_select([ [ "Усі механіки", "" ] ] + @mechanics.map { |m| [ m.name, m.id ] }, params[:mechanic_id]),
-              class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Прийнято від</label>
-        <%= date_field_tag :from, params[:from], class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">Прийнято до</label>
-        <%= date_field_tag :to, params[:to], class: "block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm" %>
-      </div>
-    </div>
 
-    <div class="flex items-center justify-between mt-3">
-      <%= submit_tag "Застосувати", class: "rounded-md bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
-      <%= link_to "Скинути фільтри", orders_path, data: { turbo_frame: "orders_list" }, class: "text-sm text-brand-700 hover:underline" %>
+      <div class="flex items-center justify-between mt-3">
+        <%= submit_tag "Застосувати", class: "rounded-md bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 cursor-pointer" %>
+        <%= link_to "Скинути фільтри", orders_path, data: { turbo_frame: "orders_list" }, class: "text-sm text-brand-700 hover:underline" %>
+      </div>
     </div>
   <% end %>
 
@@ -71,10 +81,10 @@
       <tbody class="divide-y divide-gray-100">
         <% @orders.each do |order| %>
           <tr class="hover:bg-gray-50">
-            <td data-label="№" class="px-4 py-3">
-              <%= link_to order_number(order), order, class: "font-medium text-brand-600 hover:underline" %>
+            <td data-label="№" data-card="title" class="px-4 py-3">
+              <%= link_to order_number(order), order, class: "card-link font-medium text-brand-600 hover:underline" %>
             </td>
-            <td data-label="Дата прийому" class="px-4 py-3 text-gray-600">
+            <td data-label="Дата прийому" data-card="info" class="px-4 py-3 text-gray-600">
               <% if order.booked? %>
                 <span class="block text-sky-700">Запис на <%= order.scheduled_at.strftime("%d.%m.%Y %H:%M") %></span>
               <% else %>
@@ -82,25 +92,34 @@
                 <% if order.via_booking? %><span class="block text-xs text-sky-700">за записом</span><% end %>
               <% end %>
             </td>
-            <td data-label="Клієнт" class="px-4 py-3">
-              <%= link_to order.client, class: "block hover:text-brand-600" do %>
-                <span class="block text-gray-900"><%= order.client.name %></span>
-                <span class="block text-gray-500 text-xs"><%= order.client.formatted_phone %></span>
+            <%# A quick service has neither a client nor a bike (D71). %>
+            <td data-label="Клієнт" data-card="<%= order.client ? "line" : "hide" %>" class="px-4 py-3">
+              <% if order.client %>
+                <%= link_to order.client, class: "block hover:text-brand-600" do %>
+                  <span class="block text-gray-900"><%= order.client.name %></span>
+                  <span class="block text-gray-500 text-xs"><%= order.client.formatted_phone %></span>
+                <% end %>
+                <span class="text-xs"><%= render "shared/telegram_tag", client: order.client %></span>
+              <% else %>
+                <span class="text-gray-400">—</span>
               <% end %>
-              <span class="text-xs"><%= render "shared/telegram_tag", client: order.client %></span>
             </td>
-            <td data-label="Велосипед" class="px-4 py-3">
-              <%= link_to order.bike.name, order.bike, class: "text-gray-600 hover:text-brand-600 hover:underline" %>
+            <td data-label="Велосипед" data-card="line" class="px-4 py-3">
+              <% if order.bike %>
+                <%= link_to order.bike.name, order.bike, class: "text-gray-600 hover:text-brand-600 hover:underline" %>
+              <% else %>
+                <span class="text-brand-700"><%= order_title(order) %></span>
+              <% end %>
             </td>
-            <td data-label="Механік" class="px-4 py-3 text-gray-600">
+            <td data-label="Механік" data-card="meta" class="px-4 py-3 text-gray-600">
               <% if order.mechanic %>
                 <%= link_to order.mechanic.name, mechanic_path(order.mechanic), class: "hover:text-brand-600 hover:underline" %>
               <% else %>—<% end %>
             </td>
-            <td data-label="Статус" class="px-4 py-3"><%= render "shared/status_badge", order: order %></td>
-            <td data-label="Оплата" class="px-4 py-3"><%= render "shared/payment_badge", order: order %></td>
-            <td data-label="Сума" class="px-4 py-3 text-gray-900 font-medium"><%= order.total.positive? ? money(order.total) : "—" %></td>
-            <td data-label="" class="px-4 py-3 text-right">
+            <td data-label="Статус" data-card="badge" class="px-4 py-3"><%= render "shared/status_badge", order: order %></td>
+            <td data-label="Оплата" data-card="info" class="px-4 py-3"><%= render "shared/payment_badge", order: order %></td>
+            <td data-label="Сума" data-card="amount" class="px-4 py-3 text-gray-900 font-medium"><%= order.total.positive? ? money(order.total) : "—" %></td>
+            <td data-label="" data-card="hide" class="px-4 py-3 text-right">
               <%= link_to "›", order, class: "text-gray-400 hover:text-brand-600" %>
             </td>
           </tr>

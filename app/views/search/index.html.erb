@@ -1,0 +1,24 @@
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag "global_search_results", target: "_top" do %>
+    <div class="rounded-lg border border-gray-200 bg-white shadow-lg max-h-[70vh] overflow-y-auto pb-1">
+      <%= render "search/results" %>
+      <% if @query.present? %>
+        <%= link_to "Усі результати →", search_path(q: @query),
+              class: "block border-t border-gray-100 mt-1 px-4 py-2 text-sm font-medium text-brand-600 hover:bg-gray-50" %>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <% content_for :title, "Пошук" %>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-4">Пошук</h1>
+  <%= form_with url: search_path, method: :get, class: "mb-6 max-w-xl" do %>
+    <%= search_field_tag :q, @query, autofocus: @query.empty?, autocomplete: "off",
+          placeholder: "Велосипед, клієнт, телефон або № замовлення",
+          class: "block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-brand-600" %>
+  <% end %>
+
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden pb-2 max-w-3xl">
+    <%= render "search/results" %>
+  </div>
+<% end %>

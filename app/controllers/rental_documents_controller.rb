@@ -19,7 +19,14 @@ class RentalDocumentsController < ApplicationController
       return
     end
 
-    @rental.documents.attach(files) if files.any?
+    # A renter from the client base gets them on the client (D67), so the
+    # next hire already has them; this hire's older photos stay where they are.
+    holder = @rental.client || @rental
+    if files.any? && !holder.documents.attach(files)
+      redirect_to rentals_path, alert: "Документи не збережено: #{holder.errors.full_messages.to_sentence}."
+      return
+    end
+
     redirect_to rentals_path, notice: "Документи додано."
   end
 

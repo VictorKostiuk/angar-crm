@@ -90,11 +90,11 @@
       <tbody class="divide-y divide-gray-100">
         <% @income_by_mechanic.each do |row| %>
           <tr>
-            <td data-label="Механік" class="px-4 py-3 text-gray-900"><%= row[:mechanic].name %></td>
-            <td data-label="Замовлень" class="px-4 py-3 text-gray-600"><%= row[:order_count] %></td>
-            <td data-label="Послуги" class="px-4 py-3 text-gray-600"><%= money(row[:works_total]) %></td>
-            <td data-label="Запчастини" class="px-4 py-3 text-gray-600"><%= money(row[:parts_total]) %></td>
-            <td data-label="Разом чеків" class="px-4 py-3 font-medium text-gray-900"><%= money(row[:works_total] + row[:parts_total]) %></td>
+            <td data-label="Механік" data-card="title" class="px-4 py-3 text-gray-900"><%= row[:mechanic].name %></td>
+            <td data-label="Замовлень" data-card="meta" class="px-4 py-3 text-gray-600"><%= row[:order_count] %></td>
+            <td data-label="Послуги" data-card="meta" class="px-4 py-3 text-gray-600"><%= money(row[:works_total]) %></td>
+            <td data-label="Запчастини" data-card="meta" class="px-4 py-3 text-gray-600"><%= money(row[:parts_total]) %></td>
+            <td data-label="Разом чеків" data-card="amount" class="px-4 py-3 font-medium text-gray-900"><%= money(row[:works_total] + row[:parts_total]) %></td>
           </tr>
         <% end %>
       </tbody>
@@ -118,13 +118,13 @@
       <tbody class="divide-y divide-gray-100">
         <% @payroll_rows.each do |row| %>
           <tr>
-            <td data-label="Механік" class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
-            <td data-label="Послуги" class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
-            <td data-label="% заробітку" class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
-            <td data-label="Заробіток з послуг" class="px-4 py-3 text-gray-600"><%= money(row.payout) %></td>
-            <td data-label="Із запчастин" class="px-4 py-3 text-gray-600"><%= money(row.parts_commission) %></td>
-            <td data-label="Комісія з продажів" class="px-4 py-3 text-gray-600"><%= money(row.sales_commission) %></td>
-            <td data-label="Всього" class="px-4 py-3 font-medium text-green-700"><%= money(row.earnings) %></td>
+            <td data-label="Механік" data-card="title" class="px-4 py-3 text-gray-900"><%= row.mechanic.name %></td>
+            <td data-label="Послуги" data-card="meta" class="px-4 py-3 text-gray-600"><%= money(row.works_total) %></td>
+            <td data-label="% заробітку" data-card="meta" class="px-4 py-3 text-gray-600"><%= row.mechanic.payroll_percent.to_i %>%</td>
+            <td data-label="Заробіток з послуг" data-card="meta" class="px-4 py-3 text-gray-600"><%= money(row.payout) %></td>
+            <td data-label="Із запчастин" data-card="meta" class="px-4 py-3 text-gray-600"><%= money(row.parts_commission) %></td>
+            <td data-label="Комісія з продажів" data-card="meta" class="px-4 py-3 text-gray-600"><%= money(row.sales_commission) %></td>
+            <td data-label="Всього" data-card="amount" class="px-4 py-3 font-medium text-green-700"><%= money(row.earnings) %></td>
           </tr>
         <% end %>
 

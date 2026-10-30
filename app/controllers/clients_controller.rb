@@ -19,6 +19,8 @@ class ClientsController < ApplicationController
     # the client has actually spent.
     @billed_orders = @orders.reject(&:cancelled?)
     @orders_total = @billed_orders.sum(&:total)
+    # ID photos taken on hires before they were kept on the client (D67).
+    @hire_documents = @client.hire_documents
   end
 
   def new

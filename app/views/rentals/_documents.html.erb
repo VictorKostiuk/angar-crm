@@ -1,9 +1,13 @@
 <%# locals: (rental:) %>
-<%# The renter's ID, shot at handover — several per hire, click to enlarge.
-    Mirrors rentals/_bike_photos: same thumbnail size, same inline "+" batch
-    upload, same admin/owner-only delete. %>
+<%# The renter's ID — several per hire, click to enlarge. A client from the
+    base shows what is kept on the client (D67) and then anything taken on
+    this hire before that; a renter outside the base, this hire's own. Same
+    thumbnail size, inline "+" batch upload and admin/owner-only delete as
+    rentals/_bike_photos. %>
+<% documents = (rental.client ? rental.client.documents.map { |d| [ d, client_document_path(rental.client, d.id) ] } : []) +
+               rental.documents.map { |d| [ d, rental_document_path(rental, d.id) ] } %>
 <div class="flex flex-wrap items-center gap-1" data-controller="lightbox">
-  <% rental.documents.each do |document| %>
+  <% documents.each do |document, delete_path| %>
     <span class="relative group">
       <%= image_tag document.variant(resize_to_limit: [ 80, 80 ]),
             data: { action: "click->lightbox#open",
@@ -11,7 +15,7 @@
                     full_alt: "Документ — #{rental.renter}" },
             class: "w-10 h-10 rounded border border-gray-200 object-cover cursor-zoom-in" %>
       <% if Current.user.admin? || Current.user.owner? %>
-        <%= button_to "×", rental_document_path(rental, document.id), method: :delete,
+        <%= button_to "×", delete_path, method: :delete,
               form_class: "absolute -top-1 -right-1", data: { turbo_confirm: "Видалити документ?" },
               class: "w-4 h-4 rounded-full bg-gray-900/70 text-white text-[10px] leading-none cursor-pointer" %>
       <% end %>

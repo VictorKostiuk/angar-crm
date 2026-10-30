@@ -26,4 +26,10 @@ module ApplicationHelper
   def order_number(order)
     "##{format('%03d', order.number)}"
   end
+
+  # What an order is about, wherever a list or a heading names it: the bike —
+  # or, for a quick service, which has none (D71), the kind of job.
+  def order_title(order)
+    order.bike&.name || "Швидкий сервіс"
+  end
 end

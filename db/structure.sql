@@ -535,8 +535,8 @@ ALTER SEQUENCE public.order_works_id_seq OWNED BY public.order_works.id;
 CREATE TABLE public.orders (
     id bigint NOT NULL,
     number integer DEFAULT nextval('public.order_number_seq'::regclass) NOT NULL,
-    client_id bigint NOT NULL,
-    bike_id bigint NOT NULL,
+    client_id bigint,
+    bike_id bigint,
     mechanic_id bigint,
     accepted_by_id bigint NOT NULL,
     status integer DEFAULT 0 NOT NULL,
@@ -563,7 +563,8 @@ CREATE TABLE public.orders (
     booking_minutes integer,
     maintenance_type_id bigint,
     booking_channel character varying,
-    ready_notified_at timestamp(6) without time zone
+    ready_notified_at timestamp(6) without time zone,
+    quick boolean DEFAULT false NOT NULL
 );
 
 
@@ -2300,6 +2301,7 @@ ALTER TABLE ONLY public.order_status_changes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261030100000'),
 ('20261028100000'),
 ('20261026100000'),
 ('20261022120000'),

@@ -18,6 +18,15 @@ class Bike < ApplicationRecord
     left_joins(:client).where("bikes.name ILIKE :q OR clients.name ILIKE :q", q: "%#{query}%")
   }
 
+  # The header search (D69): every word has to appear in the bike's name,
+  # brand, model or colour, in any order — "marlin trek" finds "Trek Marlin 7".
+  scope :matching, ->(query) {
+    query.to_s.split.reduce(all) do |scope, word|
+      scope.where("bikes.name ILIKE :w OR bikes.brand ILIKE :w OR bikes.model ILIKE :w OR bikes.color ILIKE :w",
+                  w: "%#{sanitize_sql_like(word)}%")
+    end
+  }
+
   # A bike is in the shop while any of its orders is still open; once they are
   # all closed or cancelled it has been handed back. Batch-friendly companion
   # below so a list doesn't issue one query per row.
@@ -42,6 +51,13 @@ class Bike < ApplicationRecord
 
   def order_photos
     orders.sort_by(&:accepted_at).reverse.flat_map(&:photos)
+  end
+
+  # What the base already holds for this bike, shown on an order that has no
+  # photos of its own so nobody re-shoots a bike that is on file (D68): its
+  # own photos, then intake photos from its other visits, newest first.
+  def stored_photos(except: nil)
+    photos.to_a + orders.where.not(id: except&.id).with_attached_photos.order(accepted_at: :desc).flat_map(&:photos)
   end
 
   private

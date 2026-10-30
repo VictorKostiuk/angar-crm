@@ -64,27 +64,30 @@ class OrdersController < ApplicationController
   end
 
   def show
-    @order_works = @order.order_works.order(:position)
-    @order_parts = @order.order_parts.order(:position)
-    @order_status_changes = @order.order_status_changes.includes(:user)
-    @mechanics = User.assignable_as_mechanic.active.order(:name)
-    @discounts = discounts_for(@order)
+    load_show_data
   end
 
   def update
     if @order.update(order_params)
       redirect_to @order, notice: "Замовлення оновлено."
     else
-      @order_works = @order.order_works.order(:position)
-      @order_parts = @order.order_parts.order(:position)
-      @order_status_changes = @order.order_status_changes.includes(:user)
-      @mechanics = User.assignable_as_mechanic.active.order(:name)
-      @discounts = discounts_for(@order)
+      load_show_data
       render :show, status: :unprocessable_entity
     end
   end
 
   private
+    def load_show_data
+      @order_works = @order.order_works.order(:position)
+      @order_parts = @order.order_parts.order(:position)
+      @order_status_changes = @order.order_status_changes.includes(:user)
+      @mechanics = User.assignable_as_mechanic.active.order(:name)
+      @discounts = discounts_for(@order)
+      # The bike's photos from the base, when this visit has none (D68). A quick
+      # service has no bike (D71).
+      @stored_photos = @order.photos.attached? || @order.bike.nil? ? [] : @order.bike.stored_photos(except: @order)
+    end
+
     # Archiving a discount must not make the orders that used it read as
     # "Без знижки" — keep the order's own entry in the list even when it is no
     # longer offered for new orders.

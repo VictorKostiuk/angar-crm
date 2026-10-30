@@ -45,15 +45,15 @@
         <tbody class="divide-y divide-gray-100">
           <% @parts.each do |part| %>
             <tr class="hover:bg-gray-50">
-              <td data-label="Позиція" class="px-4 py-3 text-gray-900"><%= part.name %></td>
-              <td data-label="Категорія" class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
-              <td data-label="Постачальник" class="px-4 py-3 text-gray-600"><%= part.supplier&.name || "—" %></td>
-              <td data-label="Закупівля" class="px-4 py-3 text-right text-gray-600"><%= part.purchase_price ? money(part.purchase_price) : "—" %></td>
-              <td data-label="Продаж" class="px-4 py-3 text-right text-gray-600"><%= money(part.base_price) %></td>
-              <td data-label="Залишок" class="px-4 py-3 text-right">
+              <td data-label="Позиція" data-card="title" class="px-4 py-3 text-gray-900"><%= part.name %></td>
+              <td data-label="Категорія" data-card="info" class="px-4 py-3 text-gray-600"><%= part.category.name %></td>
+              <td data-label="Постачальник" data-card="meta" class="px-4 py-3 text-gray-600"><%= part.supplier&.name || "—" %></td>
+              <td data-label="Закупівля" data-card="meta" class="px-4 py-3 text-right text-gray-600"><%= part.purchase_price ? money(part.purchase_price) : "—" %></td>
+              <td data-label="Продаж" data-card="meta" class="px-4 py-3 text-right text-gray-600"><%= money(part.base_price) %></td>
+              <td data-label="Залишок" data-card="badge" class="px-4 py-3 text-right">
                 <span class="font-medium <%= part.stock_quantity.positive? ? "text-gray-900" : "text-red-600" %>"><%= part.stock_quantity %></span>
               </td>
-              <td data-label="Рух" class="px-4 py-3">
+              <td data-label="Рух" data-card="actions" class="px-4 py-3">
                 <%= render "stock/movement_form", part: part %>
               </td>
             </tr>
@@ -81,13 +81,13 @@
         <tbody class="divide-y divide-gray-100">
           <% @movements.each do |movement| %>
             <tr>
-              <td data-label="Дата" class="px-4 py-3 text-gray-500"><%= l movement.created_at.to_date %></td>
-              <td data-label="Позиція" class="px-4 py-3 text-gray-900"><%= movement.part.name %></td>
-              <td data-label="Тип" class="px-4 py-3 text-gray-600"><%= t("stock_kinds.#{movement.kind}") %></td>
-              <td data-label="К-сть" class="px-4 py-3 text-right font-medium <%= movement.quantity.negative? ? "text-red-600" : "text-green-700" %>">
+              <td data-label="Дата" data-card="info" class="px-4 py-3 text-gray-500"><%= l movement.created_at.to_date %></td>
+              <td data-label="Позиція" data-card="title" class="px-4 py-3 text-gray-900"><%= movement.part.name %></td>
+              <td data-label="Тип" data-card="info" class="px-4 py-3 text-gray-600"><%= t("stock_kinds.#{movement.kind}") %></td>
+              <td data-label="К-сть" data-card="badge" class="px-4 py-3 text-right font-medium <%= movement.quantity.negative? ? "text-red-600" : "text-green-700" %>">
                 <%= movement.quantity.positive? ? "+#{movement.quantity}" : movement.quantity %>
               </td>
-              <td data-label="Хто / замовлення" class="px-4 py-3 text-gray-500">
+              <td data-label="Хто / замовлення" data-card="info" class="px-4 py-3 text-gray-500">
                 <% if movement.order %>
                   <%= link_to order_number(movement.order), movement.order, class: "text-brand-600 hover:underline" %>
                 <% else %>

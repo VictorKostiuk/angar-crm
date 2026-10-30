@@ -83,7 +83,7 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     visit root_path
     click_on "+ Новий продаж"
     within("[data-controller='sale-items']") do
-      select "Камера 700 — 180 грн (5 шт)", from: find("select[name*='part_id']")[:name]
+      pick "Камера 700 — 180 грн (5 шт)", from: "select[name*='part_id']"
       fill_in find("input[name*='quantity']")[:name], with: "2"
     end
     find("input[type=submit][value='Записати продаж']").trigger("click")
@@ -111,7 +111,7 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     # Second line: straight from the shelf.
     click_on "+ Ще позиція"
     within all("[data-sale-items-target='rows'] > div").last do
-      select "Камера 700 — 180 грн (5 шт)", from: find("select[name*='part_id']")[:name]
+      pick "Камера 700 — 180 грн (5 шт)", from: "select[name*='part_id']"
     end
 
     find("input[type=submit][value='Записати продаж']").trigger("click")
@@ -129,7 +129,7 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_text "Доступний"
 
     click_on "+ Видати в прокат"
-    select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
+    pick "Trek прокат — 300 грн/доба", from: "#rental_rental_bike_ids"
     fill_in "rental[renter_name]", with: "Гість"
     fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
     fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 2).iso8601
@@ -144,6 +144,29 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     assert_text "Доступний"
   end
 
+  # D67: two bikes in one handover, to a client whose passport is on file.
+  test "issuing two bikes to a client whose documents are already on file" do
+    RentalBike.create!(name: "Trek прокат", daily_rate: 300)
+    RentalBike.create!(name: "Merida прокат", daily_rate: 350)
+    clients(:ivan).documents.attach(io: file_fixture("test_photo.png").open, filename: "passport.png", content_type: "image/png")
+    sign_in @owner
+
+    visit rentals_path
+    click_on "+ Видати в прокат"
+    pick "Trek прокат — 300 грн/доба", from: "#rental_rental_bike_ids"
+    pick "Merida прокат — 350 грн/доба", from: "#rental_rental_bike_ids"
+    pick clients(:ivan).name, from: "#rental_client_id", search: "Петренко"
+    assert_text "Документи вже є в картці клієнта"
+
+    fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
+    fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 1).iso8601
+    find("input[type=submit][value='Видати']").trigger("click")
+
+    assert_text "Видано в прокат: 2 велосипеди."
+    assert_equal [ clients(:ivan) ], Rental.all.map(&:client).uniq
+    assert_equal [ 300, 350 ], Rental.all.map { |rental| rental.amount.to_i }.sort
+  end
+
   test "a rental can be issued straight from the board" do
     RentalBike.create!(name: "Trek прокат", daily_rate: 300)
     sign_in @owner
@@ -151,7 +174,7 @@ class EndToEndSystemTest < ApplicationSystemTestCase
     visit root_path
     click_on "+ Новий прокат"
 
-    select "Trek прокат — 300 грн/доба", from: "rental[rental_bike_id]"
+    pick "Trek прокат — 300 грн/доба", from: "#rental_rental_bike_ids"
     fill_in "rental[renter_name]", with: "Гість"
     fill_in "rental[rented_from]", with: Date.current.beginning_of_month.iso8601
     fill_in "rental[rented_to]", with: (Date.current.beginning_of_month + 2).iso8601

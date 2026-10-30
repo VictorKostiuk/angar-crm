@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Adds another line to the sale form. The blank row lives in a <template> so
+// Adds another line to the sale form (and to the quick-service form's
+// services and materials, D71). The blank row lives in a <template> so
 // Rails renders its field names once, server-side, and JS only has to swap the
 // child index — no field names built in JavaScript.
 export default class extends Controller {

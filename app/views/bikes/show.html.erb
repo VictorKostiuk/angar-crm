@@ -96,13 +96,13 @@
           <tbody class="divide-y divide-gray-100">
             <% @orders.each do |order| %>
               <tr class="hover:bg-gray-50">
-                <td data-label="№" class="px-4 py-3">
-                  <%= link_to order_number(order), order, class: "font-medium text-brand-600 hover:underline" %>
+                <td data-label="№" data-card="title" class="px-4 py-3">
+                  <%= link_to order_number(order), order, class: "card-link font-medium text-brand-600 hover:underline" %>
                 </td>
-                <td data-label="Дата" class="px-4 py-3 text-gray-600"><%= l order.accepted_at.to_date %></td>
-                <td data-label="Механік" class="px-4 py-3 text-gray-600"><%= order.mechanic&.name || "—" %></td>
-                <td data-label="Статус" class="px-4 py-3"><%= render "shared/status_badge", order: order %></td>
-                <td data-label="Сума" class="px-4 py-3 text-gray-600"><%= money(order.total) %></td>
+                <td data-label="Дата" data-card="info" class="px-4 py-3 text-gray-600"><%= l order.accepted_at.to_date %></td>
+                <td data-label="Механік" data-card="meta" class="px-4 py-3 text-gray-600"><%= order.mechanic&.name || "—" %></td>
+                <td data-label="Статус" data-card="badge" class="px-4 py-3"><%= render "shared/status_badge", order: order %></td>
+                <td data-label="Сума" data-card="amount" class="px-4 py-3 text-gray-600"><%= money(order.total) %></td>
               </tr>
             <% end %>
           </tbody>

@@ -1,6 +1,8 @@
 class Order < ApplicationRecord
-  belongs_to :client, counter_cache: true
-  belongs_to :bike
+  # Optional only for a quick service (D71), which has neither — see the
+  # presence check below, which keeps them required on every other order.
+  belongs_to :client, counter_cache: true, optional: true
+  belongs_to :bike, optional: true
   belongs_to :mechanic, class_name: "User", optional: true
   # `discount` holds the computed amount; `discount_record` remembers which
   # catalog entry produced it, so the picker can show what was chosen.
@@ -13,6 +15,11 @@ class Order < ApplicationRecord
   has_many :order_parts, -> { order(:position) }, dependent: :destroy, inverse_of: :order
   has_many :order_status_changes, -> { order(created_at: :desc) }, dependent: :destroy, inverse_of: :order
   has_many_attached :photos
+
+  # The quick-service form enters its lines with the order in one go (D71). An
+  # untouched row — nothing picked, nothing typed — is just a spare row.
+  accepts_nested_attributes_for :order_works, reject_if: ->(attrs) { attrs[:service_id].blank? && attrs[:name].blank? }
+  accepts_nested_attributes_for :order_parts, reject_if: ->(attrs) { attrs[:part_id].blank? && attrs[:name].blank? }
 
   # NOTE: the "new order" status is intentionally NOT named :new — Rails enum
   # generates a class-level scope with that name, which would silently shadow
@@ -38,6 +45,7 @@ class Order < ApplicationRecord
   # what the «Запис» filter means on Замовлення and in Архів.
   scope :via_booking, -> { where.not(scheduled_at: nil) }
   scope :walk_in, -> { where(scheduled_at: nil) }
+  scope :quick, -> { where(quick: true) }
 
   # Closed and cancelled orders are settled records — their lines, money,
   # mechanic and photos are frozen. Enforced in the controllers, not just by
@@ -73,8 +81,12 @@ class Order < ApplicationRecord
   }
 
   validates :accepted_at, presence: true
+  # The same check belongs_to makes by default, waived for a quick service.
+  validates :client, :bike, presence: { message: :required }, unless: :quick?
+  validates :mechanic, presence: true, if: :quick?
   validates :cancel_reason, presence: true, if: :cancelled?
-  validates :payment_method, presence: true, if: :paid?
+  # A quick service is paid on the spot and nobody is asked how (D71).
+  validates :payment_method, presence: true, if: -> { paid? && !quick? }
   validate :bike_belongs_to_client
   validate :photos_must_be_images
   validate :mechanic_must_be_a_mechanic

@@ -1,6 +1,11 @@
 class Client < ApplicationRecord
   has_many :bikes, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
+  has_many :rentals, dependent: :restrict_with_error
+  # Photos of the client's ID, kept with the person so the next hire does not
+  # need them shot again (D67). A renter who is not in the base keeps theirs
+  # on the hire itself (Rental#documents).
+  has_many_attached :documents
   # A discount pinned to this client, applied to their orders automatically.
   belongs_to :discount, optional: true
   # The Telegram chat this person books from, if they have used the bot.
@@ -15,6 +20,7 @@ class Client < ApplicationRecord
   validates :name, presence: true
   validates :telegram_username, format: { with: /\A[A-Za-z0-9_]{4,32}\z/, message: "недійсний Telegram-нік" }, allow_nil: true
   validates :phone, presence: true, uniqueness: true, format: { with: /\A\d{12}\z/, message: "недійсний номер телефону" }
+  validate :documents_must_be_images
 
   # Phone-substring matching only kicks in at 4+ digits — a 1-2 digit query
   # is too short to mean anything as a phone fragment (any 12-digit number
@@ -47,6 +53,16 @@ class Client < ApplicationRecord
     name.to_s.split.first.presence || name
   end
 
+  # Every ID photo on file for this person: the ones kept on the client, then
+  # any taken on their earlier hires, before documents moved to the client.
+  def all_documents
+    documents.to_a + hire_documents
+  end
+
+  def hire_documents
+    rentals.with_attached_documents.order(:rented_from).flat_map(&:documents)
+  end
+
   def self.normalize_phone(phone)
     digits = phone.to_s.gsub(/\D/, "")
     digits = "38#{digits}" if digits.start_with?("0") && digits.length == 10
@@ -64,4 +80,11 @@ class Client < ApplicationRecord
 
     "+#{phone[0..2]} #{phone[3..4]} #{phone[5..7]} #{phone[8..9]} #{phone[10..11]}"
   end
+
+  private
+    def documents_must_be_images
+      return unless documents.attached?
+
+      errors.add(:documents, "має бути зображенням") unless documents.all? { |d| d.content_type.to_s.start_with?("image/") }
+    end
 end

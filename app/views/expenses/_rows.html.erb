@@ -1,16 +1,16 @@
 <%# locals: (expenses:) %>
 <% expenses.each do |expense| %>
   <tr class="hover:bg-gray-50" id="expense_row_<%= expense.id %>">
-    <td data-label="Дата" class="px-4 py-3 text-gray-600 whitespace-nowrap"><%= expense.date.strftime("%d.%m.%Y") %></td>
-    <td data-label="Категорія" class="px-4 py-3 text-gray-900">
+    <td data-label="Дата" data-card="badge" class="px-4 py-3 text-gray-600 whitespace-nowrap"><%= expense.date.strftime("%d.%m.%Y") %></td>
+    <td data-label="Категорія" data-card="title" class="px-4 py-3 text-gray-900">
       <%= expense.category %>
       <% if expense.auto_logged? %>
         <span class="ml-1 inline-block rounded-full bg-gray-100 text-gray-500 text-xs font-medium px-2 py-0.5">витрачено на замовлення</span>
       <% end %>
     </td>
-    <td data-label="Опис" class="px-4 py-3 text-gray-600"><%= expense.description.presence || "—" %></td>
-    <td data-label="Сума" class="px-4 py-3 text-gray-900 whitespace-nowrap"><%= money(expense.amount) %></td>
-    <td data-label="" class="px-4 py-3 text-right whitespace-nowrap">
+    <td data-label="Опис" data-card="line" class="px-4 py-3 text-gray-600"><%= expense.description.presence || "—" %></td>
+    <td data-label="Сума" data-card="amount" class="px-4 py-3 text-gray-900 whitespace-nowrap"><%= money(expense.amount) %></td>
+    <td data-label="" data-card="actions" class="px-4 py-3 text-right whitespace-nowrap">
       <%= link_to expenses_path(edit: expense.id),
             title: t("actions.edit"), "aria-label": t("actions.edit"),
             class: "inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-brand-600 hover:bg-gray-100 mr-1" do %>

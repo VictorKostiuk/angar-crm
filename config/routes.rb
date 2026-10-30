@@ -11,8 +11,13 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # The header's search across bikes, clients and order numbers (D69).
+  get "search", to: "search#index"
+
   resources :clients do
     resources :bikes, only: %i[ new create ]
+    # The client's ID photos (D67); index is the rental form's "on file" box.
+    resources :documents, only: %i[ index create destroy ], controller: "client_documents"
     get :search, on: :collection
   end
   resources :bikes, only: %i[ index show update destroy ] do
@@ -28,6 +33,8 @@ Rails.application.routes.draw do
   resources :suppliers, only: %i[ index create update destroy ]
   get "stock", to: "stock#index"
   resources :sales, only: %i[ index new create ]
+  # A short job entered and closed in one form from Майстерня (D71).
+  resources :quick_services, only: %i[ new create ]
   # A rental's own PATCH already means "bike returned", so the renter's ID
   # photos get their own nested resource rather than a branch inside it.
   resources :rentals, only: %i[ index new create update ] do

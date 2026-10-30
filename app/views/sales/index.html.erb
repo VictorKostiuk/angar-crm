@@ -42,11 +42,11 @@
       <tbody class="divide-y divide-gray-100">
         <% @sales.each do |sale| %>
           <tr class="hover:bg-gray-50">
-            <td data-label="Дата" class="px-4 py-3 text-gray-500"><%= l sale.sold_at.to_date %></td>
+            <td data-label="Дата" data-card="badge" class="px-4 py-3 text-gray-500"><%= l sale.sold_at.to_date %></td>
             <%# A ten-line sale used to print as one wrapping paragraph that swallowed
                 the row. Collapsed to the first position plus a count, expandable in
                 place — <details> does it natively, no controller and no state to keep. %>
-            <td data-label="Позиції" class="px-4 py-3 text-gray-900">
+            <td data-label="Позиції" data-card="title" class="px-4 py-3 text-gray-900">
               <% items = sale.sale_items %>
               <% if items.size > 1 %>
                 <details class="group">
@@ -69,10 +69,10 @@
                 <span class="block text-xs text-gray-400"><%= sale.note %></span>
               <% end %>
             </td>
-            <td data-label="Клієнт" class="px-4 py-3 text-gray-600"><%= sale.client&.name || "—" %></td>
-            <td data-label="Продав" class="px-4 py-3 text-gray-600"><%= sale.sold_by.name %></td>
-            <td data-label="Сума" class="px-4 py-3 text-right font-medium text-gray-900"><%= money(sale.total) %></td>
-            <td data-label="Комісія" class="px-4 py-3 text-right text-gray-600"><%= money(sale.commission) %></td>
+            <td data-label="Клієнт" data-card="meta" class="px-4 py-3 text-gray-600"><%= sale.client&.name || "—" %></td>
+            <td data-label="Продав" data-card="meta" class="px-4 py-3 text-gray-600"><%= sale.sold_by.name %></td>
+            <td data-label="Сума" data-card="amount" class="px-4 py-3 text-right font-medium text-gray-900"><%= money(sale.total) %></td>
+            <td data-label="Комісія" data-card="meta" class="px-4 py-3 text-right text-gray-600"><%= money(sale.commission) %></td>
           </tr>
         <% end %>
 

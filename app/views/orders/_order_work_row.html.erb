@@ -5,8 +5,8 @@
     — and only the field actually changed gets sent, so the other can't be
     overwritten with a stale value. %>
 <tr class="hover:bg-gray-50">
-  <td data-label="Послуга" class="px-4 py-2 text-gray-900"><%= order_work.name %></td>
-  <td data-label="К-сть" class="px-4 py-2 text-gray-600">
+  <td data-label="Послуга" data-card="title" class="px-4 py-2 text-gray-900"><%= order_work.name %></td>
+  <td data-label="К-сть" data-card="meta" class="px-4 py-2 text-gray-600">
     <% if order_work.order.editable? %>
       <%= form_with model: [ order_work.order, order_work ], method: :patch,
             data: { controller: "autosubmit" }, class: "contents" do |f| %>
@@ -18,7 +18,7 @@
       <%= number_with_precision(order_work.quantity, precision: 2, strip_insignificant_zeros: true) %>
     <% end %>
   </td>
-  <td data-label="Ціна" class="px-4 py-2 text-gray-600">
+  <td data-label="Ціна" data-card="meta" class="px-4 py-2 text-gray-600">
     <% if order_work.order.editable? %>
       <%= form_with model: [ order_work.order, order_work ], method: :patch,
             data: { controller: "autosubmit" }, class: "contents" do |f| %>
@@ -30,8 +30,8 @@
       <%= money(order_work.price) %>
     <% end %>
   </td>
-  <td data-label="Сума" class="px-4 py-2 text-gray-900 font-medium"><%= money(order_work.total) %></td>
-  <td data-label="" class="px-4 py-2 text-right">
+  <td data-label="Сума" data-card="amount" class="px-4 py-2 text-gray-900 font-medium"><%= money(order_work.total) %></td>
+  <td data-label="" data-card="badge" class="px-4 py-2 text-right">
     <% if order_work.order.editable? %>
       <%= button_to "✕", order_order_work_path(order_work.order, order_work), method: :delete,
             class: "text-gray-400 hover:text-red-600 bg-transparent cursor-pointer" %>

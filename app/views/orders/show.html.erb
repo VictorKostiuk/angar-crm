@@ -102,6 +102,27 @@
                     class="absolute top-2 right-2 w-8 h-8 rounded-full bg-gray-900/70 text-white text-lg leading-none cursor-pointer">&times;</button>
           </dialog>
         </div>
+      <% elsif @stored_photos.any? %>
+        <%# The bike is on file (D68): show what the base has rather than an
+            empty box, and say plainly it is not today's condition. %>
+        <p class="text-xs text-gray-500 mb-1.5">З бази — фото цього велосипеда з картки й попередніх візитів. Сьогоднішній стан можна додати нижче, якщо щось змінилось.</p>
+        <div class="grid grid-cols-3 gap-2 mb-2" data-controller="lightbox">
+          <% @stored_photos.first(6).each do |photo| %>
+            <%= image_tag photo.variant(resize_to_limit: [ 150, 150 ]),
+                  data: { action: "click->lightbox#open",
+                          full_src: url_for(photo.variant(resize_to_limit: [ 1600, 1600 ])),
+                          full_alt: "Фото велосипеда #{@order.bike.name}" },
+                  class: "rounded-md border border-dashed border-gray-300 aspect-square object-cover w-full cursor-zoom-in" %>
+          <% end %>
+
+          <dialog data-lightbox-target="dialog"
+                  data-action="click->lightbox#closeOnBackdrop"
+                  class="max-w-[90vw] max-h-[90vh] rounded-xl p-0 m-auto bg-transparent backdrop:bg-gray-900/80">
+            <img data-lightbox-target="image" class="max-w-[90vw] max-h-[90vh] rounded-xl object-contain" alt="">
+            <button type="button" data-action="lightbox#close" aria-label="Закрити"
+                    class="absolute top-2 right-2 w-8 h-8 rounded-full bg-gray-900/70 text-white text-lg leading-none cursor-pointer">&times;</button>
+          </dialog>
+        </div>
       <% end %>
       <% if @order.editable? %>
       <%= form_with url: order_photos_path(@order), multipart: true, class: "flex items-center gap-2" do %>
